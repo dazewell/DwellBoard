@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "helium314.keyboard"
+        applicationId = "helium314.keyboard.dazewell"
         minSdk = 21
         targetSdk = 37
         versionCode = 4200
