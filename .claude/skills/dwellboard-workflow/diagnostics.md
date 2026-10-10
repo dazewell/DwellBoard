@@ -71,8 +71,8 @@ read one.
 
 ```powershell
 adb shell ime list -s                      # enabled IMEs
-adb shell ime enable helium314.keyboard.debug/helium314.keyboard.latin.LatinIME
-adb shell ime set    helium314.keyboard.debug/helium314.keyboard.latin.LatinIME
+adb shell ime enable helium314.keyboard.dazewell.debug/helium314.keyboard.latin.LatinIME
+adb shell ime set    helium314.keyboard.dazewell.debug/helium314.keyboard.latin.LatinIME
 ```
 
 (Use `helium314.keyboard.dazewell/...` for a release-style build.) Restore dazewell's
