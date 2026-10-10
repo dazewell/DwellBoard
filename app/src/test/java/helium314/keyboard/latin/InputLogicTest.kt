@@ -646,6 +646,50 @@ class InputLogicTest {
         assertEquals("x = -5", text)
     }
 
+    @Test fun `typed punctuation keeps the space before a slash unless it follows a colon`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("hello,/")
+        assertEquals("hello, /", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("http://")
+        assertEquals("http://", text)
+    }
+
+    @Test fun `no immediate space inside an email address`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("mail@example.com,")
+        assertEquals("mail@example.com,", text)
+    }
+
+    @Test fun `shift removes the automatically inserted space only`() {
+        latinIME.prefs().edit {
+            putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true)
+            putBoolean(Settings.PREF_SHIFT_REMOVES_AUTOSPACE, true)
+        }
+        chainInput("hello,")
+        assertEquals("hello, ", text)
+        functionalKeyPress(KeyCode.SHIFT)
+        assertEquals("hello,", text)
+        reset()
+        latinIME.prefs().edit {
+            putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true)
+            putBoolean(Settings.PREF_SHIFT_REMOVES_AUTOSPACE, true)
+        }
+        chainInput("hello, ") // typed space is kept
+        functionalKeyPress(KeyCode.SHIFT)
+        assertEquals("hello, ", text)
+    }
+
+    @Test fun `pending space is dropped when the cursor is moved by space swipe`() {
+        pickSuggestion("hello")
+        assertEquals(SpaceState.PHANTOM, spaceState)
+        latinIME.mInputLogic.setExpectCursorMove()
+        setCursorPosition(3)
+        input('x')
+        assertEquals("helxlo", text)
+    }
+
     @Test fun `autospace in json editor`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("{\"label\":\"")
@@ -798,7 +842,7 @@ class InputLogicTest {
             ) {
             if (phantomSpaceToInsert.isEmpty()) {
                 // a space inserted right after punctuation may get removed again by following punctuation, and may be inserted after this input
-                val base = if (oldAutoSpace && insert in listOf(".", ",", ";", ":", "!", "?", "/")) oldBefore.dropLast(1) + insert else oldBefore + insert
+                val base = if (oldAutoSpace && (insert in listOf(".", ",", ";", ":", "!", "?") || (insert == "/" && oldBefore.endsWith(": ")))) oldBefore.dropLast(1) + insert else oldBefore + insert
                 val expected = if (spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION) "$base " else base
                 assertEquals(expected, textBeforeCursor)
             } else // in some cases autospace might be suppressed

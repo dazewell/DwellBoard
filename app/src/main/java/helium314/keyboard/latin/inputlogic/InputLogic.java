@@ -375,6 +375,8 @@ public final class InputLogic {
     /** indicates that the next selection update is expected to be a cursor move (though not needed for arrow keys) */
     public void setExpectCursorMove() {
         mCursorMoveExpectedUntil = SystemClock.elapsedRealtime() + 500;
+        // DwellBoard: the callback of this move is treated as belated and skips the reset in onUpdateSelection, so a pending space would be inserted at the new position
+        mSpaceState = SpaceState.NONE;
     }
 
     private boolean mightBeExpectedCursorMove() {
@@ -400,8 +402,6 @@ public final class InputLogic {
         if (mConnection.isBelatedExpectedUpdate(oldSelStart, newSelStart, oldSelEnd, newSelEnd, composingSpanStart, composingSpanEnd)) {
             // return whether we expect a user-initiated explicit cursor move (i.e. not as result of other input, but e.g. space swipe)
             // note that arrow keys are not considered, because for them isBelatedExpectedUpdate returns false
-            // the cursor was moved by the user (e.g. space swipe), so a pending space must not be inserted at the new position
-            if (expectCursorMove) mSpaceState = SpaceState.NONE;
             return expectCursorMove;
         }
 
@@ -753,6 +753,11 @@ public final class InputLogic {
                 inputTransaction.setRequiresUpdateSuggestions();
                 if (mSpaceState == SpaceState.PHANTOM && sv.mShiftRemovesAutospace)
                     mSpaceState = SpaceState.NONE;
+                else if (mSpaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION && sv.mShiftRemovesAutospace) {
+                    // DwellBoard: the automatic space was already inserted
+                    mConnection.removeTrailingSpace();
+                    mSpaceState = SpaceState.NONE;
+                }
                 break;
             }
             case KeyCode.CAPS_LOCK: {
@@ -990,9 +995,7 @@ public final class InputLogic {
                 return;
             }
             // punctuation typed right after auto-spaced punctuation ("?!", "://") belongs directly behind it
-            final CharSequence before = mConnection.getTextBeforeCursor(2, 0);
-            final boolean afterColon = before != null && before.length() == 2 && before.charAt(0) == ':';
-            if (codePoint == '.' || isImmediateAutospacePunctuation(codePoint) || (codePoint == '/' && afterColon))
+            if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.removesAutoSpace(codePoint, mConnection.getTextBeforeCursor(2, 0)))
                 mConnection.removeTrailingSpace();
         }
 
@@ -1132,8 +1135,8 @@ public final class InputLogic {
         enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
         // a dash after "word " is a separator (like in "Look here - a cat"), unlike in "well-known" or "-5"
-        final boolean insertSpaceAfterDash = !isComposingWord && isDash(codePoint)
-                && settingsValues.mAutospaceAfterPunctuation && letterAndSpaceBeforeCursor();
+        final boolean insertSpaceAfterDash = !isComposingWord && settingsValues.mAutospaceAfterPunctuation
+                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isSeparatorDash(codePoint, mConnection.getTextBeforeCursor(2, 0));
 
         if (isComposingWord) {
             mWordComposer.applyProcessedEvent(event);
@@ -1272,7 +1275,7 @@ public final class InputLogic {
                 if (wasComposingWord
                         && settingsValues.mAutospaceAfterPunctuation
                         && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
-                    if (isImmediateAutospacePunctuation(codePoint) && !isInsideDoubleQuoteOrAfterDigit)
+                    if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint) && !isInsideDoubleQuoteOrAfterDigit)
                         insertSpaceAfterCommit = true; // the space is inserted after the punctuation was committed
                     else
                         mSpaceState = SpaceState.PHANTOM;
@@ -2339,33 +2342,18 @@ public final class InputLogic {
         return false;
     }
 
-    /** Punctuation that gets its space inserted immediately instead of with the next input. '.' is excluded because of domains, abbreviations and decimals. */
-    private static boolean isImmediateAutospacePunctuation(final int codePoint) {
-        return codePoint == ',' || codePoint == ';' || codePoint == ':' || codePoint == '!' || codePoint == '?';
-    }
-
-    private static boolean isDash(final int codePoint) {
-        return codePoint == '-' || codePoint == '–' || codePoint == '—';
-    }
-
     /**
      * Inserts a space right now, after the just typed punctuation, if options and text allow.
      * Sets the space state so that a space typed by the user afterwards is not inserted a second time.
      */
     private void insertSpaceRightAfterPunctuation(final SettingsValues settingsValues) {
-        if (!mConnection.hasSlowInputConnection()) {
-            final CharSequence after = mConnection.getTextAfterCursor(1, 0);
-            if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0))) return; // there already is a space
-        }
+        // DwellBoard: without a reliable look at the text after the cursor an existing space could be doubled
+        if (mConnection.hasSlowInputConnection()) return;
+        final CharSequence after = mConnection.getTextAfterCursor(1, 0);
+        if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0))) return; // there already is a space
+        if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.looksLikeEmail(mConnection.textBeforeCursorUntilLastWhitespaceOrDoubleSlash())) return;
         if (insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues))
             mSpaceState = SpaceState.AUTO_SPACE_AFTER_PUNCTUATION;
-    }
-
-    /** Whether the text before the cursor ends with a letter followed by a space, i.e. a dash typed now is likely a separator and not a minus sign or a hyphen. */
-    private boolean letterAndSpaceBeforeCursor() {
-        final CharSequence before = mConnection.getTextBeforeCursor(2, 0);
-        return before != null && before.length() == 2
-                && before.charAt(1) == ' ' && Character.isLetter(before.charAt(0));
     }
 
     private boolean textBeforeCursorMayBeUrlOrSimilar(final SettingsValues settingsValues, final Boolean forAutoSpace) {
