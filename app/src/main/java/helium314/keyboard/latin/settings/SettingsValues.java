@@ -121,6 +121,7 @@ public class SettingsValues {
     public final float mSplitKeyboardSpacerRelativeWidth;
     public final boolean mQuickPinToolbarKeys;
     public final boolean mAddToPersonalDictionary;
+    public final boolean mDontLearnCapitalized;
     public final boolean mUseContactsDictionary;
     public final boolean mUseAppsDictionary;
     public final boolean mCustomNavBarColor;
@@ -310,6 +311,7 @@ public class SettingsValues {
         mPopupKeyOrder = SubtypeUtilsKt.getPopupKeyOrder(selectedSubtype, prefs);
         mPopupKeyHintOrder = SubtypeUtilsKt.getPopupKeyHintOrder(selectedSubtype, prefs);
         mAddToPersonalDictionary = prefs.getBoolean(Settings.PREF_ADD_TO_PERSONAL_DICTIONARY, Defaults.PREF_ADD_TO_PERSONAL_DICTIONARY);
+        mDontLearnCapitalized = prefs.getBoolean(Settings.PREF_DONT_LEARN_CAPITALIZED, Defaults.PREF_DONT_LEARN_CAPITALIZED);
         mUseContactsDictionary = SettingsValues.readUseContactsEnabled(prefs, context);
         mUseAppsDictionary = prefs.getBoolean(Settings.PREF_USE_APPS, Defaults.PREF_USE_APPS);
         mCustomNavBarColor = prefs.getBoolean(Settings.PREF_NAVBAR_COLOR, Defaults.PREF_NAVBAR_COLOR);
