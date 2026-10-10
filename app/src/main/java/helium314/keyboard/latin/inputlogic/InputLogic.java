@@ -1726,6 +1726,12 @@ public final class InputLogic {
             mDictionaryFacilitator.adjustConfidences(word, wasAutoCapitalized);
             return;
         }
+        // DwellBoard: optionally don't learn words with a single capital letter, but still adjust confidences
+        if (helium314.keyboard.dwell.capitalization.CapitalizedLearning.shouldSkip(settingsValues.mDontLearnCapitalized,
+                word, wasAutoCapitalized, ngramContext.isBeginningOfSentenceContext())) {
+            mDictionaryFacilitator.adjustConfidences(word, wasAutoCapitalized);
+            return;
+        }
         final int timeStampInSeconds = (int)TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
         mDictionaryFacilitator.addToUserHistory(word, wasAutoCapitalized, ngramContext,
                 timeStampInSeconds, settingsValues.mBlockPotentiallyOffensive);
