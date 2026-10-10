@@ -8,7 +8,8 @@
 # Subjects carry no author/type prefix (no "dazewell:" / "docs:") — the tag is
 # what marks and groups a fork commit. Feature commits use the feature slug;
 # infra/chore commits use a category tag such as #ci, #docs, or #build.
-# Merge commits are exempt.
+# Merge commits are the only exemption. Revert/fixup!/squash!/amend! subjects
+# quote the original subject, so they already carry its tag.
 #
 # Enable once per clone (committed hooks aren't active until you point git at them):
 #   git config core.hooksPath .githooks
@@ -17,9 +18,8 @@
 msg_file="$1"
 subject=$(head -n 1 "$msg_file")
 
-# Auto-generated / non-authored commits don't need a tag.
 case "$subject" in
-  "Merge "*|"Revert "*|"fixup! "*|"squash! "*|"amend! "*) exit 0 ;;
+  "Merge "*) exit 0 ;;
 esac
 
 # A hashtag token: # followed by lowercase letters/digits/-, with at least one

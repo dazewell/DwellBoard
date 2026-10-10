@@ -37,11 +37,23 @@ esac
 
 # Already conformant: nothing to do. This is the whole name, not just the date
 # prefix — a half-right name like "2026-09-19-Foo_Bar" must still be fixed here,
-# while the rename is free, rather than at push time. Month and day are range-
-# checked because process-rules.yml parses the date, so "2026-13-01" would clear
-# a laxer local check and then fail on the PR, which is the failure this exists
-# to prevent.
-printf '%s' "$branch" | grep -Eq '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])[-_][a-z0-9]+(-[a-z0-9]+)*$' && exit 0
+# while the rename is free, rather than at push time. The date is calendar-
+# checked (leap years included) because process-rules.yml parses it, so
+# "2026-02-31" would clear a laxer local check and then fail on the PR, which is
+# the failure this exists to prevent.
+valid_branch() {
+  printf '%s' "$1" | grep -Eq '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])[-_][a-z0-9]+(-[a-z0-9]+)*$' || return 1
+  y=$(expr "$(printf '%s' "$1" | cut -c1-4)" + 0)
+  m=$(expr "$(printf '%s' "$1" | cut -c6-7)" + 0)
+  d=$(expr "$(printf '%s' "$1" | cut -c9-10)" + 0)
+  case "$m" in
+    4|6|9|11) max=30 ;;
+    2) if [ $((y % 4)) -eq 0 ] && { [ $((y % 100)) -ne 0 ] || [ $((y % 400)) -eq 0 ]; }; then max=29; else max=28; fi ;;
+    *) max=31 ;;
+  esac
+  [ "$d" -le "$max" ]
+}
+valid_branch "$branch" && exit 0
 
 if [ -n "$(git for-each-ref --format='%(refname)' "refs/remotes/*/$branch")" ] ||
    git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' >/dev/null 2>&1; then

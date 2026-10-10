@@ -10,12 +10,25 @@
 #
 # Format (kept in step with .github/scripts/test-branch-name.ps1, which is the
 # source of truth):  <YYYY-MM-DD> + '_' or '-' + lowercase-kebab-slug
-# Month and day are range-checked, because the PS1 validator parses the date
-# rather than pattern-matching it: a laxer check here would wave through
-# "2026-13-01_foo", and it would fail on the PR after the push — the exact late
-# failure this hook exists to prevent.
+# The date is calendar-checked (leap years included), because the PS1 validator
+# parses the date rather than pattern-matching it: a laxer check here would wave
+# through "2026-02-31_foo", and it would fail on the PR after the push — the
+# exact late failure this hook exists to prevent.
 #
 # Bypass in a genuine emergency only: git push --no-verify
+
+valid_branch() {
+  printf '%s' "$1" | grep -Eq '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])[-_][a-z0-9]+(-[a-z0-9]+)*$' || return 1
+  y=$(expr "$(printf '%s' "$1" | cut -c1-4)" + 0)
+  m=$(expr "$(printf '%s' "$1" | cut -c6-7)" + 0)
+  d=$(expr "$(printf '%s' "$1" | cut -c9-10)" + 0)
+  case "$m" in
+    4|6|9|11) max=30 ;;
+    2) if [ $((y % 4)) -eq 0 ] && { [ $((y % 100)) -ne 0 ] || [ $((y % 400)) -eq 0 ]; }; then max=29; else max=28; fi ;;
+    *) max=31 ;;
+  esac
+  [ "$d" -le "$max" ]
+}
 
 fail=0
 
@@ -39,7 +52,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     dev|base|main|master) continue ;;
   esac
 
-  if printf '%s' "$name" | grep -Eq '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])[-_][a-z0-9]+(-[a-z0-9]+)*$'; then
+  if valid_branch "$name"; then
     continue
   fi
 
