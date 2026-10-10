@@ -5,8 +5,8 @@ name: Staging build
 #   - a same-repo pull request that gets the build-apk label (an on-demand
 #     preview; the label is removed at the start so re-applying it re-runs);
 #   - a manual workflow_dispatch.
-# The APK is published as a workflow artifact only — fetch it with
-#   gh run download <run-id> -n DwellBoard
+# The APK is published as an unzipped workflow artifact (archive: false), so
+# the download is the .apk itself, named DwellBoard-<variant>-<sha8>.apk.
 # Doc-, .github- and hook-only pushes to dev are skipped; dispatch manually to
 # verify a pipeline change.
 #
@@ -117,18 +117,24 @@ jobs:
             --out "out/DwellBoard-release-${GITHUB_SHA::8}.apk" "$UNSIGNED"
           "$APKSIGNER" verify --print-certs "out/DwellBoard-release-${GITHUB_SHA::8}.apk" | head -n 3
           rm -f "$RUNNER_TEMP/release.jks"
+          echo "APK=out/DwellBoard-release-${GITHUB_SHA::8}.apk" >> "$GITHUB_ENV"
       - name: Build debug (no keystore configured)
         if: env.HAS_KEYSTORE != 'true'
         run: |
           echo "::warning::SIGNING_KEYSTORE_BASE64 is not set — building the debug variant with a throwaway signature. It installs alongside, but cannot update, a previous build."
           ./gradlew :app:assembleDebug
           mkdir -p out
-          cp app/build/outputs/apk/debug/*.apk "out/DwellBoard-debug-${GITHUB_SHA::8}.apk"
+          BUILT=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          if [ -z "$BUILT" ]; then echo "::error::no debug APK produced"; exit 1; fi
+          cp "$BUILT" "out/DwellBoard-debug-${GITHUB_SHA::8}.apk"
+          echo "APK=out/DwellBoard-debug-${GITHUB_SHA::8}.apk" >> "$GITHUB_ENV"
       - name: Upload APK
+        # archive: false uploads the single .apk as-is instead of wrapping it in
+        # a zip; the artifact takes the file's name, so `name` is not set.
         uses: actions/upload-artifact@v7
         with:
-          name: DwellBoard
-          path: out/*.apk
+          path: ${{ env.APK }}
+          archive: false
           if-no-files-found: error
       - name: Archive reports for failed job
         if: failure()
