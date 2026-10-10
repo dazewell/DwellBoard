@@ -208,6 +208,11 @@ fun String.decapitalize(locale: Locale): String {
     return replaceFirstChar { it.lowercase(locale) }
 }
 
+/** true if the word starts with an uppercase letter and has no other uppercase letters, e.g. "Hello" but not "HELlo" or "iPhone" */
+fun String.isSimplyCapitalized(): Boolean {
+    return isNotEmpty() && this[0].isUpperCase() && count { it.isUpperCase() } == 1
+}
+
 fun encodeBase36(string: String): String = BigInteger(string.toByteArray()).toString(36)
 
 fun decodeBase36(string: String) = BigInteger(string, 36).toByteArray().decodeToString()

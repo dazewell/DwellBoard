@@ -1726,6 +1726,13 @@ public final class InputLogic {
             mDictionaryFacilitator.adjustConfidences(word, wasAutoCapitalized);
             return;
         }
+        if (settingsValues.mDontLearnCapitalized && !wasAutoCapitalized && !ngramContext.isBeginningOfSentenceContext()
+                && StringUtilsKt.isSimplyCapitalized(word)) {
+            // Words with a single capital letter (e.g. "Hello") are not learned, but confidences are still adjusted.
+            // Not applied at beginning of sentence, where the word is decapitalized before learning anyway.
+            mDictionaryFacilitator.adjustConfidences(word, wasAutoCapitalized);
+            return;
+        }
         final int timeStampInSeconds = (int)TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
         mDictionaryFacilitator.addToUserHistory(word, wasAutoCapitalized, ngramContext,
                 timeStampInSeconds, settingsValues.mBlockPotentiallyOffensive);

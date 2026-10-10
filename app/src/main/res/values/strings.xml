@@ -106,6 +106,10 @@
     <string name="add_to_personal_dictionary">Add words to personal dictionary</string>
     <!-- Description for option to add learned words to system-wide user dictionary -->
     <string name="add_to_personal_dictionary_summary">Use device personal dictionary to store learned words</string>
+    <!-- Option name for not learning words that only start with a capital letter -->
+    <string name="dont_learn_capitalized">Don\'t learn capitalized words</string>
+    <!-- Description for option to not learn capitalized words -->
+    <string name="dont_learn_capitalized_summary">Words with a single capital letter (e.g. \"Hello\") are not learned, words with more capital letters (e.g. \"HELlo\") still are</string>
     <!-- Option name for enabling or disabling the double-space period feature that lets double tap on spacebar insert a period followed by a space -->
     <string name="use_double_space_period">Double-space period</string>
     <!-- Description for option enabling or disabling the double-space period feature that lets double tap on spacebar insert a period followed by a space -->
