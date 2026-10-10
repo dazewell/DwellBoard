@@ -97,6 +97,8 @@ android {
             isIncludeAndroidResources = true
         }
     }
+    // DwellBoard: AGP 9 only creates unit-test tasks for testBuildType; CI passes -PdwellTestBuildType=runTests
+    testBuildType = providers.gradleProperty("dwellTestBuildType").getOrElse("debug")
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
