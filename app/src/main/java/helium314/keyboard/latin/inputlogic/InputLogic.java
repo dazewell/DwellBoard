@@ -400,6 +400,8 @@ public final class InputLogic {
         if (mConnection.isBelatedExpectedUpdate(oldSelStart, newSelStart, oldSelEnd, newSelEnd, composingSpanStart, composingSpanEnd)) {
             // return whether we expect a user-initiated explicit cursor move (i.e. not as result of other input, but e.g. space swipe)
             // note that arrow keys are not considered, because for them isBelatedExpectedUpdate returns false
+            // the cursor was moved by the user (e.g. space swipe), so a pending space must not be inserted at the new position
+            if (expectCursorMove) mSpaceState = SpaceState.NONE;
             return expectCursorMove;
         }
 
@@ -979,6 +981,21 @@ public final class InputLogic {
         mSpaceState = SpaceState.NONE;
         final SettingsValues sv = inputTransaction.getSettingsValues();
 
+        if (SpaceState.AUTO_SPACE_AFTER_PUNCTUATION == inputTransaction.getSpaceState()
+                && mConnection.getCodePointBeforeCursor() == Constants.CODE_SPACE) {
+            if (codePoint == Constants.CODE_SPACE) {
+                // the space was already inserted automatically, don't add a second one
+                mSpaceState = SpaceState.WEAK;
+                inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
+                return;
+            }
+            // punctuation typed right after auto-spaced punctuation ("?!", "://") belongs directly behind it
+            final CharSequence before = mConnection.getTextBeforeCursor(2, 0);
+            final boolean afterColon = before != null && before.length() == 2 && before.charAt(0) == ':';
+            if (codePoint == '.' || isImmediateAutospacePunctuation(codePoint) || (codePoint == '/' && afterColon))
+                mConnection.removeTrailingSpace();
+        }
+
         // wrap / unwrap selected text in codepoint pairs
         if (!mWordComposer.isComposingWord() && mConnection.hasSelection()) { // we should never be composing when something is selected
             final int pairedCodepoint = sv.mSpacingAndPunctuations.getSecondInSymbolPair(codePoint);
@@ -1114,6 +1131,10 @@ public final class InputLogic {
 
         enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
+        // a dash after "word " is a separator (like in "Look here - a cat"), unlike in "well-known" or "-5"
+        final boolean insertSpaceAfterDash = !isComposingWord && isDash(codePoint)
+                && settingsValues.mAutospaceAfterPunctuation && letterAndSpaceBeforeCursor();
+
         if (isComposingWord) {
             mWordComposer.applyProcessedEvent(event);
             // If it's the first letter, make note of auto-caps state
@@ -1134,6 +1155,7 @@ public final class InputLogic {
                 sendDownUpKeyEvent(codePoint - '0' + KeyEvent.KEYCODE_0);
             } else {
                 mConnection.commitCodePoint(codePoint);
+                if (insertSpaceAfterDash) insertSpaceRightAfterPunctuation(settingsValues);
             }
         }
         inputTransaction.setRequiresUpdateSuggestions();
@@ -1225,6 +1247,7 @@ public final class InputLogic {
                 mConnection.commitCodePoint(codePoint);
             }
         } else {
+            boolean insertSpaceAfterCommit = false;
             if (SpaceState.PHANTOM == inputTransaction.getSpaceState()
                     && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
                 // If we are in phantom space state, and the user presses a separator, we want to
@@ -1249,13 +1272,17 @@ public final class InputLogic {
                 if (wasComposingWord
                         && settingsValues.mAutospaceAfterPunctuation
                         && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
-                    mSpaceState = SpaceState.PHANTOM;
+                    if (isImmediateAutospacePunctuation(codePoint) && !isInsideDoubleQuoteOrAfterDigit)
+                        insertSpaceAfterCommit = true; // the space is inserted after the punctuation was committed
+                    else
+                        mSpaceState = SpaceState.PHANTOM;
                 }
             }
 
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
             mConnection.commitCodePoint(codePoint);
+            if (insertSpaceAfterCommit) insertSpaceRightAfterPunctuation(settingsValues);
 
             if (isInlineEmojiSearchAction()) {
                 inputTransaction.setRequiresUpdateSuggestions();
@@ -2298,7 +2325,7 @@ public final class InputLogic {
      *
      * @param settingsValues the current values of the settings.
      */
-    private void insertAutomaticSpaceIfOptionsAndTextAllow(final SettingsValues settingsValues) {
+    private boolean insertAutomaticSpaceIfOptionsAndTextAllow(final SettingsValues settingsValues) {
         if (settingsValues.shouldInsertSpacesAutomatically()
                 && settingsValues.mSpacingAndPunctuations.mCurrentLanguageHasSpaces
                 && !textBeforeCursorMayBeUrlOrSimilar(settingsValues, true)
@@ -2307,7 +2334,38 @@ public final class InputLogic {
         ) {
             mConnection.commitCodePoint(Constants.CODE_SPACE);
             // todo: why not remove phantom space state?
+            return true;
         }
+        return false;
+    }
+
+    /** Punctuation that gets its space inserted immediately instead of with the next input. '.' is excluded because of domains, abbreviations and decimals. */
+    private static boolean isImmediateAutospacePunctuation(final int codePoint) {
+        return codePoint == ',' || codePoint == ';' || codePoint == ':' || codePoint == '!' || codePoint == '?';
+    }
+
+    private static boolean isDash(final int codePoint) {
+        return codePoint == '-' || codePoint == '–' || codePoint == '—';
+    }
+
+    /**
+     * Inserts a space right now, after the just typed punctuation, if options and text allow.
+     * Sets the space state so that a space typed by the user afterwards is not inserted a second time.
+     */
+    private void insertSpaceRightAfterPunctuation(final SettingsValues settingsValues) {
+        if (!mConnection.hasSlowInputConnection()) {
+            final CharSequence after = mConnection.getTextAfterCursor(1, 0);
+            if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0))) return; // there already is a space
+        }
+        if (insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues))
+            mSpaceState = SpaceState.AUTO_SPACE_AFTER_PUNCTUATION;
+    }
+
+    /** Whether the text before the cursor ends with a letter followed by a space, i.e. a dash typed now is likely a separator and not a minus sign or a hyphen. */
+    private boolean letterAndSpaceBeforeCursor() {
+        final CharSequence before = mConnection.getTextBeforeCursor(2, 0);
+        return before != null && before.length() == 2
+                && before.charAt(1) == ' ' && Character.isLetter(before.charAt(0));
     }
 
     private boolean textBeforeCursorMayBeUrlOrSimilar(final SettingsValues settingsValues, final Boolean forAutoSpace) {
