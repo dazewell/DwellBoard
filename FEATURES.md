@@ -16,7 +16,7 @@ Keeps words with a single capital letter, like "Hello", out of learned words; "H
 
 ### Learning contexts <!-- #learning-contexts -->
 
-Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts and pick their apps under Learning contexts in the main settings; every other app uses the default context. Deleting a context erases what it learned. A dot on the toolbar arrow shows when the app uses a context; long-press the arrow for its name.
+Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts under Learning contexts in settings, starting empty or from a copy of another context's learned data, and pick their apps; every other app uses the default context. Clear learned data or delete a context from its menu. A dot on the toolbar arrow shows when the app uses a context; long-press the arrow for its name.
 
 ### Instant space after punctuation <!-- #punctuation-autospace -->
 

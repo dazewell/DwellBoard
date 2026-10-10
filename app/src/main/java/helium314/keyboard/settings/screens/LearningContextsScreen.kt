@@ -40,6 +40,7 @@ import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchScreen
 import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.settings.dialogs.ConfirmationDialog
+import helium314.keyboard.settings.dialogs.ListPickerDialog
 import helium314.keyboard.settings.dialogs.TextInputDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,9 +48,11 @@ import kotlinx.coroutines.withContext
 /** Lists the learning contexts. The default context is always first, followed by user-created contexts. */
 @Composable
 fun LearningContextsScreen(onClickBack: () -> Unit) {
-    val prefs = LocalContext.current.prefs()
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
     var contexts by remember { mutableStateOf(LearningContexts.getAll(prefs)) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var newName by remember { mutableStateOf<String?>(null) } // set once the name is entered, while choosing what to start from
     // items: null is the "add" row, the default context is represented by a context with empty id
     val defaultContext = LearningContext(LearningContexts.DEFAULT, stringResource(R.string.dwell_learning_context_default))
     SearchScreen(
@@ -109,13 +112,29 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
     if (showAddDialog) {
         TextInputDialog(
             onDismissRequest = { showAddDialog = false },
-            onConfirmed = {
-                val new = LearningContexts.create(prefs, it)
+            onConfirmed = { newName = it },
+            title = { Text(stringResource(R.string.dwell_learning_context_add)) },
+            textInputLabel = { Text(stringResource(R.string.dwell_learning_context_name)) },
+        )
+    }
+    newName?.let { name ->
+        // "none" (not a valid context id) stands for starting empty, otherwise the context to copy the learned data from
+        val none = LearningContext("none", "")
+        val sources = listOf(none, defaultContext) + contexts
+        ListPickerDialog(
+            onDismissRequest = { newName = null },
+            items = sources,
+            onItemSelected = { source ->
+                val new = if (source === none) LearningContexts.create(prefs, name)
+                    else LearningContexts.createFrom(ctx, name, source.id)
                 contexts = LearningContexts.getAll(prefs)
                 SettingsDestination.navigateTo(SettingsDestination.LearningContext + new.id)
             },
-            title = { Text(stringResource(R.string.dwell_learning_context_add)) },
-            textInputLabel = { Text(stringResource(R.string.dwell_learning_context_name)) },
+            title = { Text(stringResource(R.string.dwell_learning_context_start_from)) },
+            getItemName = {
+                if (it === none) stringResource(R.string.dwell_learning_context_start_empty)
+                else stringResource(R.string.dwell_learning_context_copy_of, it.name)
+            },
         )
     }
 }
@@ -131,6 +150,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
     var apps by remember { mutableStateOf(emptyList<AppInfo>()) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showClearDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         apps = withContext(Dispatchers.IO) {
             AppsManager(ctx).getPackagesWithNameAndIcon()
@@ -149,6 +169,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         title = { Text(current.name) },
         menu = listOf(
             stringResource(R.string.dwell_learning_context_rename) to { showRenameDialog = true },
+            stringResource(R.string.dwell_learning_context_clear) to { showClearDialog = true },
             stringResource(R.string.dwell_learning_context_delete) to { showDeleteDialog = true },
         ),
         filteredItems = { term ->
@@ -220,6 +241,14 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
             },
             title = { Text(stringResource(R.string.dwell_learning_context_delete)) },
             content = { Text(stringResource(R.string.dwell_learning_context_delete_message, current.name)) },
+        )
+    }
+    if (showClearDialog) {
+        ConfirmationDialog(
+            onDismissRequest = { showClearDialog = false },
+            onConfirmed = { LearningContexts.clearData(ctx, id) },
+            title = { Text(stringResource(R.string.dwell_learning_context_clear)) },
+            content = { Text(stringResource(R.string.dwell_learning_context_clear_message, current.name)) },
         )
     }
 }
