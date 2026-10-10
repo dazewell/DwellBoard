@@ -605,6 +605,47 @@ class InputLogicTest {
         assertEquals("\"hello\", \"you\"", text)
     }
 
+    @Test fun `space is inserted right after punctuation, typed space is not added a second time`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("hello,")
+        assertEquals("hello, ", text)
+        input(' ')
+        assertEquals("hello, ", text)
+        chainInput("there")
+        assertEquals("hello, there", text)
+        // the inserted space is removed again when more punctuation follows
+        chainInput("!?")
+        assertEquals("hello, there!?", text)
+        chainInput(" ")
+        assertEquals("hello, there!? ", text)
+    }
+
+    @Test fun `no immediate autospace without the setting, or with space after the cursor`() {
+        chainInput("hello,")
+        assertEquals("hello,", text)
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        setText("hello there")
+        setCursorPosition(5)
+        input(',')
+        assertEquals("hello, there", text)
+    }
+
+    @Test fun `space is inserted right after dash with spaces around, but not in hyphenated words`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("Look here -")
+        assertEquals("Look here - ", text)
+        chainInput(" a cat")
+        assertEquals("Look here - a cat", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("a well-known")
+        assertEquals("a well-known", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("x = -5")
+        assertEquals("x = -5", text)
+    }
+
     @Test fun `autospace in json editor`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("{\"label\":\"")
@@ -745,6 +786,7 @@ class InputLogicTest {
         val oldAfter = textAfterCursor
         val insert = StringUtils.newSingleCodePointString(codePoint)
         val phantomSpaceToInsert = if (spaceState == SpaceState.PHANTOM) " " else ""
+        val oldAutoSpace = spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION && oldBefore.lastOrNull() == ' '
         val oldIsAtEnd = !composer.isCursorFrontOrMiddleOfComposingWord
 
         latinIME.onEvent(Event.createEventForCodePointFromUnknownSource(codePoint))
@@ -754,9 +796,12 @@ class InputLogicTest {
             && !(codePoint == Constants.CODE_SPACE && oldBefore.lastOrNull() == ' ') // check fails when 2 spaces are converted into a period
             && !latinIME.mInputLogic.mSuggestedWords.mWillAutoCorrect // autocorrect obviously creates inconsistencies
             ) {
-            if (phantomSpaceToInsert.isEmpty())
-                assertEquals(oldBefore + insert, textBeforeCursor)
-            else // in some cases autospace might be suppressed
+            if (phantomSpaceToInsert.isEmpty()) {
+                // a space inserted right after punctuation may get removed again by following punctuation, and may be inserted after this input
+                val base = if (oldAutoSpace && insert in listOf(".", ",", ";", ":", "!", "?", "/")) oldBefore.dropLast(1) + insert else oldBefore + insert
+                val expected = if (spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION) "$base " else base
+                assertEquals(expected, textBeforeCursor)
+            } else // in some cases autospace might be suppressed
                 assert(oldBefore + phantomSpaceToInsert + insert == textBeforeCursor || oldBefore + insert == textBeforeCursor)
         }
         assertEquals(oldAfter, textAfterCursor)
