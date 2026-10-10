@@ -83,6 +83,8 @@ jobs:
       )
     env:
       HAS_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -136,6 +138,27 @@ jobs:
           path: ${{ env.APK }}
           archive: false
           if-no-files-found: error
+      - name: Publish to rolling staging release
+        # Push to dev only: the fixed `staging` pre-release always holds the
+        # newest dev build under a fixed asset name, so README can link
+        #   releases/download/staging/DwellBoard.apk
+        # PR-label and dispatch builds stay artifact-only.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          NOTES="Latest build of \`dev\` at ${GITHUB_SHA::8} ($(basename "$APK")). Replaced on every push to dev."
+          if gh release view staging -R "$REPO" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$REPO/git/refs/tags/staging" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+            gh release edit staging -R "$REPO" --prerelease --notes "$NOTES"
+          else
+            gh release create staging -R "$REPO" --prerelease --target "$GITHUB_SHA" \
+              --title "Staging (latest dev build)" --notes "$NOTES"
+          fi
+          cp "$APK" out/DwellBoard.apk
+          gh release upload staging out/DwellBoard.apk -R "$REPO" --clobber
       - name: Archive reports for failed job
         if: failure()
         uses: actions/upload-artifact@v7
