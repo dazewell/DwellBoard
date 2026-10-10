@@ -90,8 +90,12 @@ jobs:
       # The commit actually built: on pull_request, GITHUB_SHA is the synthetic
       # merge commit, not the checked-out PR head.
       BUILT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      # Read by app/build.gradle.kts: versionName becomes e.g. 4.2-beta1+1a2b3c4d,
+      # so an installed build shows which commit it is.
+      DWELL_BUILD_SHA: ${{ substr(github.event.pull_request.head.sha || github.sha, 0, 8) }}
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -129,6 +133,7 @@ jobs:
           cp "$BUILT" "out/DwellBoard-debug-${BUILT_SHA::8}.apk"
           echo "APK=out/DwellBoard-debug-${BUILT_SHA::8}.apk" >> "$GITHUB_ENV"
       - name: Upload APK
+        id: upload
         # archive: false uploads the single .apk as-is instead of wrapping it in
         # a zip; the artifact takes the file's name, so `name` is not set.
         uses: actions/upload-artifact@v7
@@ -136,6 +141,29 @@ jobs:
           path: ${{ env.APK }}
           archive: false
           if-no-files-found: error
+      - name: Comment APK link on the PR
+        # Label-triggered builds only (same-repo, guaranteed by the job condition).
+        # One comment per PR, edited in place so re-labelling doesn't stack them.
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -e
+          MARK='<!-- dwellboard-apk -->'
+          BODY="$MARK
+          **APK built** for \`${BUILT_SHA::8}\` — version \`4.2-beta1+${DWELL_BUILD_SHA}\`
+
+          [Download $(basename "$APK")]($ARTIFACT_URL) (GitHub login required) · [workflow run]($RUN_URL)"
+          ID=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$MARK\"))][0].id // empty")
+          if [ -n "$ID" ]; then
+            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$ID" -f body="$BODY" >/dev/null
+          else
+            gh api -X POST "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" -f body="$BODY" >/dev/null
+          fi
       - name: Publish to rolling staging release
         # Push to dev only: the fixed `staging` pre-release always holds the
         # newest dev build under a fixed asset name, so README can link
