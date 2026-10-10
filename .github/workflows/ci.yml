@@ -1,0 +1,143 @@
+name: CI
+
+# The validation gate. Runs on every push to dev and every pull request: compiles
+# Java/Kotlin and runs the unit tests. No native packaging, no signing, no APK —
+# an installable build is staging.yml, on request. Doc-only, hook-only and
+# agent/skill-only changes are skipped, but workflow edits are deliberately NOT
+# skipped so a change to this file validates itself on its own PR.
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.githooks/**'
+      - '.claude/**'
+      - '.github/agents/**'
+      - '.github/skills/**'
+      - '.github/instructions/**'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.githooks/**'
+      - '.claude/**'
+      - '.github/agents/**'
+      - '.github/skills/**'
+      - '.github/instructions/**'
+
+# Keep only the latest run per branch/PR; supersede an older in-flight one.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    name: Compile and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Compile Java/Kotlin
+        # debugNoMinify is the local compile gate in AGENTS.md; Kotlin compiles
+        # first as a dependency of javac, so this covers both languages.
+        run: ./gradlew :app:compileDebugNoMinifyJavaWithJavac --build-cache
+      - name: Assert javac produced class files
+        # A disabled task is reported SKIPPED inside a SUCCESSFUL build, so a
+        # green exit code is not proof anything compiled.
+        run: |
+          COUNT=$(find app/build/intermediates/javac/debugNoMinify -name '*.class' 2>/dev/null | wc -l)
+          echo "javac emitted $COUNT .class files"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No .class files under app/build/intermediates/javac/debugNoMinify — javac did not run"
+            exit 1
+          fi
+      - name: Unit tests
+        # runTests is upstream's CI build type; it skips tests known to fail.
+        run: ./gradlew :app:testRunTestsUnitTest -PdwellTestBuildType=runTests --build-cache
+      - name: Archive reports for failed job
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: '*/build/reports'
+
+  # Escalation for the surface the fast gate is blind to. A change to R8 rules,
+  # the build scripts, gradle wrapper/properties, settings or a manifest must not
+  # reach dev without R8 having run on the minified release variant.
+  changes:
+    name: Detect deep-validation paths
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      deep: ${{ steps.filter.outputs.deep }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Full history: on a push with several commits, paths-filter diffs
+          # against the before-SHA using local git, and a shallow clone can miss
+          # a build-file change and wrongly skip the deep job.
+          fetch-depth: 0
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            deep:
+              - 'app/proguard-rules.pro'
+              - 'app/build.gradle.kts'
+              - 'build.gradle.kts'
+              - 'gradle.properties'
+              - 'settings.gradle'
+              - 'gradle/**'
+              - 'gradlew'
+              - 'gradlew.bat'
+              - '**/AndroidManifest.xml'
+
+  deep:
+    name: R8 (release)
+    needs: changes
+    if: needs.changes.outputs.deep == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Run R8
+        # Targets the R8 task directly rather than assembleRelease: R8 consumes
+        # class files, not the native library, and no signing config is needed.
+        run: ./gradlew :app:minifyReleaseWithR8 --build-cache
+      - name: Assert R8 produced a mapping
+        run: |
+          MAPPING=app/build/outputs/mapping/release/mapping.txt
+          if [ ! -f "$MAPPING" ]; then
+            echo "::error::$MAPPING missing — R8 did not run"
+            exit 1
+          fi
+          echo "R8 mapping present: $MAPPING"

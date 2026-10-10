@@ -1,0 +1,88 @@
+name: Process rules
+
+# Validate machine-decidable repository process rules on every PR, including
+# documentation-only changes that ci.yml intentionally skips.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  branch-name:
+    name: Branch name matches process format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Verify branch name
+        shell: pwsh
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          ./.github/scripts/test-branch-name.ps1 -SelfTest
+          ./.github/scripts/test-branch-name.ps1 -Branch $env:HEAD_REF
+      - name: Hooks parse
+        run: |
+          for hook in .githooks/*; do
+            sh -n "$hook" || exit 1
+          done
+          echo "All hooks parse."
+
+  commit-tags:
+    name: Every commit carries a #tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Verify commit tags
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -e
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA" || true
+          fail=0
+          for sha in $(git rev-list --no-merges "$BASE_SHA".."$HEAD_SHA"); do
+            subject=$(git log -1 --format=%s "$sha")
+            case "$subject" in
+              "Revert "*|"fixup! "*|"squash! "*|"amend! "*) continue ;;
+            esac
+            if git log -1 --format=%B "$sha" | grep -Eq '(^|[^A-Za-z0-9_])#([a-z][a-z0-9-]*|[0-9][a-z0-9-]*[a-z][a-z0-9-]*)'; then
+              continue
+            fi
+            echo "::error::commit $sha is missing a #<slug> change tag: $subject"
+            fail=1
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "Every commit must carry a #tag (e.g. #clip-pin) so all commits for a change are greppable."
+            exit 1
+          fi
+          echo "All commits carry a change tag."
+
+          # Every feature slug used in the PR must be catalogued in FEATURES.md
+          # (marked with <!-- #slug -->). Category tags and *-fix tags are exempt.
+          # A hashtag is only harvested if it contains a letter, so a PR
+          # reference (#204) is never a slug. The leading-boundary guard skips
+          # URL anchors (docs#permissions); the boundary character is stripped
+          # before dedupe so "(#foo" and "#foo" collapse to one entry. Merge
+          # commits are excluded, matching the presence check above.
+          missing=0
+          slugs=$(git log --no-merges --format=%B "$BASE_SHA".."$HEAD_SHA" | grep -oE '(^|[^A-Za-z0-9_])#([a-z][a-z0-9-]*|[0-9][a-z0-9-]*[a-z][a-z0-9-]*)' | while IFS= read -r match; do printf '%s\n' "${match##*#}"; done | sort -u)
+          for slug in $slugs; do
+            case "$slug" in
+              ci|docs|build|chore|infra|deps|test|release|slug|tag) continue ;;
+              *-fix) continue ;;
+            esac
+            if ! grep -q "<!-- #$slug -->" FEATURES.md; then
+              echo "::error::feature tag #$slug is not catalogued in FEATURES.md (add its entry with a <!-- #$slug --> marker)"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "All feature tags are catalogued in FEATURES.md."

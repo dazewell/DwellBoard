@@ -1,0 +1,138 @@
+name: Staging build
+
+# The installable build. Runs on:
+#   - every push to dev (the post-land build);
+#   - a same-repo pull request that gets the build-apk label (an on-demand
+#     preview; the label is removed at the start so re-applying it re-runs);
+#   - a manual workflow_dispatch.
+# The APK is published as a workflow artifact only — fetch it with
+#   gh run download <run-id> -n DwellBoard
+# Doc-, .github- and hook-only pushes to dev are skipped; dispatch manually to
+# verify a pipeline change.
+#
+# Signing: when the SIGNING_KEYSTORE_BASE64 secret is set, the release variant is
+# built and signed with it, so successive builds update in place. Without it the
+# debug variant is built instead, signed with the runner's throwaway debug key —
+# installable, but each run's signature differs, so it cannot update a previous
+# install.
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'docs/**'
+      - '.githooks/**'
+      - '.claude/**'
+  pull_request:
+    # No paths-ignore: a build explicitly requested via the label is relevant
+    # by definition, even on a doc-only PR.
+    types: [labeled]
+  workflow_dispatch:
+
+# Only the latest build per branch survives. An unrelated label event (a no-op
+# run) gets its own group so it can't cancel a real build in flight.
+concurrency:
+  group: staging-${{ github.head_ref || github.ref_name }}${{ (github.event_name == 'pull_request' && github.event.label.name != 'build-apk') && format('-{0}', github.event.label.name) || '' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unlabel:
+    name: Remove build-apk label
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.label.name == 'build-apk' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/build-apk")
+          echo "DELETE label -> HTTP $CODE"
+          # 200 removed, 404 already gone — both fine.
+          if [ "$CODE" != "200" ] && [ "$CODE" != "404" ]; then
+            exit 1
+          fi
+
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    needs: unlabel
+    # unlabel is skipped on push/dispatch, so gate on the event rather than its
+    # result; !cancelled() keeps superseded runs from continuing.
+    if: >-
+      always() &&
+      !cancelled() &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'pull_request' && github.event.label.name == 'build-apk' && github.event.pull_request.head.repo.full_name == github.repository)
+      )
+    env:
+      HAS_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE_BASE64 != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build signed release
+        if: env.HAS_KEYSTORE == 'true'
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          ./gradlew :app:assembleRelease
+          UNSIGNED=$(find app/build/outputs/apk/release -name '*.apk' | head -n 1)
+          if [ -z "$UNSIGNED" ]; then echo "::error::no release APK produced"; exit 1; fi
+          echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)apksigner
+          mkdir -p out
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/release.jks" \
+            --ks-pass env:SIGNING_KEYSTORE_PASSWORD \
+            --ks-key-alias "$SIGNING_KEY_ALIAS" \
+            --key-pass env:SIGNING_KEY_PASSWORD \
+            --out "out/DwellBoard-release-${GITHUB_SHA::8}.apk" "$UNSIGNED"
+          "$APKSIGNER" verify --print-certs "out/DwellBoard-release-${GITHUB_SHA::8}.apk" | head -n 3
+          rm -f "$RUNNER_TEMP/release.jks"
+      - name: Build debug (no keystore configured)
+        if: env.HAS_KEYSTORE != 'true'
+        run: |
+          echo "::warning::SIGNING_KEYSTORE_BASE64 is not set — building the debug variant with a throwaway signature. It installs alongside, but cannot update, a previous build."
+          ./gradlew :app:assembleDebug
+          mkdir -p out
+          cp app/build/outputs/apk/debug/*.apk "out/DwellBoard-debug-${GITHUB_SHA::8}.apk"
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: DwellBoard
+          path: out/*.apk
+          if-no-files-found: error
+      - name: Archive reports for failed job
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: '*/build/reports'
