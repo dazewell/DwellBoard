@@ -12,11 +12,11 @@ name: Staging build
 #
 # Signing: app/release.keystore is committed (as in DwellGram); its passwords come
 # from the LOCAL_PROPERTIES secret (base64 of KEYSTORE_PASS / ALIAS_NAME /
-# ALIAS_PASS), which app/build.gradle.kts reads. With the secret the release
-# variant is built and signed by Gradle, so successive builds update in place.
-# Without it (e.g. a fork) the debug variant is built instead, signed with the
-# runner's throwaway debug key — installable, but it cannot update a previous
-# install.
+# ALIAS_PASS), which app/build.gradle.kts reads. Only builds of dev (push or
+# dispatch on dev) get the secret and produce the signed release variant, which
+# updates in place. PR-label and other-branch builds run unreviewed Gradle code,
+# so they get the debug variant (helium314.keyboard.debug) signed with the
+# runner's throwaway key — installable alongside, but not updatable.
 
 on:
   push:
@@ -84,7 +84,14 @@ jobs:
         (github.event_name == 'pull_request' && github.event.label.name == 'build-apk' && github.event.pull_request.head.repo.full_name == github.repository)
       )
     env:
-      HAS_KEYSTORE: ${{ secrets.LOCAL_PROPERTIES != '' }}
+      # Signing secrets reach only builds of dev itself (post-land push, or a
+      # dispatch on dev): code that has passed review. A PR-label or feature-
+      # branch build runs branch-controlled Gradle code, so it never sees them
+      # and builds the debug variant instead.
+      HAS_KEYSTORE: ${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && secrets.LOCAL_PROPERTIES != '' }}
+      # The commit actually built: on pull_request, GITHUB_SHA is the synthetic
+      # merge commit, not the checked-out PR head.
+      BUILT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     permissions:
       contents: write
     steps:
@@ -111,18 +118,18 @@ jobs:
           APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)apksigner
           "$APKSIGNER" verify --print-certs "$BUILT" | head -n 3
           mkdir -p out
-          cp "$BUILT" "out/DwellBoard-release-${GITHUB_SHA::8}.apk"
-          echo "APK=out/DwellBoard-release-${GITHUB_SHA::8}.apk" >> "$GITHUB_ENV"
+          cp "$BUILT" "out/DwellBoard-release-${BUILT_SHA::8}.apk"
+          echo "APK=out/DwellBoard-release-${BUILT_SHA::8}.apk" >> "$GITHUB_ENV"
       - name: Build debug (no keystore configured)
         if: env.HAS_KEYSTORE != 'true'
         run: |
-          echo "::warning::LOCAL_PROPERTIES is not set — building the debug variant with a throwaway signature. It installs alongside, but cannot update, a previous build."
+          echo "::warning::Not a dev build with LOCAL_PROPERTIES available — building the debug variant (helium314.keyboard.debug) with a throwaway signature. It installs alongside, but cannot update, a previous debug build."
           ./gradlew :app:assembleDebug
           mkdir -p out
           BUILT=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
           if [ -z "$BUILT" ]; then echo "::error::no debug APK produced"; exit 1; fi
-          cp "$BUILT" "out/DwellBoard-debug-${GITHUB_SHA::8}.apk"
-          echo "APK=out/DwellBoard-debug-${GITHUB_SHA::8}.apk" >> "$GITHUB_ENV"
+          cp "$BUILT" "out/DwellBoard-debug-${BUILT_SHA::8}.apk"
+          echo "APK=out/DwellBoard-debug-${BUILT_SHA::8}.apk" >> "$GITHUB_ENV"
       - name: Upload APK
         # archive: false uploads the single .apk as-is instead of wrapping it in
         # a zip; the artifact takes the file's name, so `name` is not set.

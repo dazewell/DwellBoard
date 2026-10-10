@@ -259,11 +259,13 @@ The APK comes from **`staging.yml`**: apply the **`build-apk`** label to the PR
 `DwellBoard.apk` on the rolling **`staging`** pre-release (the README link).
 Nothing is sent anywhere else. `gh run download` unpacks the APK (it is a zip),
 so fetch it with the artifact-API `curl -o` recipe in `dwellboard-branch-flow`
-(to a dir outside the repo) and install with `adb install -r <apk>`. Staging
-signs the release with the committed `app/release.keystore` (passwords in the
-`LOCAL_PROPERTIES` secret / gitignored `local.properties`), so it installs as
-`helium314.keyboard` and updates in place; without the secret it falls back to a
-debug build, `helium314.keyboard.debug`. If the phone has a differently-signed build under
+(to a dir outside the repo) and install with `adb install -r <apk>`. Only builds
+of `dev` (post-land push, or dispatch on `dev`) are signed with the committed
+`app/release.keystore` (passwords in the `LOCAL_PROPERTIES` secret / gitignored
+`local.properties`): they install as `helium314.keyboard` and update in place.
+PR-label and other-branch builds never get the secret, so they are the debug
+variant, `helium314.keyboard.debug`, with a throwaway key that cannot update a
+previous debug install. If the phone has a differently-signed build under
 that id the install fails, and only uninstalling resolves it — ask before doing that.
 A local alternative is `.\gradlew.bat :app:assembleDebug`, which installs
 side by side as `helium314.keyboard.debug`; say which one you handed over.
