@@ -82,10 +82,15 @@ object LearningContexts {
         return getAll(prefs).firstOrNull { packageName in it.packages }?.id ?: DEFAULT
     }
 
-    /** Selects the context for [packageName]. Returns whether this changed the current context. */
-    fun setCurrentForPackage(prefs: SharedPreferences, packageName: String?): Boolean {
+    /**
+     * Selects the context for [packageName]. Returns whether this changed the current context.
+     * [beforeChange] runs first when it does, while [current] is still the old context.
+     */
+    @JvmOverloads
+    fun setCurrentForPackage(prefs: SharedPreferences, packageName: String?, beforeChange: Runnable? = null): Boolean {
         val id = idForPackage(prefs, packageName)
         if (id == current) return false
+        beforeChange?.run()
         current = id
         return true
     }

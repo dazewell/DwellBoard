@@ -5,17 +5,17 @@ import helium314.keyboard.settings.preferences.backupFilePatterns
 import java.io.File
 import java.util.Locale
 import org.junit.Assume.assumeTrue
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /** User history dictionaries of learning contexts must be picked up by backup, like the default one. */
 class LearningContextBackupTest {
-    // backupFilePatterns is built with File.separator, which is not a valid regex on a Windows host JVM (Android uses "/")
-    @BeforeTest fun onlyWithUnixSeparator() = assumeTrue(File.separatorChar == '/')
-
-    private fun backedUp(path: String) = backupFilePatterns.any { path.matches(it) }
+    private fun backedUp(path: String): Boolean {
+        // backupFilePatterns is built with File.separator, which is not a valid regex on a Windows host JVM (Android uses "/")
+        assumeTrue(File.separatorChar == '/')
+        return backupFilePatterns.any { path.matches(it) }
+    }
 
     private fun dictFiles(learningContext: String, locale: Locale): List<String> {
         val name = UserHistoryDictionary.getUserHistoryDictName(locale, learningContext) + ".dict"

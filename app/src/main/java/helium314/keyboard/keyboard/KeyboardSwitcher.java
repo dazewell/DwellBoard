@@ -525,6 +525,13 @@ public final class KeyboardSwitcher {
         }
     }
 
+    /** Saves pending recent emojis and drops the emoji grid, which is built from the current learning context's recents. */
+    public void onLearningContextChanging() {
+        if (mEmojiPalettesView == null) return;
+        mEmojiPalettesView.stopEmojiPalettes();
+        mEmojiPalettesView.clearKeyboardCache();
+    }
+
     public void trimMemory() {
         if (mEmojiPalettesView != null) {
             mEmojiPalettesView.clearKeyboardCache();

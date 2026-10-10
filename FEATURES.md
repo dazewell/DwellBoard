@@ -16,7 +16,7 @@ Keeps words with a single capital letter, like "Hello", out of learned words; "H
 
 ### Learning contexts <!-- #learning-contexts -->
 
-Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts and pick their apps under Learning contexts in the main settings; every other app uses the default context. Deleting a context erases what it learned. Included in backups.
+Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts and pick their apps under Learning contexts in the main settings; every other app uses the default context. Deleting a context erases what it learned.
 
 ### DwellBoard name <!-- #dwellboard-name -->
 

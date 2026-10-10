@@ -886,7 +886,9 @@ public class LatinIME extends InputMethodService implements
         boolean inputTypeChanged = !currentSettingsValues.isSameInputType(editorInfo);
         // learned data is separated by learning context, which depends on the app
         final boolean learningContextChanged = LearningContexts.INSTANCE.setCurrentForPackage(
-                KtxKt.prefs(this), editorInfo == null ? null : editorInfo.packageName);
+                KtxKt.prefs(this), editorInfo == null ? null : editorInfo.packageName,
+                // pending recent emojis must be saved to the old context, and the emoji grid rebuilt for the new one
+                mKeyboardSwitcher::onLearningContextChanging);
         boolean isDifferentTextField = !restarting || inputTypeChanged || learningContextChanged;
 
         // we want to reload the settings before calling updateKeyboardTheme, because updateKeyboardTheme reads SettingsValues.mToolbarMode
