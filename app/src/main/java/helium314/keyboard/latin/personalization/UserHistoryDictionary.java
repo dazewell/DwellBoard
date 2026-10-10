@@ -16,6 +16,7 @@ import helium314.keyboard.latin.dictionary.Dictionary;
 import helium314.keyboard.latin.dictionary.ExpandableBinaryDictionary;
 import helium314.keyboard.latin.NgramContext;
 import helium314.keyboard.latin.makedict.DictionaryHeader;
+import helium314.keyboard.latin.settings.LearningContexts;
 
 import java.io.File;
 import java.util.Locale;
@@ -28,25 +29,35 @@ import java.util.Map;
  */
 public class UserHistoryDictionary extends ExpandableBinaryDictionary {
     static final String NAME = UserHistoryDictionary.class.getSimpleName();
+    /** start of the dictionary name of a learning context, followed by its id */
+    static final String CONTEXT_NAME_PREFIX = NAME + ".ctx-";
 
     // TODO: Make this constructor private
-    UserHistoryDictionary(final Context context, final Locale locale) {
-        super(context, getUserHistoryDictName(NAME, locale, null), locale, Dictionary.TYPE_USER_HISTORY, null);
+    UserHistoryDictionary(final Context context, final Locale locale, @NonNull final String learningContext) {
+        super(context, getUserHistoryDictName(locale, learningContext), locale, Dictionary.TYPE_USER_HISTORY, null);
         if (mLocale != null && mLocale.toString().length() > 1) {
             reloadDictionaryIfRequired();
         }
     }
 
     /**
-     * @returns the name of the {@link UserHistoryDictionary}.
+     * @returns the name of the dictionary files for the learning context, without locale.
+     * This is the same as {@link #NAME} for the default context.
      */
-    static String getUserHistoryDictName(final String name, final Locale locale, @Nullable final File dictFile) {
-        return getDictName(name, locale, dictFile);
+    static String getContextName(@NonNull final String learningContext) {
+        return LearningContexts.DEFAULT.equals(learningContext) ? NAME : CONTEXT_NAME_PREFIX + learningContext;
+    }
+
+    /**
+     * @returns the name of the {@link UserHistoryDictionary} for the given locale and learning context.
+     */
+    static String getUserHistoryDictName(final Locale locale, @NonNull final String learningContext) {
+        return getDictName(getContextName(learningContext), locale, null);
     }
 
     public static UserHistoryDictionary getDictionary(final Context context, final Locale locale,
-            final File dictFile, final String dictNamePrefix) {
-        return PersonalizationHelper.getUserHistoryDictionary(context, locale);
+            final File dictFile, final String dictNamePrefix, @NonNull final String learningContext) {
+        return PersonalizationHelper.getUserHistoryDictionary(context, locale, learningContext);
     }
 
     /**

@@ -124,6 +124,8 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     private val defaultToolbarBackground: Drawable = toolbarExpandKey.background
     private val enabledToolKeyBackground = GradientDrawable()
     private var direction = 1 // 1 if LTR, -1 if RTL
+    // DwellBoard: marks the expand key while the app uses a learning context; declared before init, which calls updateKeys()
+    private val contextDot = helium314.keyboard.dwell.contexts.ContextIndicatorDot(toolbarExpandKey, Settings.getValues().mColors)
 
     private val toolbarKeyLayoutParams = LinearLayout.LayoutParams(
         resources.getDimensionPixelSize(R.dimen.config_suggestions_strip_edge_key_width),
@@ -176,6 +178,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
             toolbar.minimumWidth = toolbarContainer.width
         }
 
+        contextDot.setLongClickListener(this) // DwellBoard
         updateKeys()
     }
 
@@ -350,6 +353,11 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
     }
 
     override fun onLongClick(view: View): Boolean {
+        if (view === toolbarExpandKey) { // DwellBoard: name of the learning context, never the more suggestions panel
+            if (!contextDot.showName()) return false
+            AudioAndHapticFeedbackManager.getInstance().performHapticFeedback(this, HapticEvent.KEY_LONG_PRESS)
+            return true
+        }
         if (view.tag is ToolbarKey) {
             onLongClickToolbarKey(view)
             return true
@@ -506,6 +514,9 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         pinnedKeys.findViewWithTag<View>(ToolbarKey.VOICE)?.isVisible = show
     }
 
+    /** DwellBoard: for when the learning context changes without the strip being updated */
+    fun updateLearningContextIndicator() = contextDot.refresh()
+
     private fun updateKeys() {
         updateVoiceKey()
         val settingsValues = Settings.getValues()
@@ -520,6 +531,7 @@ class SuggestionStripView(context: Context, attrs: AttributeSet?, defStyle: Int)
         }
 
         toolbarExpandKey.setOnClickListener(if (!toolbarIsExpandable) null else this)
+        contextDot.refresh() // DwellBoard
         pinnedKeys.visibility = suggestionsStrip.visibility
         isExternalSuggestionVisible = false
     }

@@ -6,4 +6,19 @@
     <string name="dwell_spell_checker_service_name">DwellBoard Spell Checker</string>
     <string name="dwell_ime_settings">DwellBoard Settings</string>
     <string name="dwell_android_spell_checker_settings">DwellBoard Spell Checker Settings</string>
+    <string name="dwell_learning_contexts_title">Learning contexts</string>
+    <string name="dwell_learning_contexts_description">Apps in a context only share learned words, predictions and recent emojis with each other. All other apps use the default context.</string>
+    <string name="dwell_learning_context_default">Default</string>
+    <string name="dwell_learning_context_default_summary">Used by all apps that are not in a context</string>
+    <string name="dwell_learning_context_add">Add context</string>
+    <string name="dwell_learning_context_name">Context name</string>
+    <string name="dwell_learning_context_rename">Rename context</string>
+    <string name="dwell_learning_context_delete">Delete context</string>
+    <string name="dwell_learning_context_delete_message">Delete \"%s\" and everything learned in it? Its apps will use the default context.</string>
+    <plurals name="dwell_learning_context_app_count">
+        <item quantity="one">%d app</item>
+        <item quantity="other">%d apps</item>
+    </plurals>
+    <string name="dwell_learning_context_app_in_other">In context \"%s\"</string>
+    <string name="dwell_learning_context_toast">Learning context: %s</string>
 </resources>

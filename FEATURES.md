@@ -14,6 +14,10 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
 
 Keeps words with a single capital letter, like "Hello", out of learned words; "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
 
+### Learning contexts <!-- #learning-contexts -->
+
+Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts and pick their apps under Learning contexts in the main settings; every other app uses the default context. Deleting a context erases what it learned. A dot on the toolbar arrow shows when the app uses a context; long-press the arrow for its name.
+
 ### Instant space after punctuation <!-- #punctuation-autospace -->
 
 With "Autospace after punctuation" on, typing , ; : ! ? after a word, or a dash after "word ", adds the space right away; a space you type yourself is not doubled. Setting: Text correction → "Autospace after punctuation", off by default.
