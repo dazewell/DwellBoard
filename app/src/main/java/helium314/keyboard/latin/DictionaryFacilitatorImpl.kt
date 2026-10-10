@@ -319,11 +319,16 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         for (i in words.indices) {
             val currentWord = words[i]
             val wasCurrentWordAutoCapitalized = (i == 0) && wasAutoCapitalized
-            // add to history for preferred dictionary group, to avoid mixing languages in history
-            addWordToUserHistory(
-                preferredGroup, ngramContextForCurrentWord, currentWord,
-                wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive
-            )
+            // DwellBoard: optionally don't learn words with a single capital letter (the ngram context still advances)
+            if (!helium314.keyboard.dwell.capitalization.CapitalizedLearning.shouldSkip(sv.mDontLearnCapitalized, currentWord,
+                    wasCurrentWordAutoCapitalized, i == 0 && ngramContext.isBeginningOfSentenceContext)
+            ) {
+                // add to history for preferred dictionary group, to avoid mixing languages in history
+                addWordToUserHistory(
+                    preferredGroup, ngramContextForCurrentWord, currentWord,
+                    wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive
+                )
+            }
             ngramContextForCurrentWord = ngramContextForCurrentWord.getNextNgramContext(WordInfo(currentWord))
 
             // remove manually entered blacklisted words from blacklist for likely matching languages

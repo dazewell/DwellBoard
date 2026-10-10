@@ -66,8 +66,8 @@ read one.
 
 **Getting the build on and selected.** Install the staging artifact
 (`gh run download`) or a local `.\gradlew.bat :app:assembleDebug` with
-`adb install -r <apk>`. Debug installs as `helium314.keyboard.debug`, release as
-`helium314.keyboard`. An installed IME is not active until enabled and selected:
+`adb install -r <apk>`. Debug installs as `helium314.keyboard.dazewell.debug`, release as
+`helium314.keyboard.dazewell`. An installed IME is not active until enabled and selected:
 
 ```powershell
 adb shell ime list -s                      # enabled IMEs
@@ -75,7 +75,7 @@ adb shell ime enable helium314.keyboard.debug/helium314.keyboard.latin.LatinIME
 adb shell ime set    helium314.keyboard.debug/helium314.keyboard.latin.LatinIME
 ```
 
-(Use `helium314.keyboard/...` for a release-style build.) Restore dazewell's
+(Use `helium314.keyboard.dazewell/...` for a release-style build.) Restore dazewell's
 previous default IME afterwards if you changed it — note it from
 `adb shell settings get secure default_input_method` before switching.
 

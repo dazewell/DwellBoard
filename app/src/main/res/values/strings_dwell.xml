@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="dwell_dont_learn_capitalized">Don\'t learn capitalized words</string>
-    <string name="dwell_dont_learn_capitalized_summary">Words with a single capital letter (e.g. \"Hello\") are not learned, words with more capital letters (e.g. \"HELlo\") still are</string>
+    <string name="dwell_dont_learn_capitalized_summary">Words with a single capital letter (e.g. \"Hello\") are not learned; words with more capital letters (e.g. \"HELlo\") still are.</string>
+    <string name="dwell_app_name" translatable="false">HeliBoard dazewell</string>
     <string name="dwell_spell_checker_service_name">HeliBoard dazewell Spell Checker</string>
     <string name="dwell_ime_settings">HeliBoard dazewell Settings</string>
     <string name="dwell_android_spell_checker_settings">HeliBoard dazewell Spell Checker Settings</string>
