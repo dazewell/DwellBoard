@@ -180,12 +180,13 @@ gh pr create --base dev --head <YYYY-MM-DD>_<slug> --title "<title>" --body "<bo
 
 `ci.yml` compiles and unit-tests every PR push and is the no-local-tools gate;
 say so in the body. `process-rules.yml` also runs on every PR. For a test APK,
-add the `build-apk` label: `staging.yml` builds the APK and uploads it as an
-Actions artifact. Fetch it with:
+add the `build-apk` label: `staging.yml` builds the APK and uploads it unzipped
+as an Actions artifact. Fetch it with (`gh run download` would unpack the APK):
 
 ```powershell
 gh run list --repo dazewell/DwellBoard --workflow staging.yml --branch <branch> --limit 3
-gh run download <run-id> --repo dazewell/DwellBoard
+gh api repos/dazewell/DwellBoard/actions/runs/<run-id>/artifacts --jq '.artifacts[] | "\(.id) \(.name)"'
+curl.exe -sL -H "Authorization: Bearer $(gh auth token)" -o <dir>\<name>.apk https://api.github.com/repos/dazewell/DwellBoard/actions/artifacts/<artifact-id>/zip
 ```
 
 If labelling produces **no run at all** — not a skipped one — check
@@ -370,10 +371,10 @@ Docs/hooks/agent/skill-only changes are path-ignored; workflow edits are not.
 `process-rules.yml` runs on every PR: branch name and commit-tag checks. It
 produces the required `Every commit carries a #tag` check.
 
-`staging.yml` builds the APK and uploads it as an Actions artifact — on push to
-`dev`, on the `build-apk` PR label, or on `workflow_dispatch`. There is no other
-delivery channel: to get a build onto a device, download the artifact
-(`gh run download`) and `adb install` it. Verify pipeline edits by dispatch.
+`staging.yml` builds the APK and uploads it unzipped as an Actions artifact — on
+push to `dev`, on the `build-apk` PR label, or on `workflow_dispatch`. A push to
+`dev` also replaces `DwellBoard.apk` on the rolling `staging` pre-release, which
+the README links. Nothing else is published. Verify pipeline edits by dispatch.
 
 ## Keeping this current
 

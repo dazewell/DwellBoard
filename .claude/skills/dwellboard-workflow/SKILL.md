@@ -254,12 +254,15 @@ always has a route to a test build. Opening it and every later push triggers
 `process-rules.yml` (branch name + commit tags). Neither produces an APK.
 
 The APK comes from **`staging.yml`**: apply the **`build-apk`** label to the PR
-(it also runs on every push to `dev` and on manual dispatch). It builds a
-release-style APK and uploads it as a **GitHub Actions artifact** — nothing is
-sent anywhere else. Fetch it with `gh run download <run-id> -D <dir outside the
-repo>` and install with `adb install -r <apk>`. A release-style APK installs as
-`helium314.keyboard`; if the phone has a differently-signed HeliBoard under that
-id the install fails, and only uninstalling resolves it — ask before doing that.
+(it also runs on every push to `dev` and on manual dispatch). It uploads the
+`.apk` unzipped as a **GitHub Actions artifact**; a push to `dev` also replaces
+`DwellBoard.apk` on the rolling **`staging`** pre-release (the README link).
+Nothing is sent anywhere else. `gh run download` unpacks the APK (it is a zip),
+so fetch it with the artifact-API `curl -o` recipe in `dwellboard-branch-flow`
+(to a dir outside the repo) and install with `adb install -r <apk>`. A signed
+release installs as `helium314.keyboard`, a debug build (no keystore secret) as
+`helium314.keyboard.debug`; if the phone has a differently-signed build under
+that id the install fails, and only uninstalling resolves it — ask before doing that.
 A local alternative is `.\gradlew.bat :app:assembleDebug`, which installs
 side by side as `helium314.keyboard.debug`; say which one you handed over.
 
