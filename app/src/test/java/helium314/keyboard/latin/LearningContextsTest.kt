@@ -56,6 +56,15 @@ class LearningContextsTest {
         assertEquals(listOf(a.copy(packages = setOf("app.one"))), LearningContexts.getAll(prefs))
     }
 
+    @Test fun idsThatAreNotSafeInFileNamesAreIgnored() {
+        // e.g. from a crafted backup
+        prefs.edit().putString(LearningContexts.PREF_LEARNING_CONTEXTS,
+            """[{"id":"../../x","name":"bad","packages":["app.one"]},{"id":"ab12cd34","name":"ok","packages":["app.two"]}]""").commit()
+        assertEquals(listOf("ab12cd34"), LearningContexts.getAll(prefs).map { it.id })
+        assertEquals(LearningContexts.DEFAULT, LearningContexts.idForPackage(prefs, "app.one"))
+        assertEquals("ab12cd34", LearningContexts.idForPackage(prefs, "app.two"))
+    }
+
     @Test fun currentContextFollowsPackage() {
         val a = LearningContexts.create(prefs, "a")
         LearningContexts.setPackages(prefs, a.id, setOf("app.one"))
