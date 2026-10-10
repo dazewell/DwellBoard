@@ -133,11 +133,13 @@ jobs:
         # Targets the R8 task directly rather than assembleRelease: R8 consumes
         # class files, not the native library, and no signing config is needed.
         run: ./gradlew :app:minifyReleaseWithR8 --build-cache
-      - name: Assert R8 produced a mapping
+      - name: Assert R8 produced dex
+        # proguard-rules.pro sets -dontobfuscate, so there is no mapping.txt;
+        # the R8 dex output is the proof the task actually ran.
         run: |
-          MAPPING=app/build/outputs/mapping/release/mapping.txt
-          if [ ! -f "$MAPPING" ]; then
-            echo "::error::$MAPPING missing — R8 did not run"
+          COUNT=$(find app/build/intermediates -path '*release*' -name 'classes*.dex' 2>/dev/null | wc -l)
+          echo "R8 emitted $COUNT dex files"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No release dex under app/build/intermediates — R8 did not run"
             exit 1
           fi
-          echo "R8 mapping present: $MAPPING"
