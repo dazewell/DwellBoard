@@ -641,27 +641,6 @@ language, hence "No language". -->
     <string name="dictionary_category_title">Add-on dictionaries</string>
     <!-- Title for dictionaries preference screen -->
     <string name="dictionary_settings_category">Dictionaries</string>
-    <!-- Title for the learning contexts screen -->
-    <string name="learning_contexts_title">Learning contexts</string>
-    <!-- Explanation on the learning contexts screen -->
-    <string name="learning_contexts_description">Apps in a context only share learned words, predictions and recent emojis with each other. All other apps use the default context.</string>
-    <!-- Name of the context used by apps that are not in any learning context -->
-    <string name="learning_context_default">Default</string>
-    <!-- Description of the default context -->
-    <string name="learning_context_default_summary">Used by all apps that are not in a context</string>
-    <string name="learning_context_add">Add context</string>
-    <string name="learning_context_name">Context name</string>
-    <string name="learning_context_rename">Rename context</string>
-    <string name="learning_context_delete">Delete context</string>
-    <!-- Confirmation text when deleting a learning context -->
-    <string name="learning_context_delete_message">Delete \"%s\" and everything learned in it? Its apps will use the default context.</string>
-    <!-- Number of apps in a learning context -->
-    <plurals name="learning_context_app_count">
-        <item quantity="one">%d app</item>
-        <item quantity="other">%d apps</item>
-    </plurals>
-    <!-- Shown for an app that is in a different learning context; %s is the context name -->
-    <string name="learning_context_app_in_other">In context \"%s\"</string>
     <!-- Summary text for built-in dictionary -->
     <string name="internal_dictionary_summary">Internal main dictionary</string>
     <!-- Title for the adding new user dictionary dialog -->

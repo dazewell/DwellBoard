@@ -14,3 +14,7 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
 
 Keeps words with a single capital letter, like "Hello", out of learned words; "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
 
+
+### Learning contexts <!-- #learning-contexts -->
+
+Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts and pick their apps under Learning contexts in the main settings; every other app uses the default context. Deleting a context erases what it learned. Included in backups.

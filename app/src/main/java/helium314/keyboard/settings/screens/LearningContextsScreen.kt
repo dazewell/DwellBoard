@@ -51,10 +51,10 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
     var contexts by remember { mutableStateOf(LearningContexts.getAll(prefs)) }
     var showAddDialog by remember { mutableStateOf(false) }
     // items: null is the "add" row, the default context is represented by a context with empty id
-    val defaultContext = LearningContext(LearningContexts.DEFAULT, stringResource(R.string.learning_context_default))
+    val defaultContext = LearningContext(LearningContexts.DEFAULT, stringResource(R.string.dwell_learning_context_default))
     SearchScreen(
         onClickBack = onClickBack,
-        title = { Text(stringResource(R.string.learning_contexts_title)) },
+        title = { Text(stringResource(R.string.dwell_learning_contexts_title)) },
         filteredItems = { term ->
             if (term.isBlank()) listOf(null, defaultContext) + contexts
             else contexts.filter { it.name.contains(term, true) }
@@ -63,7 +63,7 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
             if (item == null) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
-                        stringResource(R.string.learning_contexts_description),
+                        stringResource(R.string.dwell_learning_contexts_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -75,8 +75,8 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
                             .clickable { showAddDialog = true }
                             .padding(vertical = 12.dp)
                     ) {
-                        Text(stringResource(R.string.learning_context_add))
-                        Icon(painterResource(R.drawable.ic_plus), stringResource(R.string.learning_context_add))
+                        Text(stringResource(R.string.dwell_learning_context_add))
+                        Icon(painterResource(R.drawable.ic_plus), stringResource(R.string.dwell_learning_context_add))
                     }
                 }
             } else {
@@ -95,8 +95,8 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
                     Column(Modifier.weight(1f)) {
                         Text(item.name)
                         Text(
-                            if (isDefault) stringResource(R.string.learning_context_default_summary)
-                            else pluralStringResource(R.plurals.learning_context_app_count, item.packages.size, item.packages.size),
+                            if (isDefault) stringResource(R.string.dwell_learning_context_default_summary)
+                            else pluralStringResource(R.plurals.dwell_learning_context_app_count, item.packages.size, item.packages.size),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -114,8 +114,8 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
                 contexts = LearningContexts.getAll(prefs)
                 SettingsDestination.navigateTo(SettingsDestination.LearningContext + new.id)
             },
-            title = { Text(stringResource(R.string.learning_context_add)) },
-            textInputLabel = { Text(stringResource(R.string.learning_context_name)) },
+            title = { Text(stringResource(R.string.dwell_learning_context_add)) },
+            textInputLabel = { Text(stringResource(R.string.dwell_learning_context_name)) },
         )
     }
 }
@@ -148,8 +148,8 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         onClickBack = onClickBack,
         title = { Text(current.name) },
         menu = listOf(
-            stringResource(R.string.learning_context_rename) to { showRenameDialog = true },
-            stringResource(R.string.learning_context_delete) to { showDeleteDialog = true },
+            stringResource(R.string.dwell_learning_context_rename) to { showRenameDialog = true },
+            stringResource(R.string.dwell_learning_context_delete) to { showDeleteDialog = true },
         ),
         filteredItems = { term ->
             // null is the header
@@ -159,7 +159,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         itemContent = { app ->
             if (app == null) {
                 Text(
-                    pluralStringResource(R.plurals.learning_context_app_count, current.packages.size, current.packages.size),
+                    pluralStringResource(R.plurals.dwell_learning_context_app_count, current.packages.size, current.packages.size),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -188,7 +188,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
                     Column(Modifier.weight(1f)) {
                         Text(app.name)
                         Text(
-                            if (otherContext != null && !selected) stringResource(R.string.learning_context_app_in_other, otherContext.name)
+                            if (otherContext != null && !selected) stringResource(R.string.dwell_learning_context_app_in_other, otherContext.name)
                             else app.packageName,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -206,8 +206,8 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
                 LearningContexts.rename(prefs, id, it)
                 context = LearningContexts.get(prefs, id)
             },
-            title = { Text(stringResource(R.string.learning_context_rename)) },
-            textInputLabel = { Text(stringResource(R.string.learning_context_name)) },
+            title = { Text(stringResource(R.string.dwell_learning_context_rename)) },
+            textInputLabel = { Text(stringResource(R.string.dwell_learning_context_name)) },
             initialText = current.name,
         )
     }
@@ -218,8 +218,8 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
                 LearningContexts.delete(ctx, id)
                 context = null
             },
-            title = { Text(stringResource(R.string.learning_context_delete)) },
-            content = { Text(stringResource(R.string.learning_context_delete_message, current.name)) },
+            title = { Text(stringResource(R.string.dwell_learning_context_delete)) },
+            content = { Text(stringResource(R.string.dwell_learning_context_delete_message, current.name)) },
         )
     }
 }

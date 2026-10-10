@@ -105,7 +105,7 @@ fun MainSettingsScreen(
                     icon = R.drawable.ic_dictionary
                 ) { NextScreenIcon() }
                 Preference(
-                    name = stringResource(R.string.learning_contexts_title),
+                    name = stringResource(R.string.dwell_learning_contexts_title),
                     onClick = onClickLearningContexts,
                     icon = R.drawable.ic_settings_correction
                 ) { NextScreenIcon() }
