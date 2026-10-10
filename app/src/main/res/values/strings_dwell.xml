@@ -20,4 +20,5 @@
         <item quantity="other">%d apps</item>
     </plurals>
     <string name="dwell_learning_context_app_in_other">In context \"%s\"</string>
+    <string name="dwell_learning_context_toast">Learning context: %s</string>
 </resources>

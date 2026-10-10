@@ -900,6 +900,8 @@ public class LatinIME extends InputMethodService implements
         }
 
         switcher.updateKeyboardTheme(mDisplayContext);
+        // DwellBoard: the suggestion strip is not necessarily refreshed after the learning context changed
+        if (learningContextChanged && hasSuggestionStripView()) mSuggestionStripView.updateLearningContextIndicator();
         MainKeyboardView mainKeyboardView = switcher.getMainKeyboardView();
         currentSettingsValues = mSettings.getCurrent(); // settingsValues may have been reloaded
 
