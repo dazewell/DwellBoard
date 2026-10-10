@@ -307,13 +307,16 @@ REST POST.
 Fix real findings as new commits; note false positives with a reason. Pushing
 no longer re-requests anything.
 
-**Request the on-device APK build only after round 2 and the Copilot review have
-settled** — not before. Review can still find Criticals after you think you are
-done, which makes any earlier build stale the moment it lands. "Ready for a
-build" means a `ci.yml` run exists **for the head SHA** and is green, and every
-thread is resolved. An absent run is not a pass; report an absent run as absent.
-The build itself is `staging.yml` (the `build-apk` label), whose APK is a
-GitHub Actions artifact — the mechanics are in `dwellboard-workflow` step 9.
+**Request the verification APK build only after round 2 and the Copilot review
+have settled** — not before. Review can still find Criticals after you think you
+are done, which makes any earlier verification build stale the moment it lands.
+The one exception is the **smoke build** a UI-facing change earns earlier: a
+disposable, reachability-only build defined in `dwellboard-workflow` step 9,
+never presented as the build to verify. "Ready for a build" means a `ci.yml`
+run exists **for the head SHA** and is green, and every thread is resolved. An
+absent run is not a pass; report an absent run as absent. The build itself is
+`staging.yml` (the `build-apk` label), whose APK is a GitHub Actions artifact —
+the mechanics are in `dwellboard-workflow` step 9.
 
 **Never merge.** The merge decision is dazewell's.
 

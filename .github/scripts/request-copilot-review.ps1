@@ -53,10 +53,12 @@ function Get-Pages {
 }
 
 # The reviews endpoint names the bot copilot-pull-request-reviewer[bot], the
-# timeline and comments endpoints name it Copilot. Match both.
+# timeline and comments endpoints name it Copilot. Match exactly those two, so
+# an unrelated account with "copilot" in its login can't count as the reviewer.
+$CopilotLogins = @($BotLogin, 'Copilot')
 function Test-Copilot {
     param($User)
-    $null -ne $User -and $User.login -like '*copilot*'
+    $null -ne $User -and $User.login -cin $CopilotLogins
 }
 
 function Get-CopilotState {
@@ -119,14 +121,15 @@ function Write-Result {
 }
 
 function Wait-ForReview {
-    param([int]$Baseline)
+    # Only a review of the current head counts: a superseded request for an
+    # older head can still be answered while we wait.
     $Deadline = (Get-Date).AddMinutes($TimeoutMinutes)
     while ((Get-Date) -lt $Deadline) {
         Start-Sleep -Seconds 20
         $script:State = Get-CopilotState
-        if ($State.Reviews.Count -gt $Baseline) {
-            return ($State.Reviews | Sort-Object submitted_at | Select-Object -Last 1)
-        }
+        $Review = $State.Reviews | Where-Object { $_.commit_id -eq $HeadSha } |
+            Sort-Object submitted_at | Select-Object -Last 1
+        if ($null -ne $Review) { return $Review }
     }
     $null
 }
@@ -164,7 +167,7 @@ if ($InFlight) {
         Write-Result 'pending' $null
         return
     }
-    $Review = Wait-ForReview $State.Reviews.Count
+    $Review = Wait-ForReview
     if ($null -eq $Review) { Write-Result 'timed-out' $null } else { Write-Result 'reviewed' $Review }
     return
 }
@@ -207,5 +210,5 @@ if (-not $Wait) {
     Write-Result 'requested' $null
     return
 }
-$Review = Wait-ForReview $Baseline.Reviews.Count
+$Review = Wait-ForReview
 if ($null -eq $Review) { Write-Result 'timed-out' $null } else { Write-Result 'reviewed' $Review }
