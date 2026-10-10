@@ -17,11 +17,10 @@ import helium314.keyboard.latin.utils.ExecutorUtils;
 import helium314.keyboard.latin.settings.LearningContexts;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Locale;
@@ -135,18 +134,37 @@ public class PersonalizationHelper {
             final String targetName = toName + dictName.substring(fromName.length());
             final File source = ExpandableBinaryDictionary.getDictFile(context, dictName, null);
             final File target = ExpandableBinaryDictionary.getDictFile(context, targetName, null);
-            final Runnable copy = () -> {
-                if (!source.exists()) return;
-                try {
-                    Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                } catch (final IOException e) {
-                    Log.e(TAG, "Cannot copy dictionary of learning context: " + dictName, e);
-                }
-            };
+            final Runnable copy = () -> copyDictionary(source, target);
             final SoftReference<UserHistoryDictionary> ref = sLangUserHistoryDictCache.get(dictName);
             final UserHistoryDictionary dict = ref == null ? null : ref.get();
             if (dict != null) dict.flushThen(copy);
             else ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(copy);
+        }
+    }
+
+    /**
+     * A dictionary is a directory with files that are named like the directory, so the files need new names.
+     * It is copied to a temporary directory first, so a half-copied dictionary is never loaded.
+     */
+    private static void copyDictionary(final File source, final File target) {
+        if (!source.isDirectory()) return;
+        final File tmp = new File(target.getPath() + ".copy");
+        try {
+            FileUtils.deleteRecursively(tmp);
+            final File[] children = source.listFiles();
+            if (children == null) return;
+            for (final File child : children) {
+                final File out = new File(tmp, target.getName() + child.getName().substring(source.getName().length()));
+                try (final FileInputStream in = new FileInputStream(child)) {
+                    FileUtils.copyStreamToNewFile(in, out);
+                }
+            }
+            FileUtils.deleteRecursively(target);
+            if (!tmp.renameTo(target)) Log.e(TAG, "Cannot move copied dictionary: " + target.getName());
+        } catch (final IOException e) {
+            Log.e(TAG, "Cannot copy dictionary of learning context: " + source.getName(), e);
+        } finally {
+            FileUtils.deleteRecursively(tmp);
         }
     }
 
