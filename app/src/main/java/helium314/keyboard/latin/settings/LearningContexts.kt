@@ -73,11 +73,11 @@ object LearningContexts {
         return new
     }
 
-    /** Removes everything learned in the context, but keeps the context and its apps. */
-    fun clearData(context: Context, id: String) {
+    /** Removes learned words (with their predictions) and / or recent emojis of the context, but keeps the context and its apps. */
+    fun clearData(context: Context, id: String, words: Boolean, emojis: Boolean) {
         if (id == DEFAULT) return
-        PersonalizationHelper.clearUserHistoryDictionaries(context, id)
-        RecentEmojis.clearContext(id)
+        if (words) PersonalizationHelper.clearUserHistoryDictionaries(context, id)
+        if (emojis) RecentEmojis.clearContext(id)
     }
 
     fun rename(prefs: SharedPreferences, id: String, name: String) =

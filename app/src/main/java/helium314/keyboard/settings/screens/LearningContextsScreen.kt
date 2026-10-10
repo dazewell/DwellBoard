@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -41,6 +42,7 @@ import helium314.keyboard.settings.SearchScreen
 import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.settings.dialogs.ConfirmationDialog
 import helium314.keyboard.settings.dialogs.ListPickerDialog
+import helium314.keyboard.settings.dialogs.ThreeButtonAlertDialog
 import helium314.keyboard.settings.dialogs.TextInputDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -244,11 +246,31 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         )
     }
     if (showClearDialog) {
-        ConfirmationDialog(
+        var clearWords by remember { mutableStateOf(true) }
+        var clearEmojis by remember { mutableStateOf(true) }
+        ThreeButtonAlertDialog(
             onDismissRequest = { showClearDialog = false },
-            onConfirmed = { LearningContexts.clearData(ctx, id) },
+            onConfirmed = { LearningContexts.clearData(ctx, id, clearWords, clearEmojis) },
+            checkOk = { clearWords || clearEmojis },
             title = { Text(stringResource(R.string.dwell_learning_context_clear)) },
-            content = { Text(stringResource(R.string.dwell_learning_context_clear_message, current.name)) },
+            content = {
+                Column {
+                    Text(stringResource(R.string.dwell_learning_context_clear_message, current.name))
+                    ClearOption(stringResource(R.string.dwell_learning_context_clear_words), clearWords) { clearWords = it }
+                    ClearOption(stringResource(R.string.dwell_learning_context_clear_emojis), clearEmojis) { clearEmojis = it }
+                }
+            },
         )
+    }
+}
+
+@Composable
+private fun ClearOption(text: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().clickable { onCheckedChange(!checked) }
+    ) {
+        Checkbox(checked, null)
+        Text(text, Modifier.padding(start = 8.dp))
     }
 }
