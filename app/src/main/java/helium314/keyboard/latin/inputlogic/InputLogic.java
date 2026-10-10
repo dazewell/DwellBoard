@@ -375,6 +375,8 @@ public final class InputLogic {
     /** indicates that the next selection update is expected to be a cursor move (though not needed for arrow keys) */
     public void setExpectCursorMove() {
         mCursorMoveExpectedUntil = SystemClock.elapsedRealtime() + 500;
+        // DwellBoard: the callback of this move is treated as belated and skips the reset in onUpdateSelection, so a pending space would be inserted at the new position
+        mSpaceState = SpaceState.NONE;
     }
 
     private boolean mightBeExpectedCursorMove() {
@@ -751,6 +753,11 @@ public final class InputLogic {
                 inputTransaction.setRequiresUpdateSuggestions();
                 if (mSpaceState == SpaceState.PHANTOM && sv.mShiftRemovesAutospace)
                     mSpaceState = SpaceState.NONE;
+                else if (mSpaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION && sv.mShiftRemovesAutospace) {
+                    // DwellBoard: the automatic space was already inserted
+                    mConnection.removeTrailingSpace();
+                    mSpaceState = SpaceState.NONE;
+                }
                 break;
             }
             case KeyCode.CAPS_LOCK: {
@@ -979,6 +986,19 @@ public final class InputLogic {
         mSpaceState = SpaceState.NONE;
         final SettingsValues sv = inputTransaction.getSettingsValues();
 
+        if (SpaceState.AUTO_SPACE_AFTER_PUNCTUATION == inputTransaction.getSpaceState()
+                && mConnection.getCodePointBeforeCursor() == Constants.CODE_SPACE) {
+            if (codePoint == Constants.CODE_SPACE) {
+                // the space was already inserted automatically, don't add a second one
+                mSpaceState = SpaceState.WEAK;
+                inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
+                return;
+            }
+            // punctuation typed right after auto-spaced punctuation ("?!", "://") belongs directly behind it
+            if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.removesAutoSpace(codePoint, mConnection.getTextBeforeCursor(2, 0)))
+                mConnection.removeTrailingSpace();
+        }
+
         // wrap / unwrap selected text in codepoint pairs
         if (!mWordComposer.isComposingWord() && mConnection.hasSelection()) { // we should never be composing when something is selected
             final int pairedCodepoint = sv.mSpacingAndPunctuations.getSecondInSymbolPair(codePoint);
@@ -1114,6 +1134,10 @@ public final class InputLogic {
 
         enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
+        // a dash after "word " is a separator (like in "Look here - a cat"), unlike in "well-known" or "-5"
+        final boolean insertSpaceAfterDash = !isComposingWord && settingsValues.mAutospaceAfterPunctuation
+                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isSeparatorDash(codePoint, mConnection.getTextBeforeCursor(2, 0));
+
         if (isComposingWord) {
             mWordComposer.applyProcessedEvent(event);
             // If it's the first letter, make note of auto-caps state
@@ -1134,6 +1158,7 @@ public final class InputLogic {
                 sendDownUpKeyEvent(codePoint - '0' + KeyEvent.KEYCODE_0);
             } else {
                 mConnection.commitCodePoint(codePoint);
+                if (insertSpaceAfterDash) insertSpaceRightAfterPunctuation(settingsValues);
             }
         }
         inputTransaction.setRequiresUpdateSuggestions();
@@ -1225,6 +1250,7 @@ public final class InputLogic {
                 mConnection.commitCodePoint(codePoint);
             }
         } else {
+            boolean insertSpaceAfterCommit = false;
             if (SpaceState.PHANTOM == inputTransaction.getSpaceState()
                     && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
                 // If we are in phantom space state, and the user presses a separator, we want to
@@ -1249,13 +1275,17 @@ public final class InputLogic {
                 if (wasComposingWord
                         && settingsValues.mAutospaceAfterPunctuation
                         && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
-                    mSpaceState = SpaceState.PHANTOM;
+                    if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint) && !isInsideDoubleQuoteOrAfterDigit)
+                        insertSpaceAfterCommit = true; // the space is inserted after the punctuation was committed
+                    else
+                        mSpaceState = SpaceState.PHANTOM;
                 }
             }
 
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
             mConnection.commitCodePoint(codePoint);
+            if (insertSpaceAfterCommit) insertSpaceRightAfterPunctuation(settingsValues);
 
             if (isInlineEmojiSearchAction()) {
                 inputTransaction.setRequiresUpdateSuggestions();
@@ -2298,7 +2328,7 @@ public final class InputLogic {
      *
      * @param settingsValues the current values of the settings.
      */
-    private void insertAutomaticSpaceIfOptionsAndTextAllow(final SettingsValues settingsValues) {
+    private boolean insertAutomaticSpaceIfOptionsAndTextAllow(final SettingsValues settingsValues) {
         if (settingsValues.shouldInsertSpacesAutomatically()
                 && settingsValues.mSpacingAndPunctuations.mCurrentLanguageHasSpaces
                 && !textBeforeCursorMayBeUrlOrSimilar(settingsValues, true)
@@ -2307,7 +2337,23 @@ public final class InputLogic {
         ) {
             mConnection.commitCodePoint(Constants.CODE_SPACE);
             // todo: why not remove phantom space state?
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Inserts a space right now, after the just typed punctuation, if options and text allow.
+     * Sets the space state so that a space typed by the user afterwards is not inserted a second time.
+     */
+    private void insertSpaceRightAfterPunctuation(final SettingsValues settingsValues) {
+        // DwellBoard: without a reliable look at the text after the cursor an existing space could be doubled
+        if (mConnection.hasSlowInputConnection()) return;
+        final CharSequence after = mConnection.getTextAfterCursor(1, 0);
+        if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0))) return; // there already is a space
+        if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.looksLikeEmail(mConnection.textBeforeCursorUntilLastWhitespaceOrDoubleSlash())) return;
+        if (insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues))
+            mSpaceState = SpaceState.AUTO_SPACE_AFTER_PUNCTUATION;
     }
 
     private boolean textBeforeCursorMayBeUrlOrSimilar(final SettingsValues settingsValues, final Boolean forAutoSpace) {

@@ -18,6 +18,10 @@ Keeps words with a single capital letter, like "Hello", out of learned words; "H
 
 Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts and pick their apps under Learning contexts in the main settings; every other app uses the default context. Deleting a context erases what it learned.
 
+### Instant space after punctuation <!-- #punctuation-autospace -->
+
+With "Autospace after punctuation" on, typing , ; : ! ? after a word, or a dash after "word ", adds the space right away; a space you type yourself is not doubled. Setting: Text correction → "Autospace after punctuation", off by default.
+
 ### DwellBoard name <!-- #dwellboard-name -->
 
 The app, its spell checker and its settings screen are labelled "DwellBoard", and built APKs are named `DwellBoard_<version>-<type>.apk`. The application id is unchanged, so it installs alongside HeliBoard and keeps existing data.

@@ -37,6 +37,10 @@ public class SpaceState {
     // Phantom spaces happen when a user chooses a word from the suggestion strip. In this state,
     // non-separators insert a space before they get inserted.
     public static final int PHANTOM = 4;
+    // Auto space after punctuation: a space was inserted right after typing punctuation (if the
+    // autospace-after-punctuation setting is enabled). In this state, typing a space does not add
+    // a second one, and typing further punctuation like "." or "," first removes the inserted space.
+    public static final int AUTO_SPACE_AFTER_PUNCTUATION = 5;
 
     private SpaceState() {
         // This class is not publicly instantiable.
