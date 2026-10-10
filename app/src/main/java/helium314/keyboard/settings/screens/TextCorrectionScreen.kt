@@ -69,6 +69,8 @@ fun TextCorrectionScreen(
         if (autocorrectEnabled) Settings.PREF_AUTO_CORRECT_CONFIDENCE else null,
         if (autocorrectEnabled) Settings.PREF_BACKSPACE_REVERTS_AUTOCORRECT else null,
         Settings.PREF_AUTO_CAP,
+        if (prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
+            Settings.PREF_DONT_LEARN_CAPITALIZED else null,
         R.string.settings_category_space,
         Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD,
         Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION,
@@ -94,8 +96,6 @@ fun TextCorrectionScreen(
         Settings.PREF_USE_APPS,
         if (prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
             Settings.PREF_ADD_TO_PERSONAL_DICTIONARY else null,
-        if (prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
-            Settings.PREF_DONT_LEARN_CAPITALIZED else null,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             Settings.PREF_SPELLCHECK_SUGGEST else null,
     )
