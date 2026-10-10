@@ -62,6 +62,24 @@ object LearningContexts {
         return context
     }
 
+    /** Creates a context that starts with a copy of what was learned in [sourceId] (apps are not copied). */
+    fun createFrom(context: Context, name: String, sourceId: String): LearningContext {
+        val prefs = context.prefs()
+        val new = create(prefs, name)
+        if (sourceId == DEFAULT || get(prefs, sourceId) != null) {
+            PersonalizationHelper.copyUserHistoryDictionaries(context, sourceId, new.id)
+            RecentEmojis.copyContext(sourceId, new.id)
+        }
+        return new
+    }
+
+    /** Removes learned words (with their predictions) and / or recent emojis of the context, but keeps the context and its apps. */
+    fun clearData(context: Context, id: String, words: Boolean, emojis: Boolean) {
+        if (id == DEFAULT) return
+        if (words) PersonalizationHelper.clearUserHistoryDictionaries(context, id)
+        if (emojis) RecentEmojis.clearContext(id)
+    }
+
     fun rename(prefs: SharedPreferences, id: String, name: String) =
         save(prefs, getAll(prefs).map { if (it.id == id) it.copy(name = name.trim()) else it })
 

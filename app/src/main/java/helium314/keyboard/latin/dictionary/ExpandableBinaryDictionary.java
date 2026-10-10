@@ -563,6 +563,16 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         });
     }
 
+    // DwellBoard: flushes to file, then runs the task under the same write lock, so a copy of the file is complete
+    public void flushThen(final Runnable afterFlush) {
+        asyncExecuteTaskWithWriteLock(() -> {
+            final BinaryDictionary binaryDictionary = getBinaryDictionary();
+            // a failed flush would make the task copy an older file
+            if (binaryDictionary != null && !binaryDictionary.flushWithGCIfHasUpdated()) return;
+            afterFlush.run();
+        });
+    }
+
     public DictionaryStats getDictionaryStats() {
         reloadDictionaryIfRequired();
         final String dictName = mDictName;

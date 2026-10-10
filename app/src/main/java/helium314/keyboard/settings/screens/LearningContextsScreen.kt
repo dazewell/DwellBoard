@@ -3,6 +3,7 @@ package helium314.keyboard.settings.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -24,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.painterResource
@@ -40,6 +43,8 @@ import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.SearchScreen
 import helium314.keyboard.settings.SettingsDestination
 import helium314.keyboard.settings.dialogs.ConfirmationDialog
+import helium314.keyboard.settings.dialogs.ListPickerDialog
+import helium314.keyboard.settings.dialogs.ThreeButtonAlertDialog
 import helium314.keyboard.settings.dialogs.TextInputDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,9 +52,11 @@ import kotlinx.coroutines.withContext
 /** Lists the learning contexts. The default context is always first, followed by user-created contexts. */
 @Composable
 fun LearningContextsScreen(onClickBack: () -> Unit) {
-    val prefs = LocalContext.current.prefs()
+    val ctx = LocalContext.current
+    val prefs = ctx.prefs()
     var contexts by remember { mutableStateOf(LearningContexts.getAll(prefs)) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var newName by remember { mutableStateOf<String?>(null) } // set once the name is entered, while choosing what to start from
     // items: null is the "add" row, the default context is represented by a context with empty id
     val defaultContext = LearningContext(LearningContexts.DEFAULT, stringResource(R.string.dwell_learning_context_default))
     SearchScreen(
@@ -109,13 +116,29 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
     if (showAddDialog) {
         TextInputDialog(
             onDismissRequest = { showAddDialog = false },
-            onConfirmed = {
-                val new = LearningContexts.create(prefs, it)
+            onConfirmed = { newName = it },
+            title = { Text(stringResource(R.string.dwell_learning_context_add)) },
+            textInputLabel = { Text(stringResource(R.string.dwell_learning_context_name)) },
+        )
+    }
+    newName?.let { name ->
+        // "none" (not a valid context id) stands for starting empty, otherwise the context to copy the learned data from
+        val none = LearningContext("none", "")
+        val sources = listOf(none, defaultContext) + contexts
+        ListPickerDialog(
+            onDismissRequest = { newName = null },
+            items = sources,
+            onItemSelected = { source ->
+                val new = if (source === none) LearningContexts.create(prefs, name)
+                    else LearningContexts.createFrom(ctx, name, source.id)
                 contexts = LearningContexts.getAll(prefs)
                 SettingsDestination.navigateTo(SettingsDestination.LearningContext + new.id)
             },
-            title = { Text(stringResource(R.string.dwell_learning_context_add)) },
-            textInputLabel = { Text(stringResource(R.string.dwell_learning_context_name)) },
+            title = { Text(stringResource(R.string.dwell_learning_context_start_from)) },
+            getItemName = {
+                if (it === none) stringResource(R.string.dwell_learning_context_start_empty)
+                else stringResource(R.string.dwell_learning_context_copy_of, it.name)
+            },
         )
     }
 }
@@ -131,6 +154,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
     var apps by remember { mutableStateOf(emptyList<AppInfo>()) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showClearDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         apps = withContext(Dispatchers.IO) {
             AppsManager(ctx).getPackagesWithNameAndIcon()
@@ -149,6 +173,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         title = { Text(current.name) },
         menu = listOf(
             stringResource(R.string.dwell_learning_context_rename) to { showRenameDialog = true },
+            stringResource(R.string.dwell_learning_context_clear) to { showClearDialog = true },
             stringResource(R.string.dwell_learning_context_delete) to { showDeleteDialog = true },
         ),
         filteredItems = { term ->
@@ -221,5 +246,33 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
             title = { Text(stringResource(R.string.dwell_learning_context_delete)) },
             content = { Text(stringResource(R.string.dwell_learning_context_delete_message, current.name)) },
         )
+    }
+    if (showClearDialog) {
+        var clearWords by remember { mutableStateOf(true) }
+        var clearEmojis by remember { mutableStateOf(true) }
+        ThreeButtonAlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            onConfirmed = { LearningContexts.clearData(ctx, id, clearWords, clearEmojis) },
+            checkOk = { clearWords || clearEmojis },
+            title = { Text(stringResource(R.string.dwell_learning_context_clear)) },
+            content = {
+                Column {
+                    Text(stringResource(R.string.dwell_learning_context_clear_message, current.name))
+                    ClearOption(stringResource(R.string.dwell_learning_context_clear_words), clearWords) { clearWords = it }
+                    ClearOption(stringResource(R.string.dwell_learning_context_clear_emojis), clearEmojis) { clearEmojis = it }
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun ClearOption(text: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().toggleable(checked, role = Role.Checkbox, onValueChange = onCheckedChange)
+    ) {
+        Checkbox(checked, null)
+        Text(text, Modifier.padding(start = 8.dp))
     }
 }

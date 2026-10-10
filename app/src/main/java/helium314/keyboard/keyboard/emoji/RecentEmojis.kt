@@ -61,6 +61,12 @@ object RecentEmojis {
         prefs.edit { remove(Settings.PREF_RECENT_EMOJIS + LearningContexts.keySuffix(contextId)) }
     }
 
+    /** copies the recent emojis of one learning context to another */
+    fun copyContext(fromId: String, toId: String) {
+        val value = prefs.getString(Settings.PREF_RECENT_EMOJIS + LearningContexts.keySuffix(fromId), null) ?: return
+        prefs.edit { putString(Settings.PREF_RECENT_EMOJIS + LearningContexts.keySuffix(toId), value) }
+    }
+
     // recents are stored separately for each learning context
     private fun prefKey() = Settings.PREF_RECENT_EMOJIS + LearningContexts.keySuffix(LearningContexts.current)
 

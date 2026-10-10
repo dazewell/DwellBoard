@@ -15,6 +15,13 @@
     <string name="dwell_learning_context_rename">Rename context</string>
     <string name="dwell_learning_context_delete">Delete context</string>
     <string name="dwell_learning_context_delete_message">Delete \"%s\" and everything learned in it? Its apps will use the default context.</string>
+    <string name="dwell_learning_context_clear">Clear learned data</string>
+    <string name="dwell_learning_context_clear_message">Choose what to erase from \"%s\". The context and its apps are kept.</string>
+    <string name="dwell_learning_context_clear_words">Learned words and predictions</string>
+    <string name="dwell_learning_context_clear_emojis">Recent emojis</string>
+    <string name="dwell_learning_context_start_from">Start with</string>
+    <string name="dwell_learning_context_start_empty">Nothing learned yet</string>
+    <string name="dwell_learning_context_copy_of">Copy of \"%s\"</string>
     <plurals name="dwell_learning_context_app_count">
         <item quantity="one">%d app</item>
         <item quantity="other">%d apps</item>
