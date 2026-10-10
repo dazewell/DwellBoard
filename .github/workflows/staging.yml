@@ -1,0 +1,165 @@
+name: Staging build
+
+# The installable build. Runs on:
+#   - every push to dev (the post-land build);
+#   - a same-repo pull request that gets the build-apk label (an on-demand
+#     preview; the label is removed at the start so re-applying it re-runs);
+#   - a manual workflow_dispatch.
+# The APK is published as an unzipped workflow artifact (archive: false), so
+# the download is the .apk itself, named DwellBoard-<variant>-<sha8>.apk.
+# Doc-, .github- and hook-only pushes to dev are skipped; dispatch manually to
+# verify a pipeline change.
+#
+# Signing: app/release.keystore is committed (as in DwellGram); its passwords come
+# from the LOCAL_PROPERTIES secret (base64 of KEYSTORE_PASS / ALIAS_NAME /
+# ALIAS_PASS), which app/build.gradle.kts reads. As in DwellGram, every staging
+# build (dev push, dispatch, same-repo PR label) gets the secret and produces the
+# signed release variant, so any of them updates an installed build in place.
+# Fork PRs never reach the build job (and GitHub withholds secrets from them).
+# Without the secret, the debug variant is built as a fallback.
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'docs/**'
+      - '.githooks/**'
+      - '.claude/**'
+  pull_request:
+    # No paths-ignore: a build explicitly requested via the label is relevant
+    # by definition, even on a doc-only PR.
+    types: [labeled]
+  workflow_dispatch:
+
+# Only the latest build per branch survives. An unrelated label event (a no-op
+# run) gets its own group so it can't cancel a real build in flight.
+concurrency:
+  group: staging-${{ github.head_ref || github.ref_name }}${{ (github.event_name == 'pull_request' && github.event.label.name != 'build-apk') && format('-{0}', github.event.label.name) || '' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unlabel:
+    name: Remove build-apk label
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.label.name == 'build-apk' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/build-apk")
+          echo "DELETE label -> HTTP $CODE"
+          # 200 removed, 404 already gone — both fine.
+          if [ "$CODE" != "200" ] && [ "$CODE" != "404" ]; then
+            exit 1
+          fi
+
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    needs: unlabel
+    # unlabel is skipped on push/dispatch, so gate on the event rather than its
+    # result; !cancelled() keeps superseded runs from continuing.
+    if: >-
+      always() &&
+      !cancelled() &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'pull_request' && github.event.label.name == 'build-apk' && github.event.pull_request.head.repo.full_name == github.repository)
+      )
+    env:
+      # Same policy as DwellGram: same-repo builds are trusted with the signing
+      # secret (the job condition above already excludes fork PRs).
+      HAS_KEYSTORE: ${{ secrets.LOCAL_PROPERTIES != '' }}
+      # The commit actually built: on pull_request, GITHUB_SHA is the synthetic
+      # merge commit, not the checked-out PR head.
+      BUILT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Build signed release
+        if: env.HAS_KEYSTORE == 'true'
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+        run: |
+          ./gradlew :app:assembleRelease
+          BUILT=$(find app/build/outputs/apk/release -name '*.apk' ! -name '*unsigned*' | head -n 1)
+          if [ -z "$BUILT" ]; then echo "::error::no signed release APK produced"; exit 1; fi
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)apksigner
+          "$APKSIGNER" verify --print-certs "$BUILT" | head -n 3
+          mkdir -p out
+          cp "$BUILT" "out/DwellBoard-release-${BUILT_SHA::8}.apk"
+          echo "APK=out/DwellBoard-release-${BUILT_SHA::8}.apk" >> "$GITHUB_ENV"
+      - name: Build debug (no keystore configured)
+        if: env.HAS_KEYSTORE != 'true'
+        run: |
+          echo "::warning::LOCAL_PROPERTIES secret not set — building the debug variant (helium314.keyboard.debug) with a throwaway signature. It installs alongside, but cannot update, a previous debug build."
+          ./gradlew :app:assembleDebug
+          mkdir -p out
+          BUILT=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          if [ -z "$BUILT" ]; then echo "::error::no debug APK produced"; exit 1; fi
+          cp "$BUILT" "out/DwellBoard-debug-${BUILT_SHA::8}.apk"
+          echo "APK=out/DwellBoard-debug-${BUILT_SHA::8}.apk" >> "$GITHUB_ENV"
+      - name: Upload APK
+        # archive: false uploads the single .apk as-is instead of wrapping it in
+        # a zip; the artifact takes the file's name, so `name` is not set.
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ env.APK }}
+          archive: false
+          if-no-files-found: error
+      - name: Publish to rolling staging release
+        # Push to dev only: the fixed `staging` pre-release always holds the
+        # newest dev build under a fixed asset name, so README can link
+        #   releases/download/staging/DwellBoard.apk
+        # PR-label and dispatch builds stay artifact-only.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          NOTES="Latest build of \`dev\` at ${GITHUB_SHA::8} ($(basename "$APK")). Replaced on every push to dev."
+          if gh release view staging -R "$REPO" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$REPO/git/refs/tags/staging" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+            gh release edit staging -R "$REPO" --prerelease --notes "$NOTES"
+          else
+            gh release create staging -R "$REPO" --prerelease --target "$GITHUB_SHA" \
+              --title "Staging (latest dev build)" --notes "$NOTES"
+          fi
+          cp "$APK" out/DwellBoard.apk
+          gh release upload staging out/DwellBoard.apk -R "$REPO" --clobber
+      - name: Archive reports for failed job
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: '*/build/reports'

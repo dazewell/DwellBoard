@@ -69,6 +69,8 @@ fun TextCorrectionScreen(
         if (autocorrectEnabled) Settings.PREF_AUTO_CORRECT_CONFIDENCE else null,
         if (autocorrectEnabled) Settings.PREF_BACKSPACE_REVERTS_AUTOCORRECT else null,
         Settings.PREF_AUTO_CAP,
+        if (prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
+            Settings.PREF_DONT_LEARN_CAPITALIZED else null,
         R.string.settings_category_space,
         Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD,
         Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION,
@@ -280,6 +282,11 @@ fun createCorrectionSettings(context: Context) = listOf(
         R.string.add_to_personal_dictionary, R.string.add_to_personal_dictionary_summary
     ) {
         SwitchPreference(it, Defaults.PREF_ADD_TO_PERSONAL_DICTIONARY)
+    },
+    Setting(context, Settings.PREF_DONT_LEARN_CAPITALIZED,
+        R.string.dwell_dont_learn_capitalized, R.string.dwell_dont_learn_capitalized_summary
+    ) {
+        SwitchPreference(it, Defaults.PREF_DONT_LEARN_CAPITALIZED)
     },
     Setting(context, Settings.PREF_SPELLCHECK_SUGGEST,
         R.string.spell_check_suggestions, R.string.spell_check_suggestions_summary

@@ -1,4 +1,6 @@
 import com.android.build.api.variant.ApplicationVariant
+import java.util.Base64
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -6,11 +8,31 @@ plugins {
     kotlin("plugin.compose") version "2.4.0"
 }
 
+// DwellBoard: release signing. app/release.keystore is committed; its passwords come
+// from the LOCAL_PROPERTIES env var (base64 of a properties file, set in CI from the
+// secret of the same name) or the gitignored local.properties, then plain env vars.
+val dwellSigning: Properties = Properties().apply {
+    val b64 = System.getenv("LOCAL_PROPERTIES")
+    val local = rootProject.file("local.properties")
+    if (!b64.isNullOrBlank()) load(Base64.getDecoder().decode(b64.trim()).inputStream())
+    else if (local.exists()) local.inputStream().use { load(it) }
+}
+fun dwellSigningValue(key: String): String? = dwellSigning.getProperty(key) ?: System.getenv(key)
+
 android {
     compileSdk = 37
 
+    // DwellBoard: only configured when the passwords are available, so builds without them still work.
+    val dwellKeystorePass = dwellSigningValue("KEYSTORE_PASS")
+    val dwellReleaseSigning = if (dwellKeystorePass.isNullOrBlank()) null else signingConfigs.create("release") {
+        storeFile = file("release.keystore")
+        storePassword = dwellKeystorePass
+        keyAlias = dwellSigningValue("ALIAS_NAME")
+        keyPassword = dwellSigningValue("ALIAS_PASS")
+    }
+
     defaultConfig {
-        applicationId = "helium314.keyboard"
+        applicationId = "helium314.keyboard.dazewell"
         minSdk = 21
         targetSdk = 37
         versionCode = 4200
@@ -28,6 +50,7 @@ android {
             isShrinkResources = false
             isDebuggable = false
             isJniDebuggable = false
+            signingConfig = dwellReleaseSigning // DwellBoard
         }
         create("nouserlib") { // same as release, but does not allow the user to provide a library
             isMinifyEnabled = true
@@ -96,6 +119,12 @@ android {
         unitTests {
             isIncludeAndroidResources = true
         }
+    }
+    // DwellBoard: AGP 9 only creates unit-test tasks for testBuildType; CI passes -PdwellTestBuildType=runTests
+    testBuildType = providers.gradleProperty("dwellTestBuildType").getOrElse("debug")
+    // DwellBoard: runTests skips XLinkTest, which HEAD-requests live upstream links and fails on link rot
+    if (testBuildType == "runTests") {
+        testOptions.unitTests.all { it.filter.excludeTestsMatching("helium314.keyboard.XLinkTest") }
     }
 
     compileOptions {
