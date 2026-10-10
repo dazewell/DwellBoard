@@ -37,6 +37,8 @@ android {
         targetSdk = 37
         versionCode = 4200
         versionName = "4.2-beta1"
+        // DwellBoard: staging.yml sets DWELL_BUILD_SHA so each CI build shows which commit it is (About screen, app info). Unset locally.
+        versionNameSuffix = System.getenv("DWELL_BUILD_SHA")?.takeIf { it.isNotBlank() }?.let { "+$it" } ?: ""
         ndk {
             abiFilters.clear()
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
