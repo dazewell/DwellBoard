@@ -90,9 +90,6 @@ jobs:
       # The commit actually built: on pull_request, GITHUB_SHA is the synthetic
       # merge commit, not the checked-out PR head.
       BUILT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      # Read by app/build.gradle.kts: versionName becomes e.g. 4.2-beta1+1a2b3c4d,
-      # so an installed build shows which commit it is.
-      DWELL_BUILD_SHA: ${{ substr(github.event.pull_request.head.sha || github.sha, 0, 8) }}
     permissions:
       contents: write
       pull-requests: write
@@ -102,6 +99,10 @@ jobs:
         with:
           fetch-depth: 1
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Set build version suffix
+        # Read by app/build.gradle.kts: versionName becomes e.g. 4.2-beta1+1a2b3c4d,
+        # so an installed build shows which commit it is.
+        run: echo "DWELL_BUILD_SHA=${BUILT_SHA::8}" >> "$GITHUB_ENV"
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -152,9 +153,12 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -e
+          # Read the version from the APK itself so the comment can't drift from the build.
+          AAPT2=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)aapt2
+          VERSION=$("$AAPT2" dump badging "$APK" | grep -o "versionName='[^']*'" | head -n 1 | cut -d"'" -f2)
           MARK='<!-- dwellboard-apk -->'
           BODY="$MARK
-          **APK built** for \`${BUILT_SHA::8}\` — version \`4.2-beta1+${DWELL_BUILD_SHA}\`
+          **APK built** for \`${BUILT_SHA::8}\` — version \`$VERSION\`
 
           [Download $(basename "$APK")]($ARTIFACT_URL) (GitHub login required) · [workflow run]($RUN_URL)"
           ID=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate \
