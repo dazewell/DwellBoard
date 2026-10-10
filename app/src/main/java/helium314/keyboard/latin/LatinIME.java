@@ -65,6 +65,7 @@ import helium314.keyboard.latin.common.ViewOutlineProviderUtilsKt;
 import helium314.keyboard.latin.define.DebugFlags;
 import helium314.keyboard.latin.inputlogic.InputLogic;
 import helium314.keyboard.latin.personalization.PersonalizationHelper;
+import helium314.keyboard.latin.settings.LearningContexts;
 import helium314.keyboard.latin.settings.Settings;
 import helium314.keyboard.latin.settings.SettingsSubtype;
 import helium314.keyboard.latin.settings.SettingsValues;
@@ -883,7 +884,10 @@ public class LatinIME extends InputMethodService implements
         // settings, so currentSettingsValues can't be final.
         SettingsValues currentSettingsValues = mSettings.getCurrent();
         boolean inputTypeChanged = !currentSettingsValues.isSameInputType(editorInfo);
-        boolean isDifferentTextField = !restarting || inputTypeChanged;
+        // learned data is separated by learning context, which depends on the app
+        final boolean learningContextChanged = LearningContexts.INSTANCE.setCurrentForPackage(
+                KtxKt.prefs(this), editorInfo == null ? null : editorInfo.packageName);
+        boolean isDifferentTextField = !restarting || inputTypeChanged || learningContextChanged;
 
         // we want to reload the settings before calling updateKeyboardTheme, because updateKeyboardTheme reads SettingsValues.mToolbarMode
         if (isDifferentTextField || !currentSettingsValues.hasSameOrientation(getResources().getConfiguration())) {

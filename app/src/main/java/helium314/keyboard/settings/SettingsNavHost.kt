@@ -24,6 +24,8 @@ import helium314.keyboard.settings.screens.DebugScreen
 import helium314.keyboard.settings.screens.DictionaryScreen
 import helium314.keyboard.settings.screens.GestureTypingScreen
 import helium314.keyboard.settings.screens.LanguageScreen
+import helium314.keyboard.settings.screens.LearningContextScreen
+import helium314.keyboard.settings.screens.LearningContextsScreen
 import helium314.keyboard.settings.screens.MainSettingsScreen
 import helium314.keyboard.settings.screens.PersonalDictionariesScreen
 import helium314.keyboard.settings.screens.PersonalDictionaryScreen
@@ -78,6 +80,7 @@ fun SettingsNavHost(
                 onClickLanguage = { navController.navigate(SettingsDestination.Languages) },
                 onClickLayouts = { navController.navigate(SettingsDestination.Layouts) },
                 onClickDictionaries = { navController.navigate(SettingsDestination.Dictionaries) },
+                onClickLearningContexts = { navController.navigate(SettingsDestination.LearningContexts) },
                 onClickBack = ::goBack,
             )
         }
@@ -127,6 +130,12 @@ fun SettingsNavHost(
         composable(SettingsDestination.Dictionaries) {
             DictionaryScreen(onClickBack = ::goBack)
         }
+        composable(SettingsDestination.LearningContexts) {
+            LearningContextsScreen(onClickBack = ::goBack)
+        }
+        composable(SettingsDestination.LearningContext + "{id}") {
+            LearningContextScreen(id = it.arguments?.getString("id") ?: "", onClickBack = ::goBack)
+        }
         composable(SettingsDestination.Layouts) {
             SecondaryLayoutScreen(onClickBack = ::goBack)
         }
@@ -164,6 +173,8 @@ object SettingsDestination {
     const val Subtype = "subtype/"
     const val Layouts = "layouts"
     const val Dictionaries = "dictionaries"
+    const val LearningContexts = "learning_contexts"
+    const val LearningContext = "learning_context/"
     val navTarget = MutableStateFlow(Settings)
 
     private val navScope = CoroutineScope(Dispatchers.Default)

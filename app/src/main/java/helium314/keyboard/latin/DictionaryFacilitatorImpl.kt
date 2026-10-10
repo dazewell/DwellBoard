@@ -29,6 +29,7 @@ import helium314.keyboard.latin.dictionary.ExpandableBinaryDictionary
 import helium314.keyboard.latin.dictionary.UserBinaryDictionary
 import helium314.keyboard.latin.permissions.PermissionsUtil
 import helium314.keyboard.latin.personalization.UserHistoryDictionary
+import helium314.keyboard.latin.settings.LearningContexts
 import helium314.keyboard.latin.settings.Settings
 import helium314.keyboard.latin.settings.SettingsValuesForSuggestion
 import helium314.keyboard.latin.utils.Log
@@ -58,6 +59,9 @@ import java.util.concurrent.TimeUnit
  */
 class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private var dictionaryGroups = listOf(DictionaryGroup())
+
+    /** learning context of the loaded user history dictionaries */
+    private var loadedLearningContext = LearningContexts.DEFAULT
 
     @Volatile
     private var mLatchForWaitingLoadingMainDictionaries = CountDownLatch(0)
@@ -119,6 +123,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         return contacts == dictGroup.hasDict(Dictionary.TYPE_CONTACTS)
                 && apps == dictGroup.hasDict(Dictionary.TYPE_APPS)
                 && personalization == dictGroup.hasDict(Dictionary.TYPE_USER_HISTORY)
+                && loadedLearningContext == LearningContexts.current
                 && locales.size == dictionaryGroups.size
                 && locales.none { findDictionaryGroupWithLocale(dictionaryGroups, it) == null }
     }
@@ -147,14 +152,16 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 Dictionary.TYPE_CONTACTS else null
         )
 
+        val learningContext = LearningContexts.current
         val (newDictionaryGroups, existingDictsToCleanup) =
-            getNewDictGroupsAndDictsToCleanup(locales, subDictTypesToUse, forceReloadMainDictionary, dictNamePrefix, context)
+            getNewDictGroupsAndDictsToCleanup(locales, subDictTypesToUse, forceReloadMainDictionary, dictNamePrefix, context, learningContext)
 
         // Replace Dictionaries.
         val oldDictionaryGroups: List<DictionaryGroup>
         synchronized(this) {
             oldDictionaryGroups = dictionaryGroups
             dictionaryGroups = newDictionaryGroups
+            loadedLearningContext = learningContext
             if (hasAtLeastOneUninitializedMainDictionary()) {
                 asyncReloadUninitializedMainDictionaries(context, locales, listener)
             }
@@ -181,8 +188,12 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         newSubDictTypes: Collection<String>,
         forceReload: Boolean,
         dictNamePrefix: String,
-        context: Context
+        context: Context,
+        learningContext: String
     ): Pair<List<DictionaryGroup>, Map<Locale, List<String>>> {
+        // learned data differs between learning contexts, so the user history dictionary can't be re-used
+        val learningContextChanged = learningContext != loadedLearningContext
+
         // Gather all dictionaries by locale. We may remove some from the list later.
         val existingDictsToCleanup = HashMap<Locale, MutableList<String>>()
         for (dictGroup in dictionaryGroups) {
@@ -214,9 +225,10 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 val subDict: ExpandableBinaryDictionary
                 if (forceReload || oldDictGroupForLocale == null
                     || !oldDictGroupForLocale.hasDict(subDictType)
+                    || (learningContextChanged && subDictType == Dictionary.TYPE_USER_HISTORY)
                 ) {
                     // Create a new dictionary.
-                    subDict = createSubDict(subDictType, context, locale, null, dictNamePrefix) ?: continue
+                    subDict = createSubDict(subDictType, context, locale, null, dictNamePrefix, learningContext) ?: continue
                 } else {
                     // Reuse the existing dictionary.
                     subDict = oldDictGroupForLocale.getSubDict(subDictType) ?: continue
@@ -622,11 +634,11 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         private const val CAPITALIZED_FORM_MAX_PROBABILITY_FOR_INSERT = 140
 
         private fun createSubDict(
-            dictType: String, context: Context, locale: Locale, dictFile: File?, dictNamePrefix: String
+            dictType: String, context: Context, locale: Locale, dictFile: File?, dictNamePrefix: String, learningContext: String
         ): ExpandableBinaryDictionary? {
             try {
                 return when (dictType) {
-                    Dictionary.TYPE_USER_HISTORY -> UserHistoryDictionary.getDictionary(context, locale, dictFile, dictNamePrefix)
+                    Dictionary.TYPE_USER_HISTORY -> UserHistoryDictionary.getDictionary(context, locale, dictFile, dictNamePrefix, learningContext)
                     Dictionary.TYPE_USER -> UserBinaryDictionary.getDictionary(context, locale, dictFile, dictNamePrefix)
                     Dictionary.TYPE_CONTACTS -> ContactsBinaryDictionary.getDictionary(context, locale, dictFile, dictNamePrefix)
                     Dictionary.TYPE_APPS -> AppsBinaryDictionary.getDictionary(context, locale, dictFile, dictNamePrefix)

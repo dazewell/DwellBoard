@@ -224,9 +224,11 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     // preferences that are not used in SettingsValues and thus should not trigger reload when changed
     private static boolean reloadOnChanged(String key) {
         return switch (key) {
-            case PREF_LAST_SHOWN_EMOJI_CATEGORY_PAGE_ID, PREF_LAST_SHOWN_EMOJI_CATEGORY_ID, PREF_RECENT_EMOJIS,
+            case PREF_LAST_SHOWN_EMOJI_CATEGORY_PAGE_ID, PREF_LAST_SHOWN_EMOJI_CATEGORY_ID,
                  PREF_DONT_SHOW_MISSING_DICTIONARY_DIALOG, PREF_SELECTED_SUBTYPE -> false;
-            default -> !key.startsWith(PREF_SAVED_APP_SUBTYPE_PREFIX) && !key.startsWith("floating_pos");
+            // recent emojis are stored per learning context, i.e. with a suffix
+            default -> !key.startsWith(PREF_RECENT_EMOJIS) && !key.equals(LearningContexts.PREF_LEARNING_CONTEXTS)
+                    && !key.startsWith(PREF_SAVED_APP_SUBTYPE_PREFIX) && !key.startsWith("floating_pos");
         };
     }
 

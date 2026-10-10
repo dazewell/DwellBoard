@@ -339,7 +339,7 @@ private fun restoreEntryToDir(zip: ZipInputStream, baseDir: File, entryName: Str
 private const val PREFS_FILE_NAME = "preferences.json"
 private const val PROTECTED_PREFS_FILE_NAME = "protected_preferences.json"
 
-private val backupFilePatterns by lazy { listOf(
+internal val backupFilePatterns by lazy { listOf(
     "blacklists${File.separator}.*\\.txt".toRegex(),
     "layouts${File.separator}.*${LayoutUtilsCustom.CUSTOM_LAYOUT_PREFIX}+\\..{0,4}".toRegex(), // can't expect a period at the end, as this would break restoring older backups
     "dicts${File.separator}.*${File.separator}.*user\\.dict".toRegex(),
