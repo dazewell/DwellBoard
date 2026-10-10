@@ -12,11 +12,11 @@ name: Staging build
 #
 # Signing: app/release.keystore is committed (as in DwellGram); its passwords come
 # from the LOCAL_PROPERTIES secret (base64 of KEYSTORE_PASS / ALIAS_NAME /
-# ALIAS_PASS), which app/build.gradle.kts reads. Only builds of dev (push or
-# dispatch on dev) get the secret and produce the signed release variant, which
-# updates in place. PR-label and other-branch builds run unreviewed Gradle code,
-# so they get the debug variant (helium314.keyboard.debug) signed with the
-# runner's throwaway key — installable alongside, but not updatable.
+# ALIAS_PASS), which app/build.gradle.kts reads. As in DwellGram, every staging
+# build (dev push, dispatch, same-repo PR label) gets the secret and produces the
+# signed release variant, so any of them updates an installed build in place.
+# Fork PRs never reach the build job (and GitHub withholds secrets from them).
+# Without the secret, the debug variant is built as a fallback.
 
 on:
   push:
@@ -84,11 +84,9 @@ jobs:
         (github.event_name == 'pull_request' && github.event.label.name == 'build-apk' && github.event.pull_request.head.repo.full_name == github.repository)
       )
     env:
-      # Signing secrets reach only builds of dev itself (post-land push, or a
-      # dispatch on dev): code that has passed review. A PR-label or feature-
-      # branch build runs branch-controlled Gradle code, so it never sees them
-      # and builds the debug variant instead.
-      HAS_KEYSTORE: ${{ github.ref == 'refs/heads/dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && secrets.LOCAL_PROPERTIES != '' }}
+      # Same policy as DwellGram: same-repo builds are trusted with the signing
+      # secret (the job condition above already excludes fork PRs).
+      HAS_KEYSTORE: ${{ secrets.LOCAL_PROPERTIES != '' }}
       # The commit actually built: on pull_request, GITHUB_SHA is the synthetic
       # merge commit, not the checked-out PR head.
       BUILT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -123,7 +121,7 @@ jobs:
       - name: Build debug (no keystore configured)
         if: env.HAS_KEYSTORE != 'true'
         run: |
-          echo "::warning::Not a dev build with LOCAL_PROPERTIES available — building the debug variant (helium314.keyboard.debug) with a throwaway signature. It installs alongside, but cannot update, a previous debug build."
+          echo "::warning::LOCAL_PROPERTIES secret not set — building the debug variant (helium314.keyboard.debug) with a throwaway signature. It installs alongside, but cannot update, a previous debug build."
           ./gradlew :app:assembleDebug
           mkdir -p out
           BUILT=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
