@@ -114,32 +114,35 @@ public class PersonalizationHelper {
         final String fromName = UserHistoryDictionary.getContextName(fromContext);
         final String toName = UserHistoryDictionary.getContextName(toContext);
         final boolean fromDefault = LearningContexts.DEFAULT.equals(fromContext);
-        final File filesDir = context.getFilesDir();
-        if (filesDir == null) return;
-        final HashSet<String> dictNames = new HashSet<>(); // names without file extension
-        synchronized (sLangUserHistoryDictCache) {
-            for (final String key : sLangUserHistoryDictCache.keySet()) dictNames.add(key);
-        }
-        final File[] files = filesDir.listFiles();
-        if (files != null) {
-            for (final File file : files) {
-                final String name = file.getName();
-                if (name.endsWith(".dict")) dictNames.add(name.substring(0, name.length() - ".dict".length()));
+        // listing the files directory is disk access, so all of it happens in the background
+        ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(() -> {
+            final File filesDir = context.getFilesDir();
+            if (filesDir == null) return;
+            final HashSet<String> dictNames = new HashSet<>(); // names without file extension
+            synchronized (sLangUserHistoryDictCache) {
+                for (final String key : sLangUserHistoryDictCache.keySet()) dictNames.add(key);
             }
-        }
-        for (final String dictName : dictNames) {
-            // the default context's name is a prefix of the names of all other contexts
-            if (!dictName.startsWith(fromName + ".")
-                    || (fromDefault && dictName.startsWith(UserHistoryDictionary.CONTEXT_NAME_PREFIX))) continue;
-            final String targetName = toName + dictName.substring(fromName.length());
-            final File source = ExpandableBinaryDictionary.getDictFile(context, dictName, null);
-            final File target = ExpandableBinaryDictionary.getDictFile(context, targetName, null);
-            final Runnable copy = () -> copyDictionary(source, target);
-            final SoftReference<UserHistoryDictionary> ref = sLangUserHistoryDictCache.get(dictName);
-            final UserHistoryDictionary dict = ref == null ? null : ref.get();
-            if (dict != null) dict.flushThen(copy);
-            else ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(copy);
-        }
+            final File[] files = filesDir.listFiles();
+            if (files != null) {
+                for (final File file : files) {
+                    final String name = file.getName();
+                    if (name.endsWith(".dict")) dictNames.add(name.substring(0, name.length() - ".dict".length()));
+                }
+            }
+            for (final String dictName : dictNames) {
+                // the default context's name is a prefix of the names of all other contexts
+                if (!dictName.startsWith(fromName + ".")
+                        || (fromDefault && dictName.startsWith(UserHistoryDictionary.CONTEXT_NAME_PREFIX))) continue;
+                final String targetName = toName + dictName.substring(fromName.length());
+                final File source = ExpandableBinaryDictionary.getDictFile(context, dictName, null);
+                final File target = ExpandableBinaryDictionary.getDictFile(context, targetName, null);
+                final Runnable copy = () -> copyDictionary(source, target);
+                final SoftReference<UserHistoryDictionary> ref = sLangUserHistoryDictCache.get(dictName);
+                final UserHistoryDictionary dict = ref == null ? null : ref.get();
+                if (dict != null) dict.flushThen(copy);
+                else ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(copy);
+            }
+        });
     }
 
     /**

@@ -567,7 +567,8 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
     public void flushThen(final Runnable afterFlush) {
         asyncExecuteTaskWithWriteLock(() -> {
             final BinaryDictionary binaryDictionary = getBinaryDictionary();
-            if (binaryDictionary != null) binaryDictionary.flushWithGCIfHasUpdated();
+            // a failed flush would make the task copy an older file
+            if (binaryDictionary != null && !binaryDictionary.flushWithGCIfHasUpdated()) return;
             afterFlush.run();
         });
     }
