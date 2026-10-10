@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import helium314.keyboard.keyboard.emoji.RecentEmojis
 import helium314.keyboard.latin.personalization.PersonalizationHelper
+import helium314.keyboard.latin.utils.ExecutorUtils
 import helium314.keyboard.latin.utils.prefs
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -78,6 +79,17 @@ object LearningContexts {
         PersonalizationHelper.removeUserHistoryDictionaries(context, id)
         RecentEmojis.clearContext(id)
         if (current == id) current = DEFAULT // the facilitator will reload on the next input start
+    }
+
+    /**
+     * Removes files of deleted contexts in the background. Deleting a context can not stop a dictionary that is still in use
+     * from writing itself to file again, so this is called when the context changes, i.e. when that dictionary is closed.
+     */
+    fun removeDataOfDeletedContexts(context: Context) {
+        val existingIds = getAll(context.prefs()).mapTo(HashSet()) { it.id }
+        ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute {
+            PersonalizationHelper.removeDictionariesOfDeletedContexts(context, existingIds)
+        }
     }
 
     fun idForPackage(prefs: SharedPreferences, packageName: String?): String {

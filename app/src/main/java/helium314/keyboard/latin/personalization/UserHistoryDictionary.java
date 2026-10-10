@@ -29,6 +29,8 @@ import java.util.Map;
  */
 public class UserHistoryDictionary extends ExpandableBinaryDictionary {
     static final String NAME = UserHistoryDictionary.class.getSimpleName();
+    /** start of the dictionary name of a learning context, followed by its id */
+    static final String CONTEXT_NAME_PREFIX = NAME + ".ctx-";
 
     // TODO: Make this constructor private
     UserHistoryDictionary(final Context context, final Locale locale, @NonNull final String learningContext) {
@@ -43,7 +45,7 @@ public class UserHistoryDictionary extends ExpandableBinaryDictionary {
      * This is the same as {@link #NAME} for the default context.
      */
     static String getContextName(@NonNull final String learningContext) {
-        return LearningContexts.DEFAULT.equals(learningContext) ? NAME : NAME + ".ctx-" + learningContext;
+        return LearningContexts.DEFAULT.equals(learningContext) ? NAME : CONTEXT_NAME_PREFIX + learningContext;
     }
 
     /**

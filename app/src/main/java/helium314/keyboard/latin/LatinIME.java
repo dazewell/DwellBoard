@@ -890,6 +890,7 @@ public class LatinIME extends InputMethodService implements
                 // pending recent emojis must be saved to the old context, and the emoji grid rebuilt for the new one
                 mKeyboardSwitcher::onLearningContextChanging);
         boolean isDifferentTextField = !restarting || inputTypeChanged || learningContextChanged;
+        if (learningContextChanged) LearningContexts.INSTANCE.removeDataOfDeletedContexts(this);
 
         // we want to reload the settings before calling updateKeyboardTheme, because updateKeyboardTheme reads SettingsValues.mToolbarMode
         if (isDifferentTextField || !currentSettingsValues.hasSameOrientation(getResources().getConfiguration())) {

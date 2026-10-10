@@ -19,6 +19,7 @@ import java.io.FilenameFilter;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -96,6 +97,25 @@ public class PersonalizationHelper {
             }
             for (final String key : keysToRemove) sLangUserHistoryDictCache.remove(key);
             removeDictionaryFiles(context, filePrefix);
+        }
+    }
+
+    /**
+     * Removes dictionary files of learning contexts that don't exist any more, e.g. because a dictionary that was still
+     * held when its context got deleted has written itself to file again.
+     */
+    public static void removeDictionariesOfDeletedContexts(final Context context, @NonNull final Set<String> existingContextIds) {
+        final File filesDir = context.getFilesDir();
+        final File[] files = filesDir == null ? null : filesDir.listFiles();
+        if (files == null) return;
+        for (final File file : files) {
+            final String name = file.getName();
+            if (!name.startsWith(UserHistoryDictionary.CONTEXT_NAME_PREFIX)) continue;
+            final String idAndLocale = name.substring(UserHistoryDictionary.CONTEXT_NAME_PREFIX.length());
+            final int end = idAndLocale.indexOf('.');
+            if (existingContextIds.contains(end < 0 ? idAndLocale : idAndLocale.substring(0, end))) continue;
+            if (!FileUtils.deleteRecursively(file))
+                Log.e(TAG, "Cannot remove dictionary of deleted learning context: " + name);
         }
     }
 
