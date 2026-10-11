@@ -3,6 +3,7 @@ package helium314.keyboard.dwell.learnedwords
 
 import android.content.Context
 import helium314.keyboard.latin.personalization.PersonalizationHelper
+import helium314.keyboard.latin.utils.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -17,6 +18,8 @@ data class LearnedWord(val locale: Locale, val word: String, val probability: In
  * are the same instances the keyboard uses, and all access runs on the dictionary's own executor and lock.
  */
 object LearnedWords {
+    private const val TAG = "LearnedWords"
+
     /** Learned words of all languages in the context, or null if a dictionary could not be read. */
     suspend fun load(context: Context, contextId: String): List<LearnedWord>? {
         val locales = withContext(Dispatchers.IO) { PersonalizationHelper.getUserHistoryLocales(context, contextId) }
@@ -35,16 +38,23 @@ object LearnedWords {
                     cont.resume(null)
                     return@runWithDictionary
                 }
-                val words = ArrayList<LearnedWord>()
-                var token = 0
-                do {
-                    val next = binaryDict.getNextWordProperty(token)
-                    val property = next.mWordProperty ?: break
-                    // a negative probability means the word has been forgotten, but not yet removed by GC
-                    if (!property.mIsBeginningOfSentence && !property.mIsNotAWord && property.mProbabilityInfo.mProbability >= 0)
-                        words += LearnedWord(locale, property.mWord, property.mProbabilityInfo.mProbability, property.mProbabilityInfo.mCount)
-                    token = next.mNextToken
-                } while (token != 0)
+                // the screen waits for the result, so it must come even if reading fails
+                val words = try {
+                    val words = ArrayList<LearnedWord>()
+                    var token = 0
+                    do {
+                        val next = binaryDict.getNextWordProperty(token)
+                        val property = next.mWordProperty ?: break
+                        // a negative probability means the word has been forgotten, but not yet removed by GC
+                        if (!property.mIsBeginningOfSentence && !property.mIsNotAWord && property.mProbabilityInfo.mProbability >= 0)
+                            words += LearnedWord(locale, property.mWord, property.mProbabilityInfo.mProbability, property.mProbabilityInfo.mCount)
+                        token = next.mNextToken
+                    } while (token != 0)
+                    words
+                } catch (e: Exception) {
+                    Log.e(TAG, "cannot read learned words", e)
+                    null
+                }
                 cont.resume(words)
             }
         }
@@ -55,9 +65,13 @@ object LearnedWords {
             suspendCancellableCoroutine { cont ->
                 val dict = PersonalizationHelper.getUserHistoryDictionary(context, locale, contextId)
                 dict.runWithDictionary(true) { binaryDict ->
-                    if (binaryDict != null) {
-                        localeWords.forEach { binaryDict.removeUnigramEntry(it.word) }
-                        binaryDict.flushWithGCIfHasUpdated()
+                    try {
+                        if (binaryDict != null) {
+                            localeWords.forEach { binaryDict.removeUnigramEntry(it.word) }
+                            binaryDict.flushWithGCIfHasUpdated()
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "cannot remove learned words", e)
                     }
                     cont.resume(Unit)
                 }
