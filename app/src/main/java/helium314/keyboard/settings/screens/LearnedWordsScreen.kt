@@ -79,7 +79,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
     val sorted = remember(loadedWords, byFrequency) {
         loadedWords.orEmpty()
             .groupBy { it.locale }
-            .toSortedMap(compareBy { it.localizedDisplayName(resources) })
+            .toSortedMap(compareBy<Locale> { it.localizedDisplayName(resources) }.thenBy { it.toLanguageTag() })
             .mapValues { (_, list) ->
                 if (byFrequency) list.sortedWith(compareByDescending<LearnedWord> { it.probability }.thenByDescending { it.count })
                 else list.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.word })
