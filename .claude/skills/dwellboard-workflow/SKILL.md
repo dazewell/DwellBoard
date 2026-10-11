@@ -253,7 +253,10 @@ always has a route to a test build. Opening it and every later push triggers
 `ci.yml` (compile + unit tests; an R8 deep job when build files change) and
 `process-rules.yml` (branch name + commit tags). Neither produces an APK.
 
-The APK comes from **`staging.yml`**: apply the **`build-apk`** label to the PR
+The APK comes from **`staging.yml`**. Request it with
+`.\.github\XX.ps1 -PullRequest <n> -Wait` (it applies the
+**`build-apk`** label to the PR, reuses an existing build for the head, and
+returns the artifact link) — never label by hand
 (it also runs on every push to `dev` and on manual dispatch). It uploads the
 `.apk` unzipped as a **GitHub Actions artifact**; a push to `dev` also replaces
 `DwellBoard.apk` on the rolling **`staging`** pre-release (the README link).

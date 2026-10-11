@@ -317,8 +317,17 @@ disposable, reachability-only build defined in `dwellboard-workflow` step 9,
 never presented as the build to verify. "Ready for a build" means a `ci.yml`
 run exists **for the head SHA** and is green, and every thread is resolved. An
 absent run is not a pass; report an absent run as absent. The build itself is
-`staging.yml` (the `build-apk` label), whose APK is a GitHub Actions artifact —
-the mechanics are in `dwellboard-workflow` step 9.
+`staging.yml`, whose APK is a GitHub Actions artifact. **Never label by hand;
+run the script**, every time you are about to ask dazewell to test something:
+
+```powershell
+.\.github\XX.ps1 -PullRequest <n> -Wait
+```
+
+It builds the PR head once (reusing a build that exists), and returns the run
+and artifact links as JSON; put them in your `ask_user` prompt. Add
+`-OutDir <dir outside the repo>` to download the `.apk` for `adb install -r`.
+Mechanics are in `dwellboard-workflow` step 9.
 
 **Never merge.** The merge decision is dazewell's.
 
