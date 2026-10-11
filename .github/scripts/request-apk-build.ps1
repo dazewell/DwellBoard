@@ -71,8 +71,12 @@ function Save-Apk {
     $Apk = Join-Path $OutDir $Artifact.name
     # The artifact is the .apk itself (archive: false), and an APK is a zip, so
     # save the bytes as-is. gh run download or Expand-Archive would unpack it.
-    & curl.exe -sL -H "Authorization: Bearer $(gh auth token)" -o $Apk "https://api.github.com/repos/$Repository/actions/artifacts/$($Artifact.id)/zip"
-    if ($LASTEXITCODE -ne 0) { throw 'artifact download failed.' }
+    # gh api keeps the token out of the process arguments and fails on HTTP errors.
+    & gh api "repos/$Repository/actions/artifacts/$($Artifact.id)/zip" --output $Apk
+    if ($LASTEXITCODE -ne 0) { Remove-Item $Apk -ErrorAction SilentlyContinue; throw 'artifact download failed.' }
+    # An APK is a zip: anything else is an error payload, not a build.
+    $Magic = [IO.File]::ReadAllBytes($Apk)[0..1]
+    if ($Magic[0] -ne 0x50 -or $Magic[1] -ne 0x4B) { Remove-Item $Apk; throw 'downloaded file is not an APK.' }
     $Apk
 }
 
