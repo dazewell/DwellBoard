@@ -581,7 +581,15 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
             Lock held = mLock.writeLock();
             held.lock();
             try {
-                if (mBinaryDictionary == null && mDictFile.exists()) loadBinaryDictionaryLocked();
+                if (mBinaryDictionary == null && mDictFile.exists()) {
+                    loadBinaryDictionaryLocked();
+                    // the reload regenerates a bad file only when no dictionary is set, so leave it to the reload
+                    if (mBinaryDictionary != null && !(mBinaryDictionary.isValidDictionary()
+                            && matchesExpectedBinaryDictFormatVersionForThisType(mBinaryDictionary.getFormatVersion()))) {
+                        closeBinaryDictionary();
+                        reloadDictionaryIfRequired();
+                    }
+                }
                 final BinaryDictionary dict = mBinaryDictionary != null && mBinaryDictionary.isValidDictionary() ? mBinaryDictionary : null;
                 if (write && dict != null) runGCIfRequiredLocked(true);
                 if (!write) {
