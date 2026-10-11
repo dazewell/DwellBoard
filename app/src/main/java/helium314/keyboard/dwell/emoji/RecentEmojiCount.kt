@@ -59,12 +59,11 @@ object RecentEmojiCount {
         if (columns > 0) lastAutoColumns = columns
     }
 
-    /** Replaces [autoScale] when the user chose a column count; [stepWidth] is the unscaled width of one key slot. */
+    /** The column count the user chose: 0 for automatic, otherwise MIN_COLUMNS..MAX_COLUMNS. */
     @JvmStatic
-    fun widthScale(prefs: SharedPreferences, baseWidth: Int, stepWidth: Int, autoScale: Float): Float {
+    fun chosenColumns(prefs: SharedPreferences): Int {
         val stored = runCatching { prefs.getInt(Settings.PREF_EMOJI_COLUMNS, Defaults.PREF_EMOJI_COLUMNS) }
             .getOrDefault(Defaults.PREF_EMOJI_COLUMNS)
-        val columns = columns(stored)
-        return if (columns == 0 || stepWidth <= 0) autoScale else baseWidth.toFloat() / columns / stepWidth
+        return columns(stored)
     }
 }

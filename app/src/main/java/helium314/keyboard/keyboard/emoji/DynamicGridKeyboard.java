@@ -40,6 +40,7 @@ final class DynamicGridKeyboard extends Keyboard {
 
     private final int mHorizontalStep;
     private final float mTextScale;
+    private final int mScaledKeyWidth; // -1 unless a column count is chosen
     private final int mScaledKeyHeight; // -1 unless a column count is chosen
     private final int mHorizontalGap;
     private final int mVerticalStep;
@@ -76,13 +77,15 @@ final class DynamicGridKeyboard extends Keyboard {
         final Key key1 = getTemplateKey(Constants.RECENTS_TEMPLATE_KEY_CODE_1);
         final int horizontalGap = Math.abs(key1.getX() - key0.getX()) - key0.getWidth();
         // DwellBoard: a user-chosen column count overrides the automatic width scale
-        final float widthScale = helium314.keyboard.dwell.emoji.RecentEmojiCount.widthScale(prefs, mBaseWidth,
-                key0.getWidth() + horizontalGap, determineWidthScale(key0.getWidth() + horizontalGap));
+        final int chosenColumns = helium314.keyboard.dwell.emoji.RecentEmojiCount.chosenColumns(prefs); // 0: automatic
+        final float widthScale = chosenColumns > 0
+                ? mBaseWidth / (float) chosenColumns / (key0.getWidth() + horizontalGap)
+                : determineWidthScale(key0.getWidth() + horizontalGap);
         mHorizontalGap = (int) (horizontalGap * widthScale);
         mHorizontalStep = (int) ((key0.getWidth() + horizontalGap) * widthScale);
         // DwellBoard: with a user-chosen column count, labels shrink with the cell (never grow past the row height)
-        mTextScale = widthScale == determineWidthScale(key0.getWidth() + horizontalGap) ? 1f
-                : Math.min(1f, mHorizontalStep / (float) (key0.getWidth() + horizontalGap));
+        mTextScale = chosenColumns > 0 ? Math.min(1f, mHorizontalStep / (float) (key0.getWidth() + horizontalGap)) : 1f;
+        mScaledKeyWidth = chosenColumns > 0 ? mHorizontalStep - mHorizontalGap : -1;
         mScaledKeyHeight = mTextScale < 1f ? (int) (key0.getHeight() * mTextScale) : -1;
         // DwellBoard: row spacing shrinks with the labels
         mVerticalStep = (int) ((key0.getHeight() + mVerticalGap) / Math.sqrt(Settings.getValues().mKeyboardHeightScale) * mTextScale);
@@ -242,7 +245,7 @@ final class DynamicGridKeyboard extends Keyboard {
             int keyY0 = getKeyY0(index);
             int keyX1 = getKeyX1(index);
             int keyY1 = getKeyY1(index);
-            gridKey.updateCoordinates(keyX0, keyY0, keyX1, keyY1, keyX1 - keyX0 - mHorizontalGap,
+            gridKey.updateCoordinates(keyX0, keyY0, keyX1, keyY1, mScaledKeyWidth,
                     mScaledKeyHeight);
             index++;
         }

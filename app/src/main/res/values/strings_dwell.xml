@@ -59,7 +59,7 @@
     <string name="dwell_recent_emojis_count">Recent emojis shown</string>
     <string name="dwell_recent_emojis_count_summary">Up to three times the default number</string>
     <string name="dwell_emoji_columns">Emoji columns</string>
-    <string name="dwell_emoji_columns_summary">Fewer columns make emojis larger, more make them denser</string>
+    <string name="dwell_emoji_columns_summary">More columns make emojis smaller and denser</string>
     <string name="dwell_emoji_columns_auto">Auto</string>
     <string name="dwell_emoji_columns_auto_count">Auto (%1$d)</string>
 </resources>

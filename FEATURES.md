@@ -30,7 +30,6 @@ With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? afte
 
 The app, its spell checker and its settings screen are labelled "DwellBoard", and built APKs are named `DwellBoard_<version>-<type>.apk`. The application id is unchanged, so it installs alongside HeliBoard and keeps existing data.
 
-
 ### Recent emoji count <!-- #recent-emoji-count -->
 
-Sets how many recent emojis the emoji keyboard keeps, up to three times the usual number, and how many emoji columns each page has, from 4 to 12. Settings: Appearance → "Recent emojis shown" (device-size default) and "Emoji columns" (Auto).
+Sets how many recent emojis the emoji keyboard shows, up to three times the usual number, and how many columns each page has, from 4 to 12; more columns shrink emojis and row spacing to fit. Settings: Appearance → "Recent emojis shown" (device-size default) and "Emoji columns" (Auto).
