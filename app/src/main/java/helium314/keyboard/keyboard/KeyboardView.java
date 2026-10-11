@@ -336,7 +336,7 @@ public class KeyboardView extends View {
 
         final KeyVisualAttributes attr = key.getVisualAttributes();
         // don't use the raw key height, linear font scaling with height is too extreme
-        final KeyDrawParams params = mKeyDrawParams.mayCloneAndUpdateParams((int) (key.getHeight() * mKeyScaleForText), attr);
+        final KeyDrawParams params = mKeyDrawParams.mayCloneAndUpdateParams((int) (key.getTextSizeBasis() * mKeyScaleForText), attr);
         params.mAnimAlpha = Constants.Color.ALPHA_OPAQUE;
 
         if (!key.isSpacer()) {

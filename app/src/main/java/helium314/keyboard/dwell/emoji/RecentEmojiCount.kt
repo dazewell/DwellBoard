@@ -49,6 +49,18 @@ object RecentEmojiCount {
         else if (fixed != stored) prefs.edit().putInt(key, fixed).apply()
     }
 
+    /** Columns the automatic layout last produced, shown in settings; 0 until an emoji page was built. */
+    @Volatile
+    var lastAutoColumns = 0
+        private set
+
+    @JvmStatic
+    fun reportAutoColumns(prefs: SharedPreferences, occupiedColumns: Int) {
+        val stored = runCatching { prefs.getInt(Settings.PREF_EMOJI_COLUMNS, Defaults.PREF_EMOJI_COLUMNS) }
+            .getOrDefault(Defaults.PREF_EMOJI_COLUMNS)
+        if (columns(stored) == 0) lastAutoColumns = occupiedColumns
+    }
+
     /** Replaces [autoScale] when the user chose a column count; [stepWidth] is the unscaled width of one key slot. */
     @JvmStatic
     fun widthScale(prefs: SharedPreferences, baseWidth: Int, stepWidth: Int, autoScale: Float): Float {

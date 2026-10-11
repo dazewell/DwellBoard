@@ -362,7 +362,9 @@ fun createAppearanceSettings(context: Context) = listOf(
             range = 0f..RecentEmojiCount.MAX_COLUMNS.toFloat(),
             description = {
                 val columns = RecentEmojiCount.columns(it)
-                if (columns == 0) stringResource(R.string.dwell_emoji_columns_auto) else columns.toString()
+                if (columns != 0) columns.toString()
+                else if (RecentEmojiCount.lastAutoColumns > 0) stringResource(R.string.dwell_emoji_columns_auto_count, RecentEmojiCount.lastAutoColumns)
+                else stringResource(R.string.dwell_emoji_columns_auto)
             }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
