@@ -73,7 +73,9 @@ final class DynamicGridKeyboard extends Keyboard {
         final Key key0 = getTemplateKey(Constants.RECENTS_TEMPLATE_KEY_CODE_0);
         final Key key1 = getTemplateKey(Constants.RECENTS_TEMPLATE_KEY_CODE_1);
         final int horizontalGap = Math.abs(key1.getX() - key0.getX()) - key0.getWidth();
-        final float widthScale = determineWidthScale(key0.getWidth() + horizontalGap);
+        // DwellBoard: a user-chosen column count overrides the automatic width scale
+        final float widthScale = helium314.keyboard.dwell.emoji.RecentEmojiCount.widthScale(prefs, mBaseWidth,
+                key0.getWidth() + horizontalGap, determineWidthScale(key0.getWidth() + horizontalGap));
         mHorizontalGap = (int) (horizontalGap * widthScale);
         mHorizontalStep = (int) ((key0.getWidth() + horizontalGap) * widthScale);
         mVerticalStep = (int) ((key0.getHeight() + mVerticalGap) / Math.sqrt(Settings.getValues().mKeyboardHeightScale));

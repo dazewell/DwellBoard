@@ -33,4 +33,4 @@ The app, its spell checker and its settings screen are labelled "DwellBoard", an
 
 ### Recent emoji count <!-- #recent-emoji-count -->
 
-Lets the emoji keyboard remember and show up to three times as many recent emojis as before. Setting: Appearance → "Recent emojis shown", 100% (the usual number) to 300%.
+Sets how many recent emojis the emoji keyboard keeps, up to three times the usual number, and how many emoji columns each page has, from 4 to 12. Settings: Appearance → "Recent emojis shown" (device-size default) and "Emoji columns" (Auto).
