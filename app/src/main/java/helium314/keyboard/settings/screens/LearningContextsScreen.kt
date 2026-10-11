@@ -259,7 +259,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
     if (showClearDialog) ClearLearnedDataDialog(id, current.name) { showClearDialog = false }
 }
 
-/** Asks what to erase from the learning context [id] (default included) and clears it. [onDone] runs on dismiss and after clearing. */
+/** Asks what to erase from the learning context [id] (default included) and clears it. [onDone] runs when the dialog closes, whether or not anything was cleared. */
 @Composable
 fun ClearLearnedDataDialog(id: String, name: String, onDone: () -> Unit) {
     val ctx = LocalContext.current
@@ -267,10 +267,7 @@ fun ClearLearnedDataDialog(id: String, name: String, onDone: () -> Unit) {
     var clearEmojis by remember { mutableStateOf(true) }
     ThreeButtonAlertDialog(
         onDismissRequest = onDone,
-        onConfirmed = {
-            LearningContexts.clearData(ctx, id, clearWords, clearEmojis)
-            onDone()
-        },
+        onConfirmed = { LearningContexts.clearData(ctx, id, clearWords, clearEmojis) },
         checkOk = { clearWords || clearEmojis },
         title = { Text(stringResource(R.string.dwell_learning_context_clear)) },
         content = {
