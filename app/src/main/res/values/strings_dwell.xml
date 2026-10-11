@@ -40,6 +40,13 @@
         <item quantity="one">%d selected</item>
         <item quantity="other">%d selected</item>
     </plurals>
+    <plurals name="dwell_learned_words_new_count">
+        <item quantity="one">%2$d new word learned in \"%1$s\"</item>
+        <item quantity="other">%2$d new words learned in \"%1$s\"</item>
+    </plurals>
+    <string name="dwell_learned_words_none_new">All words learned in \"%s\" are in the dictionary</string>
+    <string name="dwell_learned_words_show_dictionary">Show dictionary words</string>
+    <string name="dwell_learned_words_hide_dictionary">Hide dictionary words</string>
     <string name="dwell_learned_words_sort_frequency">Sort by frequency</string>
     <string name="dwell_learned_words_sort_alphabetical">Sort alphabetically</string>
     <string name="dwell_learned_words_select_all">Select all shown</string>

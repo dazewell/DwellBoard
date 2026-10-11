@@ -66,6 +66,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
     var words by remember { mutableStateOf<List<LearnedWord>?>(null) }
     var failed by remember { mutableStateOf(false) }
     var byFrequency by remember { mutableStateOf(false) }
+    var showDictionaryWords by remember { mutableStateOf(false) } // off: only words the dictionary doesn't know
     var selected by remember { mutableStateOf(emptySet<LearnedWord>()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     LaunchedEffect(loadCount) {
@@ -76,8 +77,11 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
     }
     val loadedWords = words
     // languages ordered by name, words alphabetically or most frequent first
-    val sorted = remember(loadedWords, byFrequency) {
-        loadedWords.orEmpty()
+    val shown = remember(loadedWords, showDictionaryWords) {
+        loadedWords.orEmpty().filter { showDictionaryWords || !it.inDictionary }
+    }
+    val sorted = remember(shown, byFrequency) {
+        shown
             .groupBy { it.locale }
             .toSortedMap(compareBy<Locale> { it.localizedDisplayName(resources) }.thenBy { it.toLanguageTag() })
             .mapValues { (_, list) ->
@@ -93,6 +97,8 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
         menu = listOf(
             stringResource(if (byFrequency) R.string.dwell_learned_words_sort_alphabetical else R.string.dwell_learned_words_sort_frequency) to
                 { byFrequency = !byFrequency },
+            stringResource(if (showDictionaryWords) R.string.dwell_learned_words_hide_dictionary else R.string.dwell_learned_words_show_dictionary) to
+                { showDictionaryWords = !showDictionaryWords; selected = emptySet() },
             stringResource(R.string.dwell_learned_words_select_all) to { selected = visible(lastTerm[0]).values.flatten().toSet() },
             stringResource(R.string.dwell_learned_words_select_none) to { selected = emptySet() },
         ),
@@ -120,7 +126,9 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                             failed -> stringResource(R.string.dwell_learned_words_failed)
                             selected.isNotEmpty() -> pluralStringResource(R.plurals.dwell_learned_words_selected, selected.size, selected.size)
                             all.isEmpty() -> stringResource(R.string.dwell_learned_words_empty, contextName)
-                            else -> pluralStringResource(R.plurals.dwell_learned_words_count, all.size, contextName, all.size)
+                            shown.isEmpty() -> stringResource(R.string.dwell_learned_words_none_new, contextName)
+                            showDictionaryWords -> pluralStringResource(R.plurals.dwell_learned_words_count, shown.size, contextName, shown.size)
+                            else -> pluralStringResource(R.plurals.dwell_learned_words_new_count, shown.size, contextName, shown.size)
                         },
                         modifier = Modifier.weight(1f).padding(vertical = 12.dp),
                         style = MaterialTheme.typography.bodyMedium,

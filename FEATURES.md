@@ -20,7 +20,7 @@ Keeps learned words, predictions and recent emojis separate for chosen sets of a
 
 ### Learned words <!-- #learned-words -->
 
-Shows the words a learning context has learned, grouped by language, alphabetically or most frequent first. Search, tick the unwanted ones and delete them along with their predictions. Open it from a context's menu, or tap Default under Learning contexts.
+Shows the words a learning context has learned that are not in the dictionary (the menu adds the rest), grouped by language, alphabetically or most frequent first. Search, tick the unwanted ones and delete them along with their predictions. Open it from a context's menu, or tap Default under Learning contexts.
 
 ### Instant space after punctuation <!-- #punctuation-autospace -->
 

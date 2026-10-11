@@ -2,6 +2,7 @@
 package helium314.keyboard.dwell.learnedwords
 
 import android.content.Context
+import helium314.keyboard.latin.dictionary.DictionaryFactory
 import helium314.keyboard.latin.personalization.PersonalizationHelper
 import helium314.keyboard.latin.utils.Log
 import kotlinx.coroutines.Dispatchers
@@ -10,8 +11,11 @@ import kotlinx.coroutines.withContext
 import java.util.Locale
 import kotlin.coroutines.resume
 
-/** A word in the user history dictionary of a learning context. [probability] includes decay, so it ranks like suggestions do. */
-data class LearnedWord(val locale: Locale, val word: String, val probability: Int, val count: Int)
+/**
+ * A word in the user history dictionary of a learning context. [probability] includes decay, so it ranks like suggestions do.
+ * [inDictionary] is whether the main dictionary knows it, i.e. it was only learned for frequency and predictions.
+ */
+data class LearnedWord(val locale: Locale, val word: String, val probability: Int, val count: Int, val inDictionary: Boolean = false)
 
 /**
  * Lists and removes the learned words of a learning context. The dictionaries come from [PersonalizationHelper], so they
@@ -25,7 +29,8 @@ object LearnedWords {
         val locales = withContext(Dispatchers.IO) { PersonalizationHelper.getUserHistoryLocales(context, contextId) }
         val result = ArrayList<LearnedWord>()
         for (locale in locales) {
-            result += loadLocale(context, contextId, locale) ?: return null
+            val words = loadLocale(context, contextId, locale) ?: return null
+            result += withContext(Dispatchers.IO) { markDictionaryWords(context, locale, words) }
         }
         return result
     }
@@ -58,6 +63,25 @@ object LearnedWords {
                 cont.resume(words)
             }
         }
+
+    /** The user history also holds every typed word the main dictionary knows, which only matters for predictions. */
+    private fun markDictionaryWords(context: Context, locale: Locale, words: List<LearnedWord>): List<LearnedWord> {
+        if (words.isEmpty()) return words
+        val mainDict = try {
+            DictionaryFactory.createMainDictionaryCollection(context, locale, false)
+        } catch (e: Exception) {
+            Log.e(TAG, "cannot open main dictionary", e)
+            return words
+        }
+        try {
+            // a capitalized word at sentence start is learned as typed, the dictionary may only have it in lowercase
+            return words.map {
+                it.copy(inDictionary = mainDict.isValidWord(it.word) || mainDict.isValidWord(it.word.lowercase(locale)))
+            }
+        } finally {
+            mainDict.close()
+        }
+    }
 
     /** Removes the words from the context's dictionaries and writes them to file. */
     suspend fun delete(context: Context, contextId: String, words: Collection<LearnedWord>) {
