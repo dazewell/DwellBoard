@@ -986,7 +986,9 @@ public final class InputLogic {
         mSpaceState = SpaceState.NONE;
         final SettingsValues sv = inputTransaction.getSettingsValues();
 
-        if (SpaceState.AUTO_SPACE_AFTER_PUNCTUATION == inputTransaction.getSpaceState()
+        if ((SpaceState.AUTO_SPACE_AFTER_PUNCTUATION == inputTransaction.getSpaceState()
+                // DwellBoard: a swap also leaves a space behind the punctuation, don't double it either
+                || (SpaceState.SWAP_PUNCTUATION == inputTransaction.getSpaceState() && sv.mAutospaceAfterPunctuation))
                 && mConnection.getCodePointBeforeCursor() == Constants.CODE_SPACE) {
             if (codePoint == Constants.CODE_SPACE) {
                 // the space was already inserted automatically, don't add a second one
@@ -1280,6 +1282,10 @@ public final class InputLogic {
                     else
                         mSpaceState = SpaceState.PHANTOM;
                 }
+                // DwellBoard: digits never compose a word, but ; ! ? can't be inside a number, so "25!" gets its space too
+                else if (!wasComposingWord && settingsValues.mAutospaceAfterPunctuation
+                        && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediateAfterNumber(codePoint, mConnection.getCodePointBeforeCursor()))
+                    insertSpaceAfterCommit = true;
             }
 
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
@@ -1605,6 +1611,10 @@ public final class InputLogic {
             }
             mConnection.removeTrailingSpace();
         }
+        // DwellBoard: upstream swaps only strip punctuation; with the setting a typed "word ," becomes "word, " too
+        if (SpaceState.WEAK == inputTransaction.getSpaceState() && !isFromSuggestionStrip
+                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.swapsTypedSpace(codePoint, inputTransaction.getSettingsValues(), mConnection))
+            return true;
         return false;
     }
 

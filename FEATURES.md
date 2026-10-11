@@ -12,7 +12,7 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
 
 ### Don't learn capitalized words <!-- #no-learn-capitalized -->
 
-Keeps words with a single capital letter, like "Hello", out of learned words; "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
+Keeps capitalized ("Hello") and ALL CAPS ("HELLO") words out of learned words; mixed case like "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
 
 ### Learning contexts <!-- #learning-contexts -->
 
@@ -22,9 +22,9 @@ Keeps learned words, predictions and recent emojis separate for chosen sets of a
 
 Shows the words a learning context has learned that are not in the dictionary (the menu adds the rest), grouped by language, alphabetically or most frequent first. Search, tick the unwanted ones and delete them along with their predictions. Open it from a context's menu, or tap Default under Learning contexts.
 
-### Instant space after punctuation <!-- #punctuation-autospace -->
+### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 
-With "Autospace after punctuation" on, typing , ; : ! ? after a word, or a dash after "word ", adds the space right away; a space you type yourself is not doubled. Setting: Text correction → "Autospace after punctuation", off by default.
+With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? after a number, or a dash after "word ", adds the space right away; a space you type yourself is not doubled. The same marks typed after "word " move in front of that space: "word ," becomes "word, ". Setting: Text correction → "Autospace after punctuation", off by default.
 
 ### DwellBoard name <!-- #dwellboard-name -->
 

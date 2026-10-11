@@ -1,19 +1,25 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.dwell.capitalization
 
-/** Decides whether a typed word is kept out of the user history because it is "simply capitalized". */
+/** Decides whether a typed word is kept out of the user history because it is capitalized or ALL CAPS. */
 object CapitalizedLearning {
-    /** true for a word that starts with an uppercase letter and has no other uppercase letter, e.g. "Hello" but not "HELlo" or "iPhone" */
+    /**
+     * true for a word that starts with an uppercase letter and is either "Hello" (no other uppercase letter)
+     * or "HELLO" (no lowercase letter). Mixed case like "HELlo" or "iPhone" is not.
+     */
     @JvmStatic
     fun isSimplyCapitalized(word: String): Boolean {
         if (word.isEmpty() || !Character.isUpperCase(word.codePointAt(0))) return false
         var i = Character.charCount(word.codePointAt(0))
+        var hasUpper = false
+        var hasLower = false
         while (i < word.length) {
             val cp = word.codePointAt(i)
-            if (Character.isUpperCase(cp)) return false
+            if (Character.isUpperCase(cp)) hasUpper = true
+            else if (Character.isLowerCase(cp)) hasLower = true
             i += Character.charCount(cp)
         }
-        return true
+        return !hasUpper || !hasLower
     }
 
     /**
