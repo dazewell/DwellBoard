@@ -48,11 +48,13 @@ are not part of this pipeline; use one only when dazewell asks for it.
 
 ## Read these first, every time
 
-Do not work from memory. These beat anything summarised here:
+Do not work from memory. These beat anything summarised here. **The workflow
+skill is read first, before anything else — before recon, before answering,
+before the first tool call on the task.**
 
-- `AGENTS.md` — the repo's facts and hard rules.
 - `.claude/skills/dwellboard-workflow/SKILL.md` — what a change looks like: hook
   points, config surfaces, the gate, the `FEATURES.md` entry, the PR step.
+- `AGENTS.md` — the repo's facts and hard rules.
 - `.claude/skills/dwellboard-branch-flow/SKILL.md` — branch naming, the `#<slug>`
   tag, append-only, the CI and staging builds.
 - `.claude/skills/dwellboard-process-lifecycle/SKILL.md` — the contract for any

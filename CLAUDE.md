@@ -8,6 +8,10 @@ repeated here.
 
 This file covers only what is specific to Claude Code.
 
+**Your first action in every session is to invoke the `dwellboard-workflow`
+skill**, before recon or any other tool call on the task. The session's main
+agent is `dwellboard-implementer` (set in `.claude/settings.json`).
+
 ## Skills
 
 The process lives in `.claude/skills/`, loaded on demand:
