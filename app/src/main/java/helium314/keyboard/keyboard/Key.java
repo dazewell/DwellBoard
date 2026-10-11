@@ -822,8 +822,9 @@ public class Key implements Comparable<Key> {
 
     public final int getDrawWidth() {
         final OptionalAttributes attrs = mOptionalAttributes;
-        return (attrs == null) ? mWidth
-                : mWidth - attrs.mVisualInsetsLeft - attrs.mVisualInsetsRight;
+        // DwellBoard: getWidth() so GridKey's column-dependent width is drawn
+        return (attrs == null) ? getWidth()
+                : getWidth() - attrs.mVisualInsetsLeft - attrs.mVisualInsetsRight;
     }
 
     /**

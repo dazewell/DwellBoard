@@ -344,21 +344,26 @@ fun createAppearanceSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_RECENT_EMOJIS_COUNT, R.string.dwell_recent_emojis_count, R.string.dwell_recent_emojis_count_summary) { setting ->
         val base = RecentEmojiCount.baseCount(LocalContext.current)
+        RecentEmojiCount.normalizeStored(LocalContext.current.prefs(), base)
         SliderPreference(
             name = setting.title,
             key = setting.key,
             default = base, // a stored 0 means the same, see RecentEmojiCount.get
             range = base.toFloat()..(base * RecentEmojiCount.MAX_FACTOR).toFloat(),
-            description = { it.toString() }
+            description = { RecentEmojiCount.count(base, it).toString() }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_EMOJI_COLUMNS, R.string.dwell_emoji_columns, R.string.dwell_emoji_columns_summary) { setting ->
+        RecentEmojiCount.normalizeStored(LocalContext.current.prefs(), RecentEmojiCount.baseCount(LocalContext.current))
         SliderPreference(
             name = setting.title,
             key = setting.key,
             default = Defaults.PREF_EMOJI_COLUMNS,
             range = 0f..RecentEmojiCount.MAX_COLUMNS.toFloat(),
-            description = { if (it == 0) stringResource(R.string.dwell_emoji_columns_auto) else it.toString() }
+            description = {
+                val columns = RecentEmojiCount.columns(it)
+                if (columns == 0) stringResource(R.string.dwell_emoji_columns_auto) else columns.toString()
+            }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_EMOJI_KEY_FIT, R.string.prefs_emoji_key_fit) {

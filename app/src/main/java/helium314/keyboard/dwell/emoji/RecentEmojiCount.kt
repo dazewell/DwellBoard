@@ -31,6 +31,24 @@ object RecentEmojiCount {
     /** 0 means automatic, otherwise MIN_COLUMNS..MAX_COLUMNS */
     fun columns(stored: Int) = if (stored <= 0) 0 else stored.coerceIn(MIN_COLUMNS, MAX_COLUMNS)
 
+    /**
+     * Rewrites stored values the settings UI would otherwise show unchanged although the keyboard applies something
+     * else: a wrong type is dropped, an out-of-range value is clamped to what the keyboard uses.
+     */
+    fun normalizeStored(prefs: SharedPreferences, base: Int) {
+        normalizeKey(prefs, Settings.PREF_RECENT_EMOJIS_COUNT) { if (it <= 0) null else count(base, it) }
+        normalizeKey(prefs, Settings.PREF_EMOJI_COLUMNS) { columns(it) }
+    }
+
+    // normalize returns the value to keep, or null to drop the key (so the default applies)
+    private fun normalizeKey(prefs: SharedPreferences, key: String, normalize: (Int) -> Int?) {
+        if (!prefs.contains(key)) return
+        val stored = runCatching { prefs.getInt(key, 0) }.getOrNull()
+        val fixed = stored?.let(normalize)
+        if (fixed == null) prefs.edit().remove(key).apply()
+        else if (fixed != stored) prefs.edit().putInt(key, fixed).apply()
+    }
+
     /** Replaces [autoScale] when the user chose a column count; [stepWidth] is the unscaled width of one key slot. */
     @JvmStatic
     fun widthScale(prefs: SharedPreferences, baseWidth: Int, stepWidth: Int, autoScale: Float): Float {
