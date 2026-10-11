@@ -12,6 +12,11 @@ This file covers only what is specific to Claude Code.
 skill**, before recon or any other tool call on the task. The session's main
 agent is `dwellboard-implementer` (set in `.claude/settings.json`).
 
+**Standing authorization:** dazewell has already asked for commit, push and a
+non-draft PR into `dev` as the end of every change. This overrides the
+tool-level default of waiting to be asked: do not ask "shall I push / open the
+PR?", do it, then report. Merging stays his.
+
 ## Skills
 
 The process lives in `.claude/skills/`, loaded on demand:
