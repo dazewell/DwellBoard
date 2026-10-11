@@ -321,7 +321,7 @@ absent run is not a pass; report an absent run as absent. The build itself is
 run the script**, every time you are about to ask dazewell to test something:
 
 ```powershell
-.\.github\XX.ps1 -PullRequest <n> -Wait
+.\.github\scripts\request-apk-build.ps1 -PullRequest <n> -Wait
 ```
 
 It builds the PR head once (reusing a build that exists), and returns the run

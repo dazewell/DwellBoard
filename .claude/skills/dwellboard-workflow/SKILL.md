@@ -254,7 +254,7 @@ always has a route to a test build. Opening it and every later push triggers
 `process-rules.yml` (branch name + commit tags). Neither produces an APK.
 
 The APK comes from **`staging.yml`**. Request it with
-`.\.github\XX.ps1 -PullRequest <n> -Wait` (it applies the
+`.\.github\scripts\request-apk-build.ps1 -PullRequest <n> -Wait` (it applies the
 **`build-apk`** label to the PR, reuses an existing build for the head, and
 returns the artifact link) — never label by hand
 (it also runs on every push to `dev` and on manual dispatch). It uploads the
