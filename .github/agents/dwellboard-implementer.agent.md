@@ -48,11 +48,13 @@ are not part of this pipeline; use one only when dazewell asks for it.
 
 ## Read these first, every time
 
-Do not work from memory. These beat anything summarised here:
+Do not work from memory. These beat anything summarised here. **The workflow
+skill is read first, before anything else — before recon, before answering,
+before the first tool call on the task.**
 
-- `AGENTS.md` — the repo's facts and hard rules.
 - `.claude/skills/dwellboard-workflow/SKILL.md` — what a change looks like: hook
   points, config surfaces, the gate, the `FEATURES.md` entry, the PR step.
+- `AGENTS.md` — the repo's facts and hard rules.
 - `.claude/skills/dwellboard-branch-flow/SKILL.md` — branch naming, the `#<slug>`
   tag, append-only, the CI and staging builds.
 - `.claude/skills/dwellboard-process-lifecycle/SKILL.md` — the contract for any
@@ -61,6 +63,24 @@ Do not work from memory. These beat anything summarised here:
   as new.
 - `CONTRIBUTING.md` — upstream's map of where input, suggestions and settings
   live.
+
+## Scripts, not improvisation
+
+Routine steps are scripts in `.github/scripts/`. Call them; don't rebuild the
+steps from memory or read raw logs. Each prints short JSON (`pwsh -File`).
+
+| Step | Script |
+|---|---|
+| Compile gate (`-Tests` adds unit tests) | `run-gate.ps1` |
+| Push and open the PR into `dev` | `open-pr.ps1 -Title <t> -BodyFile <f>` |
+| Re-read head, CI runs, open threads for the handback | `pr-state.ps1 -PullRequest <n>` |
+| List, reply to, resolve review threads | `review-thread.ps1 -Action list\|reply\|resolve` |
+| Billed Copilot review | `request-copilot-review.ps1 -PullRequest <n> -Wait` |
+| APK for dazewell to test (returns the phone download link) | `request-apk-build.ps1 -PullRequest <n> -Wait` |
+| Install that APK on the connected phone | `install-apk.ps1 -PullRequest <n>` |
+| `FEATURES.md` 70-word check | `features-wordcount.ps1` |
+| End-of-session leftovers (dirty tree, unpushed, processes) | `worktree-check.ps1` |
+| Branch name | `new-branch-name.ps1 <slug>` |
 
 ## How you run a change
 
@@ -173,12 +193,13 @@ three review rounds.
 ### 6. The compile gate
 
 ```powershell
-.\gradlew.bat :app:compileDebugNoMinifyJavaWithJavac
+.\.github\scripts\run-gate.ps1 [-Tests]
 ```
 
-Plus `.\gradlew.bat :app:testRunTestsUnitTest -PdwellTestBuildType=runTests` when the change touches tested
-logic. Details, budgets and the CI fallback are in `AGENTS.md`. Run it in the
-worktree your branch is checked out in.
+`-Tests` when the change touches tested logic. It runs `--no-daemon`, and its
+JSON is the evidence (gates run, errors, failing tests, log path). `status:
+environment` means no toolchain: let CI be the gate. Details, budgets and the CI
+fallback are in `AGENTS.md`. Run it in the worktree your branch is checked out in.
 
 **Never claim you compiled something you did not.** Say which gate you used, and
 show the evidence — the command and the tail of its output, not an assertion
@@ -228,9 +249,14 @@ the easiest way to make a sentence false.
 Open it into `dev`, **not as a draft**, once it compiles or is about to be gated
 by CI. Non-draft keeps it in the normal review flow; it does not mean reviewed.
 
+Do it without asking; opening the PR is the standing last step.
+
 ```powershell
-gh pr create --base dev --head <YYYY-MM-DD>_<slug> --title "<title>" --body "<body>"
+.\.github\scripts\open-pr.ps1 -Title "<title>" -BodyFile <body.md>
 ```
+
+It pushes, refuses a bad branch or dirty tree, and returns the existing PR
+instead of a duplicate. Write the body to a file outside the repo.
 
 The PR body states the exact gate command and its result.
 
@@ -242,17 +268,9 @@ why it will not change, then gets resolved. Reply *in the thread*, not as a
 loose PR comment. Verify none remain unresolved.
 
 ```powershell
-# reply in-thread; --body-file avoids this shell mangling backticks and $ in prose
-$pr = '<n>'
-[System.IO.File]::WriteAllText("$env:TEMP\reply.md", $text, (New-Object System.Text.UTF8Encoding $false))
-gh api "repos/dazewell/DwellBoard/pulls/$pr/comments/<comment-id>/replies" -F body=@"$env:TEMP\reply.md"
-
-# resolve. threadId is the PRRT_... node id, not the comment id
-.\.github\scripts\get-review-threads.ps1 -Repository dazewell/DwellBoard -PullRequest $pr |
-  ConvertFrom-Json | Where-Object { -not $_.isResolved }
-
-$m = 'mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}'
-gh api graphql -f query=$m -F id=<PRRT_...>
+.\.github\scripts\review-thread.ps1 -Action list -PullRequest <n>
+.\.github\scripts\review-thread.ps1 -Action reply -PullRequest <n> -CommentId <id> -BodyFile <reply.md>
+.\.github\scripts\review-thread.ps1 -Action resolve -ThreadId <PRRT_...>
 ```
 
 ### 10. Round 2, the Copilot review, and the APK
@@ -315,8 +333,19 @@ disposable, reachability-only build defined in `dwellboard-workflow` step 9,
 never presented as the build to verify. "Ready for a build" means a `ci.yml`
 run exists **for the head SHA** and is green, and every thread is resolved. An
 absent run is not a pass; report an absent run as absent. The build itself is
-`staging.yml` (the `build-apk` label), whose APK is a GitHub Actions artifact —
-the mechanics are in `dwellboard-workflow` step 9.
+`staging.yml`, whose APK is a GitHub Actions artifact. **Never label by hand;
+run the script**, every time you are about to ask dazewell to test something:
+
+```powershell
+.\.github\scripts\request-apk-build.ps1 -PullRequest <n> -Wait
+```
+
+It builds the PR head once (reusing a build that exists), and returns the run
+and `downloadUrl` as JSON. Put `downloadUrl` in your `ask_user` prompt: dazewell
+opens it on his phone (signed in to GitHub) and downloads the APK without
+visiting the PR. To install on the connected phone instead, run
+`install-apk.ps1 -PullRequest <n>`.
+Mechanics are in `dwellboard-workflow` step 9.
 
 **Never merge.** The merge decision is dazewell's.
 
