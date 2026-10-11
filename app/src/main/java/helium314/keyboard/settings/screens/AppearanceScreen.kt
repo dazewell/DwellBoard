@@ -19,6 +19,7 @@ import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.KeyboardTheme
 import helium314.keyboard.keyboard.internal.KeyboardIconsSet
 import helium314.keyboard.latin.R
+import helium314.keyboard.dwell.emoji.RecentEmojiCount
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.getActivity
@@ -90,6 +91,8 @@ fun AppearanceScreen(
         if (prefs.getBoolean(Settings.PREF_SHOW_HINTS, Defaults.PREF_SHOW_HINTS)) Settings.PREF_HINT_FONT_SCALE else null,
         SettingsWithoutKey.CUSTOM_EMOJI_FONT,
         Settings.PREF_EMOJI_FONT_SCALE,
+        Settings.PREF_RECENT_EMOJIS_COUNT, // DwellBoard
+        Settings.PREF_EMOJI_COLUMNS,
         if (prefs.getFloat(Settings.PREF_EMOJI_FONT_SCALE, Defaults.PREF_EMOJI_FONT_SCALE) != 1f)
             Settings.PREF_EMOJI_KEY_FIT else null,
         if (prefs.getInt(Settings.PREF_EMOJI_MAX_SDK, 0) >= 24)
@@ -337,6 +340,32 @@ fun createAppearanceSettings(context: Context) = listOf(
             default = Defaults.PREF_EMOJI_FONT_SCALE,
             range = 0.5f..1.5f,
             description = { "${(100 * it).toInt()}%" }
+        ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+    },
+    Setting(context, Settings.PREF_RECENT_EMOJIS_COUNT, R.string.dwell_recent_emojis_count, R.string.dwell_recent_emojis_count_summary) { setting ->
+        val base = RecentEmojiCount.baseCount(LocalContext.current)
+        RecentEmojiCount.normalizeStored(LocalContext.current.prefs(), base)
+        SliderPreference(
+            name = setting.title,
+            key = setting.key,
+            default = base, // a stored 0 means the same, see RecentEmojiCount.get
+            range = base.toFloat()..(base * RecentEmojiCount.MAX_FACTOR).toFloat(),
+            description = { RecentEmojiCount.count(base, it).toString() }
+        ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+    },
+    Setting(context, Settings.PREF_EMOJI_COLUMNS, R.string.dwell_emoji_columns, R.string.dwell_emoji_columns_summary) { setting ->
+        RecentEmojiCount.normalizeStored(LocalContext.current.prefs(), RecentEmojiCount.baseCount(LocalContext.current))
+        SliderPreference(
+            name = setting.title,
+            key = setting.key,
+            default = Defaults.PREF_EMOJI_COLUMNS,
+            range = 0f..RecentEmojiCount.MAX_COLUMNS.toFloat(),
+            description = {
+                val columns = RecentEmojiCount.columns(it)
+                if (columns != 0) columns.toString()
+                else if (RecentEmojiCount.lastAutoColumns > 0) stringResource(R.string.dwell_emoji_columns_auto_count, RecentEmojiCount.lastAutoColumns)
+                else stringResource(R.string.dwell_emoji_columns_auto)
+            }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
     Setting(context, Settings.PREF_EMOJI_KEY_FIT, R.string.prefs_emoji_key_fit) {

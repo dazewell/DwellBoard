@@ -70,5 +70,5 @@ object RecentEmojis {
     // recents are stored separately for each learning context
     private fun prefKey() = Settings.PREF_RECENT_EMOJIS + LearningContexts.keySuffix(LearningContexts.current)
 
-    private const val MAX_COUNT = 39 // max for config_emoji_keyboard_max_recents_key_count
+    private const val MAX_COUNT = helium314.keyboard.dwell.emoji.RecentEmojiCount.MAX_STORED // DwellBoard: recents count is user-scalable, so store the largest possible
 }
