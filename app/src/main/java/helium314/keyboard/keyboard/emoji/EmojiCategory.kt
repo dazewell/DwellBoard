@@ -33,7 +33,8 @@ internal class EmojiCategory(private val context: Context, private val layoutSet
     }
 
     private val prefs = context.prefs()
-    private val maxRecentsKeyCount = context.resources.getInteger(R.integer.config_emoji_keyboard_max_recents_key_count)
+    // DwellBoard: user-scaled recents count (read per keyboard build, not per key); clamped so a bad stored value can't break it
+    private val maxRecentsKeyCount get() = helium314.keyboard.dwell.emoji.RecentEmojiCount.get(context, prefs)
 
     private val categoryTabIconId = IntArray(Category.entries.size) { i ->
         emojiPaletteViewAttr.getResourceId(Category.entries[i].iconAttr, 0)

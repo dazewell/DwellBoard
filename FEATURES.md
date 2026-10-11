@@ -29,3 +29,8 @@ With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? afte
 ### DwellBoard name <!-- #dwellboard-name -->
 
 The app, its spell checker and its settings screen are labelled "DwellBoard", and built APKs are named `DwellBoard_<version>-<type>.apk`. The application id is unchanged, so it installs alongside HeliBoard and keeps existing data.
+
+
+### Recent emoji count <!-- #recent-emoji-count -->
+
+Lets the emoji keyboard remember and show up to three times as many recent emojis as before. Setting: Appearance → "Recent emojis shown", 100% (the usual number) to 300%.

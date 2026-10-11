@@ -56,4 +56,6 @@
         <item quantity="one">Delete %1$d word from \"%2$s\"? Its predictions are removed too. It can be learned again if you keep typing it.</item>
         <item quantity="other">Delete %1$d words from \"%2$s\"? Their predictions are removed too. They can be learned again if you keep typing them.</item>
     </plurals>
+    <string name="dwell_recent_emojis_scale">Recent emojis shown</string>
+    <string name="dwell_recent_emojis_scale_summary">Up to three times the default number of recent emojis</string>
 </resources>

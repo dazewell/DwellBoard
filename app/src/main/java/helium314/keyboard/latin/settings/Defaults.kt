@@ -103,6 +103,7 @@ object Defaults {
     const val PREF_EMOJI_FONT_SCALE = DEFAULT_SIZE_SCALE
     const val PREF_EMOJI_KEY_FIT = true
     const val PREF_EMOJI_SKIN_TONE = ""
+    const val PREF_RECENT_EMOJIS_SCALE = 1f
     @JvmField
     val PREF_SPACE_HORIZONTAL_SWIPE = KeyboardActionListener.SwipeAction.MOVE_CURSOR.name
     @JvmField

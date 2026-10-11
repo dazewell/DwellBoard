@@ -90,6 +90,7 @@ fun AppearanceScreen(
         if (prefs.getBoolean(Settings.PREF_SHOW_HINTS, Defaults.PREF_SHOW_HINTS)) Settings.PREF_HINT_FONT_SCALE else null,
         SettingsWithoutKey.CUSTOM_EMOJI_FONT,
         Settings.PREF_EMOJI_FONT_SCALE,
+        Settings.PREF_RECENT_EMOJIS_SCALE, // DwellBoard
         if (prefs.getFloat(Settings.PREF_EMOJI_FONT_SCALE, Defaults.PREF_EMOJI_FONT_SCALE) != 1f)
             Settings.PREF_EMOJI_KEY_FIT else null,
         if (prefs.getInt(Settings.PREF_EMOJI_MAX_SDK, 0) >= 24)
@@ -336,6 +337,15 @@ fun createAppearanceSettings(context: Context) = listOf(
             key = setting.key,
             default = Defaults.PREF_EMOJI_FONT_SCALE,
             range = 0.5f..1.5f,
+            description = { "${(100 * it).toInt()}%" }
+        ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+    },
+    Setting(context, Settings.PREF_RECENT_EMOJIS_SCALE, R.string.dwell_recent_emojis_scale, R.string.dwell_recent_emojis_scale_summary) { setting ->
+        SliderPreference(
+            name = setting.title,
+            key = setting.key,
+            default = Defaults.PREF_RECENT_EMOJIS_SCALE,
+            range = 1f..3f,
             description = { "${(100 * it).toInt()}%" }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
