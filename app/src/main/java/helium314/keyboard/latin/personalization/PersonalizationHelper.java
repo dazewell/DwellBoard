@@ -188,20 +188,22 @@ public class PersonalizationHelper {
     }
 
     /**
-     * Empties the user history dictionaries of all languages for the given (non-default) learning context.
+     * Empties the user history dictionaries of all languages for the given learning context.
      * Unlike {@link #removeUserHistoryDictionaries} the loaded dictionaries stay cached, as the context may be in use.
      */
     public static void clearUserHistoryDictionaries(final Context context, @NonNull final String learningContext) {
-        if (LearningContexts.DEFAULT.equals(learningContext)) return;
         final String filePrefix = UserHistoryDictionary.getContextName(learningContext) + ".";
+        // the default context's prefix is also the start of every other context's names, which must stay
+        final boolean isDefault = LearningContexts.DEFAULT.equals(learningContext);
         synchronized (sLangUserHistoryDictCache) {
             for (final ConcurrentHashMap.Entry<String, SoftReference<UserHistoryDictionary>> entry
                     : sLangUserHistoryDictCache.entrySet()) {
                 if (!entry.getKey().startsWith(filePrefix) || entry.getValue() == null) continue;
+                if (isDefault && entry.getKey().startsWith(UserHistoryDictionary.CONTEXT_NAME_PREFIX)) continue;
                 final UserHistoryDictionary dict = entry.getValue().get();
                 if (dict != null) dict.clear();
             }
-            removeDictionaryFiles(context, filePrefix);
+            removeDictionaryFiles(context, filePrefix, isDefault ? UserHistoryDictionary.CONTEXT_NAME_PREFIX : null);
         }
     }
 
@@ -225,12 +227,16 @@ public class PersonalizationHelper {
     }
 
     private static void removeDictionaryFiles(final Context context, final String namePrefix) {
+        removeDictionaryFiles(context, namePrefix, null);
+    }
+
+    private static void removeDictionaryFiles(final Context context, final String namePrefix, final String excludePrefix) {
         final File filesDir = context.getFilesDir();
         if (filesDir == null) {
             Log.e(TAG, "context.getFilesDir() returned null.");
             return;
         }
-        final boolean filesDeleted = FileUtils.deleteFilteredFiles(filesDir, new DictFilter(namePrefix));
+        final boolean filesDeleted = FileUtils.deleteFilteredFiles(filesDir, new DictFilter(namePrefix, excludePrefix));
         if (!filesDeleted) {
             Log.e(TAG, "Cannot remove dictionary files. filesDir: " + filesDir.getAbsolutePath()
                     + ", dictNamePrefix: " + namePrefix);
@@ -239,14 +245,16 @@ public class PersonalizationHelper {
 
     private static class DictFilter implements FilenameFilter {
         private final String mName;
+        private final String mExclude;
 
-        DictFilter(final String name) {
+        DictFilter(final String name, final String exclude) {
             mName = name;
+            mExclude = exclude;
         }
 
         @Override
         public boolean accept(final File dir, final String name) {
-            return name.startsWith(mName);
+            return name.startsWith(mName) && (mExclude == null || !name.startsWith(mExclude));
         }
     }
 }

@@ -256,23 +256,31 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
             content = { Text(stringResource(R.string.dwell_learning_context_delete_message, current.name)) },
         )
     }
-    if (showClearDialog) {
-        var clearWords by remember { mutableStateOf(true) }
-        var clearEmojis by remember { mutableStateOf(true) }
-        ThreeButtonAlertDialog(
-            onDismissRequest = { showClearDialog = false },
-            onConfirmed = { LearningContexts.clearData(ctx, id, clearWords, clearEmojis) },
-            checkOk = { clearWords || clearEmojis },
-            title = { Text(stringResource(R.string.dwell_learning_context_clear)) },
-            content = {
-                Column {
-                    Text(stringResource(R.string.dwell_learning_context_clear_message, current.name))
-                    ClearOption(stringResource(R.string.dwell_learning_context_clear_words), clearWords) { clearWords = it }
-                    ClearOption(stringResource(R.string.dwell_learning_context_clear_emojis), clearEmojis) { clearEmojis = it }
-                }
-            },
-        )
-    }
+    if (showClearDialog) ClearLearnedDataDialog(id, current.name) { showClearDialog = false }
+}
+
+/** Asks what to erase from the learning context [id] (default included) and clears it. [onDone] runs on dismiss and after clearing. */
+@Composable
+fun ClearLearnedDataDialog(id: String, name: String, onDone: () -> Unit) {
+    val ctx = LocalContext.current
+    var clearWords by remember { mutableStateOf(true) }
+    var clearEmojis by remember { mutableStateOf(true) }
+    ThreeButtonAlertDialog(
+        onDismissRequest = onDone,
+        onConfirmed = {
+            LearningContexts.clearData(ctx, id, clearWords, clearEmojis)
+            onDone()
+        },
+        checkOk = { clearWords || clearEmojis },
+        title = { Text(stringResource(R.string.dwell_learning_context_clear)) },
+        content = {
+            Column {
+                Text(stringResource(R.string.dwell_learning_context_clear_message, name))
+                ClearOption(stringResource(R.string.dwell_learning_context_clear_words), clearWords) { clearWords = it }
+                ClearOption(stringResource(R.string.dwell_learning_context_clear_emojis), clearEmojis) { clearEmojis = it }
+            }
+        },
+    )
 }
 
 @Composable

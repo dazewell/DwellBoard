@@ -75,7 +75,6 @@ object LearningContexts {
 
     /** Removes learned words (with their predictions) and / or recent emojis of the context, but keeps the context and its apps. */
     fun clearData(context: Context, id: String, words: Boolean, emojis: Boolean) {
-        if (id == DEFAULT) return
         if (words) PersonalizationHelper.clearUserHistoryDictionaries(context, id)
         if (emojis) RecentEmojis.clearContext(id)
     }

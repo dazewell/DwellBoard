@@ -69,6 +69,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
     var showDictionaryWords by remember { mutableStateOf(false) } // off: only words the dictionary doesn't know
     var selected by remember { mutableStateOf(emptySet<LearnedWord>()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showClearDialog by remember { mutableStateOf(false) }
     LaunchedEffect(loadCount) {
         val loaded = LearnedWords.load(ctx, id)
         failed = loaded == null
@@ -101,7 +102,8 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                 { showDictionaryWords = !showDictionaryWords; selected = emptySet() },
             stringResource(R.string.dwell_learned_words_select_all) to { selected = visible(lastTerm[0]).values.flatten().toSet() },
             stringResource(R.string.dwell_learned_words_select_none) to { selected = emptySet() },
-        ),
+        ) + // the default context has no screen of its own, so this is where it is cleared
+            if (isDefault) listOf(stringResource(R.string.dwell_learning_context_clear) to { showClearDialog = true }) else emptyList(),
         filteredItems = { term ->
             lastTerm[0] = term
             val items = mutableListOf<LearnedWordsItem>(LearnedWordsItem.Header)
@@ -161,6 +163,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
             }
         }
     )
+    if (showClearDialog) ClearLearnedDataDialog(id, contextName) { showClearDialog = false; loadCount++ }
     if (showDeleteDialog) {
         val toDelete = selected
         ConfirmationDialog(
