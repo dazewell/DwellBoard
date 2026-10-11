@@ -12,7 +12,7 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
 
 ### Don't learn capitalized words <!-- #no-learn-capitalized -->
 
-Keeps words with a single capital letter, like "Hello", out of learned words; "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
+Keeps capitalized ("Hello") and ALL CAPS ("HELLO") words out of learned words; mixed case like "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
 
 ### Learning contexts <!-- #learning-contexts -->
 
