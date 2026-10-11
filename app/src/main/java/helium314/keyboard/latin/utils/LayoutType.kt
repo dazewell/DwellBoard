@@ -22,7 +22,8 @@ enum class LayoutType {
             return map
         }
 
-        val LayoutType.folder get() = "layouts${File.separator}${name.lowercase()}"
+        // DwellBoard: asset paths always use "/"; File.separator is "\" on Windows, where Robolectric then finds no layouts and ~10 local unit tests fail
+        val LayoutType.folder get() = "layouts/${name.lowercase()}"
 
         val LayoutType.displayNameId get() = when (this) {
             MAIN -> R.string.subtype_no_language
