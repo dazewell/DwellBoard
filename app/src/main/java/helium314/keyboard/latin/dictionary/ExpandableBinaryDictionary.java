@@ -573,6 +573,37 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         });
     }
 
+    // DwellBoard: runs the task with the dictionary, or null if it can't be loaded. It loads the dictionary itself because
+    // the executor is a pool, so a reload queued earlier may still be waiting. A read task drops to the read lock, so
+    // suggestions from this dictionary keep working while the learned words screen lists it.
+    public void runWithDictionary(final boolean write, final java.util.function.Consumer<BinaryDictionary> task) {
+        ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(() -> {
+            Lock held = mLock.writeLock();
+            held.lock();
+            try {
+                if (mBinaryDictionary == null && mDictFile.exists()) {
+                    loadBinaryDictionaryLocked();
+                    // the reload regenerates a bad file only when no dictionary is set, so leave it to the reload
+                    if (mBinaryDictionary != null && !(mBinaryDictionary.isValidDictionary()
+                            && matchesExpectedBinaryDictFormatVersionForThisType(mBinaryDictionary.getFormatVersion()))) {
+                        closeBinaryDictionary();
+                        reloadDictionaryIfRequired();
+                    }
+                }
+                final BinaryDictionary dict = mBinaryDictionary != null && mBinaryDictionary.isValidDictionary() ? mBinaryDictionary : null;
+                if (write && dict != null) runGCIfRequiredLocked(true);
+                if (!write) {
+                    mLock.readLock().lock();
+                    held.unlock();
+                    held = mLock.readLock();
+                }
+                task.accept(dict);
+            } finally {
+                held.unlock();
+            }
+        });
+    }
+
     public DictionaryStats getDictionaryStats() {
         reloadDictionaryIfRequired();
         final String dictName = mDictName;

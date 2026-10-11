@@ -18,6 +18,10 @@ Keeps capitalized ("Hello") and ALL CAPS ("HELLO") words out of learned words; m
 
 Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts under Learning contexts in settings, optionally from a copy of another context's learned data, and pick their apps; every other app uses the default context. Clear learned data or delete a context from its menu. A dot on the toolbar arrow shows when the app uses a context; long-press the arrow for its name.
 
+### Learned words <!-- #learned-words -->
+
+Shows the words a learning context has learned that are not in the dictionary (the menu adds the rest), grouped by language, alphabetically or most frequent first. Search, tick the unwanted ones and delete them along with their predictions. Open it from a context's menu, or tap Default under Learning contexts.
+
 ### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 
 With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? after a number, or a dash after "word ", adds the space right away; a space you type yourself is not doubled. The same marks typed after "word " move in front of that space: "word ," becomes "word, ". Setting: Text correction → "Autospace after punctuation", off by default.

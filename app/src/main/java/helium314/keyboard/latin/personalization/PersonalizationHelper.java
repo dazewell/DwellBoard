@@ -12,6 +12,7 @@ import helium314.keyboard.latin.utils.Log;
 import androidx.annotation.NonNull;
 
 import helium314.keyboard.latin.common.FileUtils;
+import helium314.keyboard.latin.common.LocaleUtils;
 import helium314.keyboard.latin.dictionary.ExpandableBinaryDictionary;
 import helium314.keyboard.latin.utils.ExecutorUtils;
 import helium314.keyboard.latin.settings.LearningContexts;
@@ -113,26 +114,9 @@ public class PersonalizationHelper {
             @NonNull final String toContext) {
         final String fromName = UserHistoryDictionary.getContextName(fromContext);
         final String toName = UserHistoryDictionary.getContextName(toContext);
-        final boolean fromDefault = LearningContexts.DEFAULT.equals(fromContext);
         // listing the files directory is disk access, so all of it happens in the background
         ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(() -> {
-            final File filesDir = context.getFilesDir();
-            if (filesDir == null) return;
-            final HashSet<String> dictNames = new HashSet<>(); // names without file extension
-            synchronized (sLangUserHistoryDictCache) {
-                for (final String key : sLangUserHistoryDictCache.keySet()) dictNames.add(key);
-            }
-            final File[] files = filesDir.listFiles();
-            if (files != null) {
-                for (final File file : files) {
-                    final String name = file.getName();
-                    if (name.endsWith(".dict")) dictNames.add(name.substring(0, name.length() - ".dict".length()));
-                }
-            }
-            for (final String dictName : dictNames) {
-                // the default context's name is a prefix of the names of all other contexts
-                if (!dictName.startsWith(fromName + ".")
-                        || (fromDefault && dictName.startsWith(UserHistoryDictionary.CONTEXT_NAME_PREFIX))) continue;
+            for (final String dictName : getUserHistoryDictNames(context, fromContext)) {
                 final String targetName = toName + dictName.substring(fromName.length());
                 final File source = ExpandableBinaryDictionary.getDictFile(context, dictName, null);
                 final File target = ExpandableBinaryDictionary.getDictFile(context, targetName, null);
@@ -143,6 +127,38 @@ public class PersonalizationHelper {
                 else ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(copy);
             }
         });
+    }
+
+    /** Returns the languages that have a user history dictionary in the given learning context. Reads the disk. */
+    @NonNull
+    public static ArrayList<Locale> getUserHistoryLocales(final Context context, @NonNull final String learningContext) {
+        final int prefixLength = UserHistoryDictionary.getContextName(learningContext).length() + 1;
+        final ArrayList<Locale> locales = new ArrayList<>();
+        for (final String dictName : getUserHistoryDictNames(context, learningContext))
+            locales.add(LocaleUtils.constructLocale(dictName.substring(prefixLength)));
+        return locales;
+    }
+
+    /** Names (without file extension) of the loaded or stored user history dictionaries of the context. Reads the disk. */
+    private static HashSet<String> getUserHistoryDictNames(final Context context, @NonNull final String learningContext) {
+        final String contextName = UserHistoryDictionary.getContextName(learningContext);
+        final boolean isDefault = LearningContexts.DEFAULT.equals(learningContext);
+        final HashSet<String> dictNames = new HashSet<>();
+        synchronized (sLangUserHistoryDictCache) {
+            dictNames.addAll(sLangUserHistoryDictCache.keySet());
+        }
+        final File filesDir = context.getFilesDir();
+        final File[] files = filesDir == null ? null : filesDir.listFiles();
+        if (files != null) {
+            for (final File file : files) {
+                final String name = file.getName();
+                if (name.endsWith(".dict")) dictNames.add(name.substring(0, name.length() - ".dict".length()));
+            }
+        }
+        // the default context's name is a prefix of the names of all other contexts
+        dictNames.removeIf(name -> !name.startsWith(contextName + ".")
+                || (isDefault && name.startsWith(UserHistoryDictionary.CONTEXT_NAME_PREFIX)));
+        return dictNames;
     }
 
     /**

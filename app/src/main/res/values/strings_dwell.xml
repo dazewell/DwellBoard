@@ -28,4 +28,32 @@
     </plurals>
     <string name="dwell_learning_context_app_in_other">In context \"%s\"</string>
     <string name="dwell_learning_context_toast">Learning context: %s</string>
+    <string name="dwell_learned_words_title">Learned words</string>
+    <string name="dwell_learned_words_loading">Loading…</string>
+    <string name="dwell_learned_words_failed">Learned words could not be read. Try again later.</string>
+    <string name="dwell_learned_words_empty">Nothing learned in \"%s\" yet</string>
+    <plurals name="dwell_learned_words_count">
+        <item quantity="one">%2$d word learned in \"%1$s\"</item>
+        <item quantity="other">%2$d words learned in \"%1$s\"</item>
+    </plurals>
+    <plurals name="dwell_learned_words_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="dwell_learned_words_new_count">
+        <item quantity="one">%2$d new word learned in \"%1$s\"</item>
+        <item quantity="other">%2$d new words learned in \"%1$s\"</item>
+    </plurals>
+    <string name="dwell_learned_words_none_new">All words learned in \"%s\" are in the dictionary</string>
+    <string name="dwell_learned_words_show_dictionary">Show dictionary words</string>
+    <string name="dwell_learned_words_hide_dictionary">Hide dictionary words</string>
+    <string name="dwell_learned_words_sort_frequency">Sort by frequency</string>
+    <string name="dwell_learned_words_sort_alphabetical">Sort alphabetically</string>
+    <string name="dwell_learned_words_select_all">Select all shown</string>
+    <string name="dwell_learned_words_select_none">Clear selection</string>
+    <string name="dwell_learned_words_delete">Delete learned words</string>
+    <plurals name="dwell_learned_words_delete_message">
+        <item quantity="one">Delete %1$d word from \"%2$s\"? Its predictions are removed too. It can be learned again if you keep typing it.</item>
+        <item quantity="other">Delete %1$d words from \"%2$s\"? Their predictions are removed too. They can be learned again if you keep typing them.</item>
+    </plurals>
 </resources>

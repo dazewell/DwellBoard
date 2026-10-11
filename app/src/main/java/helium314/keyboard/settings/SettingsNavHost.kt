@@ -24,7 +24,9 @@ import helium314.keyboard.settings.screens.DebugScreen
 import helium314.keyboard.settings.screens.DictionaryScreen
 import helium314.keyboard.settings.screens.GestureTypingScreen
 import helium314.keyboard.settings.screens.LanguageScreen
+import helium314.keyboard.settings.screens.LearnedWordsScreen
 import helium314.keyboard.settings.screens.LearningContextScreen
+import helium314.keyboard.settings.screens.learnedWordsContextId
 import helium314.keyboard.settings.screens.LearningContextsScreen
 import helium314.keyboard.settings.screens.MainSettingsScreen
 import helium314.keyboard.settings.screens.PersonalDictionariesScreen
@@ -136,6 +138,9 @@ fun SettingsNavHost(
         composable(SettingsDestination.LearningContext + "{id}") {
             LearningContextScreen(id = it.arguments?.getString("id") ?: "", onClickBack = ::goBack)
         }
+        composable(SettingsDestination.LearnedWords + "{id}") {
+            LearnedWordsScreen(id = learnedWordsContextId(it.arguments?.getString("id")), onClickBack = ::goBack)
+        }
         composable(SettingsDestination.Layouts) {
             SecondaryLayoutScreen(onClickBack = ::goBack)
         }
@@ -175,6 +180,7 @@ object SettingsDestination {
     const val Dictionaries = "dictionaries"
     const val LearningContexts = "learning_contexts"
     const val LearningContext = "learning_context/"
+    const val LearnedWords = "learned_words/" // followed by learnedWordsRouteId
     val navTarget = MutableStateFlow(Settings)
 
     private val navScope = CoroutineScope(Dispatchers.Default)
