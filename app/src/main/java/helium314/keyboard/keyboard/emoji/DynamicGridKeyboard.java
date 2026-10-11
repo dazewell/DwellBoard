@@ -40,6 +40,7 @@ final class DynamicGridKeyboard extends Keyboard {
 
     private final int mHorizontalStep;
     private final float mTextScale;
+    private final int mScaledKeyHeight; // -1 unless a column count is chosen
     private final int mHorizontalGap;
     private final int mVerticalStep;
     private final int mColumnsNum;
@@ -82,14 +83,19 @@ final class DynamicGridKeyboard extends Keyboard {
         // DwellBoard: with a user-chosen column count, labels shrink with the cell (never grow past the row height)
         mTextScale = widthScale == determineWidthScale(key0.getWidth() + horizontalGap) ? 1f
                 : Math.min(1f, mHorizontalStep / (float) (key0.getWidth() + horizontalGap));
-        mVerticalStep = (int) ((key0.getHeight() + mVerticalGap) / Math.sqrt(Settings.getValues().mKeyboardHeightScale));
+        mScaledKeyHeight = mTextScale < 1f ? (int) (key0.getHeight() * mTextScale) : -1;
+        // DwellBoard: row spacing shrinks with the labels
+        mVerticalStep = (int) ((key0.getHeight() + mVerticalGap) / Math.sqrt(Settings.getValues().mKeyboardHeightScale) * mTextScale);
         mColumnsNum = mBaseWidth / mHorizontalStep;
         if (spacerWidth > 0)
             setSpacerColumns(spacerWidth);
         mMaxKeyCount = fixedRowCount? maxCount * getOccupiedColumnCount() : maxCount;
         mFixedRowCount = fixedRowCount;
         mIsRecents = isRecents;
-        helium314.keyboard.dwell.emoji.RecentEmojiCount.reportAutoColumns(prefs, getOccupiedColumnCount());
+        // DwellBoard: what automatic mode would give, so settings can show it even while a count is chosen
+        final int autoStep = (int) ((key0.getWidth() + horizontalGap) * determineWidthScale(key0.getWidth() + horizontalGap));
+        helium314.keyboard.dwell.emoji.RecentEmojiCount.reportAutoColumns(
+                autoStep > 0 ? mBaseWidth / autoStep - mEmptyColumnIndices.size() : 0);
     }
 
     private void setSpacerColumns(final float spacerWidth) {
@@ -236,7 +242,8 @@ final class DynamicGridKeyboard extends Keyboard {
             int keyY0 = getKeyY0(index);
             int keyX1 = getKeyX1(index);
             int keyY1 = getKeyY1(index);
-            gridKey.updateCoordinates(keyX0, keyY0, keyX1, keyY1, keyX1 - keyX0 - mHorizontalGap);
+            gridKey.updateCoordinates(keyX0, keyY0, keyX1, keyY1, keyX1 - keyX0 - mHorizontalGap,
+                    mScaledKeyHeight);
             index++;
         }
     }
@@ -339,15 +346,18 @@ final class DynamicGridKeyboard extends Keyboard {
     static final class GridKey extends Key {
         private int mCurrentX;
         private int mCurrentY;
-        private int mCurrentWidth = -1; // DwellBoard: width follows the user-chosen column count
+        private int mCurrentWidth = -1; // DwellBoard: size follows the user-chosen column count
+        private int mCurrentHeight = -1;
 
         public GridKey(@NonNull final Key originalKey, @Nullable final PopupKeySpec[] popupKeys,
              @Nullable final String labelHint, final int backgroundType) {
             super(originalKey, popupKeys, labelHint, backgroundType);
         }
 
-        public void updateCoordinates(final int x0, final int y0, final int x1, final int y1, final int width) {
+        public void updateCoordinates(final int x0, final int y0, final int x1, final int y1, final int width,
+                final int height) {
             mCurrentWidth = width;
+            mCurrentHeight = height;
             mCurrentX = x0;
             mCurrentY = y0;
             getHitBox().set(x0, y0, x1, y1);
@@ -356,6 +366,11 @@ final class DynamicGridKeyboard extends Keyboard {
         @Override
         public int getWidth() {
             return mCurrentWidth > 0 ? mCurrentWidth : super.getWidth();
+        }
+
+        @Override
+        public int getHeight() {
+            return mCurrentHeight > 0 ? mCurrentHeight : super.getHeight();
         }
 
         @Override

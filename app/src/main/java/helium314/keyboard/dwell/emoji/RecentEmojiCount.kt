@@ -55,10 +55,8 @@ object RecentEmojiCount {
         private set
 
     @JvmStatic
-    fun reportAutoColumns(prefs: SharedPreferences, occupiedColumns: Int) {
-        val stored = runCatching { prefs.getInt(Settings.PREF_EMOJI_COLUMNS, Defaults.PREF_EMOJI_COLUMNS) }
-            .getOrDefault(Defaults.PREF_EMOJI_COLUMNS)
-        if (columns(stored) == 0) lastAutoColumns = occupiedColumns
+    fun reportAutoColumns(columns: Int) {
+        if (columns > 0) lastAutoColumns = columns
     }
 
     /** Replaces [autoScale] when the user chose a column count; [stepWidth] is the unscaled width of one key slot. */
