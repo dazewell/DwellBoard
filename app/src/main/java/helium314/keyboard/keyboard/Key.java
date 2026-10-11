@@ -814,11 +814,6 @@ public class Key implements Comparable<Key> {
         return mY;
     }
 
-    /** DwellBoard: height the label size is derived from; GridKey shrinks it with the emoji column count. */
-    public int getTextSizeBasis() {
-        return getHeight();
-    }
-
     public final int getDrawX() {
         final int x = getX();
         final OptionalAttributes attrs = mOptionalAttributes;

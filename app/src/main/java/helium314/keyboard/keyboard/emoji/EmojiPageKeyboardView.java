@@ -171,6 +171,12 @@ public final class EmojiPageKeyboardView extends KeyboardView implements
     @Override
     public void setKeyboard(@NonNull final Keyboard keyboard) {
         super.setKeyboard(keyboard);
+        // DwellBoard: emoji labels shrink with a user-chosen column count (same size formula as KeyboardView.setKeyboard)
+        if (keyboard instanceof DynamicGridKeyboard grid && grid.getTextScale() < 1f) {
+            final int size = Math.min(2 * keyboard.mMostCommonKeyWidth, keyboard.mMostCommonKeyHeight - keyboard.mVerticalGap);
+            getKeyDrawParams().updateParams((int) (size * Math.sqrt(1 / Settings.getValues().mKeyboardHeightScale) * grid.getTextScale()),
+                    keyboard.mKeyVisualAttributes);
+        }
         mKeyDetector.setKeyboard(keyboard, 0 /* correctionX */, 0 /* correctionY */);
         mPopupKeysKeyboardCache.clear();
         if (AccessibilityUtils.Companion.getInstance().isAccessibilityEnabled()) {

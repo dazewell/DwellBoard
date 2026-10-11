@@ -146,6 +146,10 @@ final class DynamicGridKeyboard extends Keyboard {
         }
     }
 
+    public float getTextScale() {
+        return mTextScale;
+    }
+
     public boolean isRecents() {
         return mIsRecents;
     }
@@ -232,7 +236,7 @@ final class DynamicGridKeyboard extends Keyboard {
             int keyY0 = getKeyY0(index);
             int keyX1 = getKeyX1(index);
             int keyY1 = getKeyY1(index);
-            gridKey.updateCoordinates(keyX0, keyY0, keyX1, keyY1, keyX1 - keyX0 - mHorizontalGap, mTextScale);
+            gridKey.updateCoordinates(keyX0, keyY0, keyX1, keyY1, keyX1 - keyX0 - mHorizontalGap);
             index++;
         }
     }
@@ -336,17 +340,14 @@ final class DynamicGridKeyboard extends Keyboard {
         private int mCurrentX;
         private int mCurrentY;
         private int mCurrentWidth = -1; // DwellBoard: width follows the user-chosen column count
-        private float mTextScale = 1f;
 
         public GridKey(@NonNull final Key originalKey, @Nullable final PopupKeySpec[] popupKeys,
              @Nullable final String labelHint, final int backgroundType) {
             super(originalKey, popupKeys, labelHint, backgroundType);
         }
 
-        public void updateCoordinates(final int x0, final int y0, final int x1, final int y1, final int width,
-                final float textScale) {
+        public void updateCoordinates(final int x0, final int y0, final int x1, final int y1, final int width) {
             mCurrentWidth = width;
-            mTextScale = textScale;
             mCurrentX = x0;
             mCurrentY = y0;
             getHitBox().set(x0, y0, x1, y1);
@@ -355,11 +356,6 @@ final class DynamicGridKeyboard extends Keyboard {
         @Override
         public int getWidth() {
             return mCurrentWidth > 0 ? mCurrentWidth : super.getWidth();
-        }
-
-        @Override
-        public int getTextSizeBasis() {
-            return (int) (getHeight() * mTextScale);
         }
 
         @Override
