@@ -7,9 +7,9 @@
 #
 # Prints one JSON object. status is one of:
 #   requested       the build was started; nothing waited for (run set if found)
-#   already-built   a successful build for this head exists (artifact set)
+#   already-built   a successful build for this head exists (downloadUrl set)
 #   in-progress     a build for this head is already running; nothing re-sent
-#   built           the build finished while waiting (artifact set)
+#   built           the build finished while waiting (downloadUrl set)
 #   failed          the build finished unsuccessfully (run set)
 #   timed-out       the build did not finish in time (run set)
 # Refusals and API failures throw instead.
@@ -86,7 +86,12 @@ function Out-Result {
         pullRequest = $PullRequest
         headSha     = $Sha
         run         = if ($Run) { $Run.html_url } else { $null }
-        artifact    = if ($Artifact) { "https://github.com/$Repository/actions/runs/$($Run.id)/artifacts/$($Artifact.id)" } else { $null }
+        # Open on a phone already signed in to GitHub: downloads the .apk. Null
+        # until the build has finished, so pass -Wait whenever the link is going
+        # to dazewell.
+        downloadUrl = if ($Artifact) { "https://github.com/$Repository/actions/runs/$($Run.id)/artifacts/$($Artifact.id)" } else { $null }
+        # The PR comment staging.yml keeps current with the same link.
+        prUrl       = $Pr.html_url
         apkPath     = $Apk
     } | ConvertTo-Json
 }
