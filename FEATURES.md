@@ -16,7 +16,7 @@ Keeps capitalized ("Hello") and ALL CAPS ("HELLO") words out of learned words; m
 
 ### Learning contexts <!-- #learning-contexts -->
 
-Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts under Learning contexts in settings, optionally copying another's learned data, and pick their apps, enabled ones listed first; other apps use the default context. Clear learned data or delete a context from its menu. A toolbar arrow dot shows when the app uses a context; long-press for its name.
+Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts under Learning contexts in settings, optionally copying another's learned data, and pick their apps, enabled ones listed first; other apps use the default context. Clear learned data from a menu (Default's is in its learned words), or delete a context. A toolbar arrow dot shows when the app uses a context; long-press for its name.
 
 ### Learned words <!-- #learned-words -->
 
