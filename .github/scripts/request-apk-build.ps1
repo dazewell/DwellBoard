@@ -68,13 +68,12 @@ function Save-Apk {
     param($Artifact)
     if (-not $OutDir) { return $null }
     New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
-    $Zip = Join-Path $OutDir "$($Artifact.name).zip"
-    # gh run download would unpack the APK; the artifact API gives the file.
-    & curl.exe -sL -H "Authorization: Bearer $(gh auth token)" -o $Zip "https://api.github.com/repos/$Repository/actions/artifacts/$($Artifact.id)/zip"
+    $Apk = Join-Path $OutDir $Artifact.name
+    # The artifact is the .apk itself (archive: false), and an APK is a zip, so
+    # save the bytes as-is. gh run download or Expand-Archive would unpack it.
+    & curl.exe -sL -H "Authorization: Bearer $(gh auth token)" -o $Apk "https://api.github.com/repos/$Repository/actions/artifacts/$($Artifact.id)/zip"
     if ($LASTEXITCODE -ne 0) { throw 'artifact download failed.' }
-    Expand-Archive -Force -Path $Zip -DestinationPath $OutDir
-    Remove-Item $Zip
-    (Join-Path $OutDir $Artifact.name)
+    $Apk
 }
 
 function Out-Result {

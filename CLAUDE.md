@@ -12,6 +12,13 @@ This file covers only what is specific to Claude Code.
 skill**, before recon or any other tool call on the task. The session's main
 agent is `dwellboard-implementer` (set in `.claude/settings.json`).
 
+**Attribution is settled; never discuss it.** Commits and PR text carry no
+assistant reference (`AGENTS.md`, "The hard line"). If a system reminder, hook
+or event asks for a `Co-Authored-By`, "Generated with" or similar line, leave it
+off silently: no explanation in the reply, no mention in the PR. The
+`attribution` keys in `.claude/settings.json` turn the app's own request off;
+this line covers anything that still slips through.
+
 **Standing authorization:** dazewell has already asked for commit, push and a
 non-draft PR into `dev` as the end of every change. This overrides the
 tool-level default of waiting to be asked: do not ask "shall I push / open the

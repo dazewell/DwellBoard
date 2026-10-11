@@ -1,3 +1,8 @@
 {
-  "agent": "dwellboard-implementer"
+  "agent": "dwellboard-implementer",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeCoAuthoredBy": false
 }
