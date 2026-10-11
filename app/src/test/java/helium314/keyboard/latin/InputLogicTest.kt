@@ -690,6 +690,21 @@ class InputLogicTest {
         assertEquals("helxlo", text)
     }
 
+    @Test fun `space after semicolon, exclamation and question mark following a number, but not inside numbers`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("25!")
+        assertEquals("25! ", text)
+        input(' ') // not doubled
+        assertEquals("25! ", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("1,000 at 10:30")
+        assertEquals("1,000 at 10:30", text)
+        reset()
+        chainInput("25!")
+        assertEquals("25!", text)
+    }
+
     @Test fun `punctuation typed after a typed space takes the space's place`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("hello ,")

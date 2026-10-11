@@ -1282,6 +1282,10 @@ public final class InputLogic {
                     else
                         mSpaceState = SpaceState.PHANTOM;
                 }
+                // DwellBoard: digits never compose a word, but ; ! ? can't be inside a number, so "25!" gets its space too
+                else if (!wasComposingWord && settingsValues.mAutospaceAfterPunctuation
+                        && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediateAfterNumber(codePoint, mConnection.getCodePointBeforeCursor()))
+                    insertSpaceAfterCommit = true;
             }
 
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);

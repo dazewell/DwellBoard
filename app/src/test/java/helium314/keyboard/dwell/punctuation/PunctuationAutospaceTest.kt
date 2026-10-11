@@ -11,6 +11,13 @@ class PunctuationAutospaceTest {
         ".)\"$-a".forEach { assertFalse(PunctuationAutospace.isImmediate(it.code)) }
     }
 
+    @Test fun immediateAfterNumber() {
+        ";!?".forEach { assertTrue(PunctuationAutospace.isImmediateAfterNumber(it.code, '5'.code)) }
+        ",:.".forEach { assertFalse(PunctuationAutospace.isImmediateAfterNumber(it.code, '5'.code)) }
+        assertFalse(PunctuationAutospace.isImmediateAfterNumber('!'.code, 'a'.code))
+        assertFalse(PunctuationAutospace.isImmediateAfterNumber('!'.code, ' '.code))
+    }
+
     @Test fun separatorDash() {
         assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, "e "))
         assertTrue(PunctuationAutospace.isSeparatorDash('—'.code, "e "))

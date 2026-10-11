@@ -14,6 +14,11 @@ object PunctuationAutospace {
     fun isImmediate(codePoint: Int): Boolean = codePoint == ','.code || codePoint == ';'.code || codePoint == ':'.code
             || codePoint == '!'.code || codePoint == '?'.code
 
+    /** Punctuation that gets its space immediately after a number too. ',' and ':' are excluded for "1,000" and "10:30". */
+    @JvmStatic
+    fun isImmediateAfterNumber(codePoint: Int, codePointBefore: Int): Boolean =
+        (codePoint == ';'.code || codePoint == '!'.code || codePoint == '?'.code) && Character.isDigit(codePointBefore)
+
     @JvmStatic
     fun isDash(codePoint: Int): Boolean = codePoint == '-'.code || codePoint == '–'.code || codePoint == '—'.code
 
