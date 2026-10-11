@@ -93,10 +93,11 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(
-                            if (isDefault) Modifier
-                            else Modifier.clickable { SettingsDestination.navigateTo(SettingsDestination.LearningContext + item.id) }
-                        )
+                        .clickable {
+                            // the default context has no apps or name to edit, only its learned words
+                            if (isDefault) SettingsDestination.navigateTo(SettingsDestination.LearnedWords + learnedWordsRouteId(item.id))
+                            else SettingsDestination.navigateTo(SettingsDestination.LearningContext + item.id)
+                        }
                         .padding(vertical = 6.dp, horizontal = 16.dp)
                 ) {
                     Column(Modifier.weight(1f)) {
@@ -108,7 +109,7 @@ fun LearningContextsScreen(onClickBack: () -> Unit) {
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    if (!isDefault) NextScreenIcon()
+                    NextScreenIcon()
                 }
             }
         }
@@ -172,6 +173,8 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         onClickBack = onClickBack,
         title = { Text(current.name) },
         menu = listOf(
+            stringResource(R.string.dwell_learned_words_title) to
+                { SettingsDestination.navigateTo(SettingsDestination.LearnedWords + learnedWordsRouteId(id)) },
             stringResource(R.string.dwell_learning_context_rename) to { showRenameDialog = true },
             stringResource(R.string.dwell_learning_context_clear) to { showClearDialog = true },
             stringResource(R.string.dwell_learning_context_delete) to { showDeleteDialog = true },
