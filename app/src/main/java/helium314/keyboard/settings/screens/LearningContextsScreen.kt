@@ -152,6 +152,9 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
     val prefs = ctx.prefs()
     var context by remember { mutableStateOf(LearningContexts.get(prefs, id)) }
     var apps by remember { mutableStateOf(emptyList<AppInfo>()) }
+    // apps shown at the top: enabled ones on entering the screen, plus any enabled since.
+    // Disabling doesn't remove from it, so a row only drops back down on the next visit.
+    var pinned by remember { mutableStateOf(context?.packages ?: emptySet<String>()) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showClearDialog by remember { mutableStateOf(false) }
@@ -178,9 +181,11 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         ),
         filteredItems = { term ->
             // null is the header
-            if (term.isBlank()) listOf<AppInfo?>(null) + apps
-            else apps.filter { it.name.contains(term, true) || it.packageName.contains(term, true) }
+            val ordered = apps.sortedBy { it.packageName !in pinned } // stable, so name order is kept within each group
+            if (term.isBlank()) listOf<AppInfo?>(null) + ordered
+            else ordered.filter { it.name.contains(term, true) || it.packageName.contains(term, true) }
         },
+        itemKey = { it?.packageName ?: "header" },
         itemContent = { app ->
             if (app == null) {
                 Text(
@@ -201,6 +206,7 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
                             val packages = if (selected) current.packages - app.packageName else current.packages + app.packageName
                             LearningContexts.setPackages(prefs, id, packages)
                             context = LearningContexts.get(prefs, id)
+                            if (!selected) pinned = pinned + app.packageName
                         }
                         .padding(vertical = 6.dp, horizontal = 16.dp)
                 ) {
