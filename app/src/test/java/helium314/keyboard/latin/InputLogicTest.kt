@@ -690,6 +690,36 @@ class InputLogicTest {
         assertEquals("helxlo", text)
     }
 
+    @Test fun `punctuation typed after a typed space takes the space's place`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("hello ,")
+        assertEquals("hello, ", text)
+        input(' ') // not doubled
+        assertEquals("hello, ", text)
+        chainInput("there ?")
+        assertEquals("hello, there? ", text)
+    }
+
+    @Test fun `backspace reverts punctuation swapped with a typed space`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("hello ,")
+        functionalKeyPress(KeyCode.DELETE)
+        assertEquals("hello ,", text)
+    }
+
+    @Test fun `typed space is kept before punctuation without the setting, after non-words and before a period`() {
+        chainInput("hello ,")
+        assertEquals("hello ,", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("x = ,")
+        assertEquals("x = ,", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("hello .")
+        assertEquals("hello .", text)
+    }
+
     @Test fun `autospace in json editor`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("{\"label\":\"")
@@ -842,8 +872,10 @@ class InputLogicTest {
             ) {
             if (phantomSpaceToInsert.isEmpty()) {
                 // a space inserted right after punctuation may get removed again by following punctuation, and may be inserted after this input
-                val base = if (oldAutoSpace && (insert in listOf(".", ",", ";", ":", "!", "?") || (insert == "/" && oldBefore.endsWith(": ")))) oldBefore.dropLast(1) + insert else oldBefore + insert
-                val expected = if (spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION) "$base " else base
+                // punctuation may also have swapped places with a typed space ("word ," -> "word, ")
+                val swapped = spaceState == SpaceState.SWAP_PUNCTUATION && oldBefore.lastOrNull() == ' '
+                val base = if (swapped || oldAutoSpace && (insert in listOf(".", ",", ";", ":", "!", "?") || (insert == "/" && oldBefore.endsWith(": ")))) oldBefore.dropLast(1) + insert else oldBefore + insert
+                val expected = if (swapped || spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION) "$base " else base
                 assertEquals(expected, textBeforeCursor)
             } else // in some cases autospace might be suppressed
                 assert(oldBefore + phantomSpaceToInsert + insert == textBeforeCursor || oldBefore + insert == textBeforeCursor)
