@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.dwell.capitalization
 
+import java.util.Locale
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CapitalizedLearningTest {
-    @Test fun skipsCapitalizedAndAllCaps() {
+    @Test fun detectsCapitalizedAndAllCaps() {
         listOf("Hello", "HELLO", "NASA", "I", "A1B", "O'NEIL").forEach { assertTrue(CapitalizedLearning.isSimplyCapitalized(it), it) }
     }
 
@@ -14,10 +16,14 @@ class CapitalizedLearningTest {
         listOf("", "hello", "iPhone", "HELlo", "McDonald", "NASA's").forEach { assertFalse(CapitalizedLearning.isSimplyCapitalized(it), it) }
     }
 
-    @Test fun neverSkipsWhenOffOrSentenceStart() {
-        assertFalse(CapitalizedLearning.shouldSkip(false, "HELLO", false, false))
-        assertFalse(CapitalizedLearning.shouldSkip(true, "HELLO", true, false))
-        assertFalse(CapitalizedLearning.shouldSkip(true, "HELLO", false, true))
-        assertTrue(CapitalizedLearning.shouldSkip(true, "HELLO", false, false))
+    @Test fun lowercasesOnlyWhenOnAndNotSentenceStart() {
+        val en = Locale.ENGLISH
+        assertEquals("HELLO", CapitalizedLearning.wordToLearn(false, "HELLO", false, false, en))
+        assertEquals("HELLO", CapitalizedLearning.wordToLearn(true, "HELLO", true, false, en))
+        assertEquals("HELLO", CapitalizedLearning.wordToLearn(true, "HELLO", false, true, en))
+        assertEquals("hello", CapitalizedLearning.wordToLearn(true, "HELLO", false, false, en))
+        assertEquals("hello", CapitalizedLearning.wordToLearn(true, "Hello", false, false, en))
+        assertEquals("iPhone", CapitalizedLearning.wordToLearn(true, "iPhone", false, false, en))
+        assertEquals("HELlo", CapitalizedLearning.wordToLearn(true, "HELlo", false, false, en))
     }
 }

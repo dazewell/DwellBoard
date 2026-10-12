@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="dwell_dont_learn_capitalized">Don\'t learn capitalized words</string>
-    <string name="dwell_dont_learn_capitalized_summary">Capitalized (e.g. \"Hello\") and ALL CAPS (e.g. \"HELLO\") words are not learned; mixed case words (e.g. \"HELlo\") still are.</string>
+    <string name="dwell_dont_learn_capitalized">Learn capitalized words in lowercase</string>
+    <string name="dwell_dont_learn_capitalized_summary">Capitalized (e.g. \"Hello\") and ALL CAPS (e.g. \"HELLO\") words are learned in lowercase; mixed case words (e.g. \"HELlo\") are learned as typed.</string>
     <string name="dwell_app_name" translatable="false">DwellBoard</string>
     <string name="dwell_spell_checker_service_name">DwellBoard Spell Checker</string>
     <string name="dwell_ime_settings">DwellBoard Settings</string>

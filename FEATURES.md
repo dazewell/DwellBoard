@@ -10,9 +10,9 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
      Every feature carries its commit tag as a marker: ### Name <!-- #slug -->
      process-rules.yml fails a PR whose feature #slug has no marker here. -->
 
-### Don't learn capitalized words <!-- #no-learn-capitalized -->
+### Learn capitalized words in lowercase <!-- #no-learn-capitalized -->
 
-Keeps capitalized ("Hello") and ALL CAPS ("HELLO") words out of learned words; mixed case like "HELlo" is still learned. Words at the start of a sentence are unaffected. Setting: Text correction → "Don't learn capitalized words", off by default.
+Learns capitalized ("Hello") and ALL CAPS ("HELLO") words in lowercase; mixed case like "HELlo" is learned as typed. Words at the start of a sentence are unaffected. Setting: Text correction → "Learn capitalized words in lowercase", off by default.
 
 ### Learning contexts <!-- #learning-contexts -->
 
