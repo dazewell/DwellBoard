@@ -26,4 +26,10 @@ class CapitalizedLearningTest {
         assertEquals("iPhone", CapitalizedLearning.wordToLearn(true, "iPhone", false, false, en))
         assertEquals("HELlo", CapitalizedLearning.wordToLearn(true, "HELlo", false, false, en))
     }
+
+    @Test fun keepsSingleLetterWords() {
+        val en = Locale.ENGLISH
+        listOf("I", "A", "I'm", "I’ll", "I've", "I'd").forEach { assertEquals(it, CapitalizedLearning.wordToLearn(true, it, false, false, en)) }
+        assertEquals("o'neil", CapitalizedLearning.wordToLearn(true, "O'NEIL", false, false, en))
+    }
 }
