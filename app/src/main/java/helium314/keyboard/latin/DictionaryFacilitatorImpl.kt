@@ -75,6 +75,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private var tryChangingWords = false
     private var changeFrom = ""
     private var changeTo = ""
+    // DwellBoard: the same for words learned in lowercase by the capitalized words option
+    private val lowercasedPreviousWord = helium314.keyboard.dwell.capitalization.LowercasedPreviousWord()
 
     // todo: write cache never set, and never read (only written)
     //  tried to use read cache for a while, but small performance improvements are not worth the work,
@@ -326,22 +328,22 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
             addToPersonalDictionaryIfInvalidButInHistory(suggestion)
         }
 
-        var ngramContextForCurrentWord = ngramContext
+        var ngramContextForCurrentWord = lowercasedPreviousWord.apply(sv.mDontLearnCapitalized, ngramContext) // DwellBoard: see lowercasedPreviousWord
         val preferredGroup = currentlyPreferredDictionaryGroup
         for (i in words.indices) {
             val currentWord = words[i]
             val wasCurrentWordAutoCapitalized = (i == 0) && wasAutoCapitalized
-            // DwellBoard: optionally don't learn words with a single capital letter (the ngram context still advances)
-            if (!helium314.keyboard.dwell.capitalization.CapitalizedLearning.shouldSkip(sv.mDontLearnCapitalized, currentWord,
-                    wasCurrentWordAutoCapitalized, i == 0 && ngramContext.isBeginningOfSentenceContext)
-            ) {
-                // add to history for preferred dictionary group, to avoid mixing languages in history
-                addWordToUserHistory(
-                    preferredGroup, ngramContextForCurrentWord, currentWord,
-                    wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive
-                )
-            }
-            ngramContextForCurrentWord = ngramContextForCurrentWord.getNextNgramContext(WordInfo(currentWord))
+            // DwellBoard: optionally learn capitalized and ALL CAPS words in lowercase. The ngram context advances with
+            // the learned form so the bigram's previous word exists; lookups retry a previous word in lowercase anyway.
+            val wordToLearn = helium314.keyboard.dwell.capitalization.CapitalizedLearning.wordToLearn(sv.mDontLearnCapitalized,
+                currentWord, wasCurrentWordAutoCapitalized, i == 0 && ngramContext.isBeginningOfSentenceContext, preferredGroup.locale)
+            lowercasedPreviousWord.remember(currentWord, wordToLearn)
+            // add to history for preferred dictionary group, to avoid mixing languages in history
+            addWordToUserHistory(
+                preferredGroup, ngramContextForCurrentWord, wordToLearn,
+                wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive
+            )
+            ngramContextForCurrentWord = ngramContextForCurrentWord.getNextNgramContext(WordInfo(wordToLearn))
 
             // remove manually entered blacklisted words from blacklist for likely matching languages
             dictionaryGroups.filter { it.confidence == preferredGroup.confidence }.forEach {
