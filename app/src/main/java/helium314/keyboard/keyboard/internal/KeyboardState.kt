@@ -177,7 +177,8 @@ class KeyboardState(private val switchActions: SwitchActions) {
         if (layout is Alphabet) shiftMode = layout.shiftMode
         recapitalizeMode = null
         isInSpaceToAlpha = false
-        if (layout is Alphabet && layout.shiftMode == ShiftMode.AUTOMATIC) {
+        // DwellBoard: UNSHIFT too, the text may have reached a sentence start while away (e.g. "end? " on symbols); layout keys get no other shift update
+        if (layout is Alphabet && (layout.shiftMode == ShiftMode.AUTOMATIC || layout.shiftMode == ShiftMode.UNSHIFT)) {
             onUpdateShiftState(layout.autoCapsFlags, layout.recapitalizeMode)
         }
     }
