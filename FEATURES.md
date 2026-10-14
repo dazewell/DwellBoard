@@ -37,3 +37,7 @@ Sets how many recent emojis the emoji keyboard shows, up to three times the usua
 ### Clear emoji search <!-- #emoji-search-clear -->
 
 Emoji search starts empty again once you've returned to the main keyboard yourself with ABC or the emoji key; searching and picking emojis in between keeps what you typed. Setting: Preferences → "Clear emoji search", on by default.
+
+### Main keyboard after emoji and space <!-- #emoji-space-abc -->
+
+Pressing space or enter on the emoji keyboard after picking an emoji returns to the main keyboard, like the existing symbols and numpad options; emoji search is not affected. Setting: Advanced → "Switch to main keyboard after… Pressing enter or space after other keys in emoji view", off by default.
