@@ -321,8 +321,11 @@ public final class EmojiPalettesView extends LinearLayout
             mKeyboardActionListener.onCodeInput(code, NOT_A_COORDINATE, NOT_A_COORDINATE, false);
         }
         mKeyboardActionListener.onReleaseKey(code, false);
+        // DwellBoard: #emoji-search-clear - the ABC below is sent for the user, so it must not count as going back by hand
+        helium314.keyboard.dwell.emoji.EmojiSearchReset.setAutomaticAlpha(true);
         if (Settings.getValues().mAlphaAfterEmojiInEmojiView)
             mKeyboardActionListener.onCodeInput(KeyCode.ALPHA, NOT_A_COORDINATE, NOT_A_COORDINATE, false);
+        helium314.keyboard.dwell.emoji.EmojiSearchReset.setAutomaticAlpha(false);
     }
 
     @Override

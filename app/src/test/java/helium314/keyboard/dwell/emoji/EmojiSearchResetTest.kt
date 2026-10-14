@@ -7,14 +7,18 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class EmojiSearchResetTest {
-    @Test fun abcAndEmojiKeyLeaveTheEmojiKeyboard() {
-        assertTrue(EmojiSearchReset.leavesEmojiKeyboard(KeyCode.ALPHA))
-        assertTrue(EmojiSearchReset.leavesEmojiKeyboard(KeyCode.EMOJI))
+    @Test fun abcAndEmojiKeyByHandClear() {
+        assertTrue(EmojiSearchReset.clearsOn(KeyCode.ALPHA, automaticAlpha = false))
+        assertTrue(EmojiSearchReset.clearsOn(KeyCode.EMOJI, automaticAlpha = false))
+    }
+
+    @Test fun abcSentAfterAnEmojiPickDoesNot() {
+        assertFalse(EmojiSearchReset.clearsOn(KeyCode.ALPHA, automaticAlpha = true))
     }
 
     @Test fun otherKeysDoNot() {
-        assertFalse(EmojiSearchReset.leavesEmojiKeyboard(KeyCode.EMOJI_SEARCH))
-        assertFalse(EmojiSearchReset.leavesEmojiKeyboard(KeyCode.DELETE))
-        assertFalse(EmojiSearchReset.leavesEmojiKeyboard('a'.code))
+        assertFalse(EmojiSearchReset.clearsOn(KeyCode.EMOJI_SEARCH, automaticAlpha = false))
+        assertFalse(EmojiSearchReset.clearsOn(KeyCode.DELETE, automaticAlpha = false))
+        assertFalse(EmojiSearchReset.clearsOn('a'.code, automaticAlpha = false))
     }
 }
