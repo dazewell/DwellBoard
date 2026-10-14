@@ -164,8 +164,6 @@ class KeyboardState(private val switchActions: SwitchActions) {
         if (DebugFlags.DEBUG_ENABLED) {
             Log.d(TAG, "loadLayout($layout)")
         }
-        // DWELL_SMOKE_emoji-search-clear temporary probe: who switches layouts (layout type and call chain only)
-        Log.e(TAG, "DWELL_SMOKE_emoji-search-clear loadLayout ${layout::class.simpleName} fromMode=$mode", Throwable())
         when (layout) {
             is Alphabet -> switchActions.setAlphabetKeyboard(layout.shiftMode)
             Utility.SYMBOLS -> switchActions.setSymbolsKeyboard()

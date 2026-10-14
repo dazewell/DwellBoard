@@ -138,7 +138,6 @@ class EmojiSearchActivity : ComponentActivity() {
     @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.e(TAG, "DWELL_SMOKE_emoji-search-clear BEGIN activity created, startsWithText=${searchText.isNotEmpty()}") // DWELL_SMOKE_emoji-search-clear
         init()
         enableEdgeToEdge()
         setContent {
@@ -390,11 +389,6 @@ class EmojiSearchActivity : ComponentActivity() {
         private const val PRIVATE_IME_OPTIONS_PREFIX: String = "helium314.keyboard.keyboard.emoji.search"
         private var dictionaryFacilitator: SingleDictionaryFacilitator? = null
         internal var searchText: String = "" // DwellBoard: #emoji-search-clear - was private, cleared by EmojiSearchReset
-            set(value) {
-                // DWELL_SMOKE_emoji-search-clear temporary probe: which path empties a non-empty remembered search (no text logged)
-                if (value.isEmpty() && field.isNotEmpty()) Log.e(TAG, "DWELL_SMOKE_emoji-search-clear searchText emptied", Throwable())
-                field = value
-            }
 
         fun decodePrivateImeOptions(editorInfo: EditorInfo?): PrivateImeOptions = PrivateImeOptions(
             editorInfo?.privateImeOptions?.takeIf { it.startsWith(PRIVATE_IME_OPTIONS_PREFIX) }
