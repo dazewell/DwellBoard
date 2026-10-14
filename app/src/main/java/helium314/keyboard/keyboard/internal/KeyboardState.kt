@@ -455,6 +455,8 @@ class KeyboardState(private val switchActions: SwitchActions) {
         if (DEBUG_EVENT) {
             Log.d(TAG, "onEvent: code=${Constants.printableCode(code)} ${stateToString(autoCapsFlags, recapitalizeMode)}")
         }
+        // DwellBoard: #emoji-search-clear - only a key press leaves the emoji keyboard here; the restore after a search does not come through onEvent
+        if (mode == Mode.EMOJI) helium314.keyboard.dwell.emoji.EmojiSearchReset.onEmojiKey(code)
 
         if (mode in Settings.getValues().mAlphaAfterSpace) {
             if (isSpaceOrEnter(code)) {

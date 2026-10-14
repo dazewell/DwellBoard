@@ -33,3 +33,7 @@ The app, its spell checker and its settings screen are labelled "DwellBoard", an
 ### Recent emoji count <!-- #recent-emoji-count -->
 
 Sets how many recent emojis the emoji keyboard shows, up to three times the usual number, and how many columns each page has, from 4 to 12; more columns shrink emojis and row spacing to fit. Settings: Appearance → "Recent emojis shown" (device-size default) and "Emoji columns" (Auto).
+
+### Clear emoji search <!-- #emoji-search-clear -->
+
+Emoji search starts empty again once you've returned to the main keyboard yourself with ABC or the emoji key; searching and picking emojis in between keeps what you typed. Setting: Preferences → "Clear emoji search", on by default.

@@ -388,7 +388,7 @@ class EmojiSearchActivity : ComponentActivity() {
         const val EMOJI_KEY: String = "EMOJI"
         private const val PRIVATE_IME_OPTIONS_PREFIX: String = "helium314.keyboard.keyboard.emoji.search"
         private var dictionaryFacilitator: SingleDictionaryFacilitator? = null
-        private var searchText: String = ""
+        internal var searchText: String = "" // DwellBoard: #emoji-search-clear - was private, cleared by EmojiSearchReset
 
         fun decodePrivateImeOptions(editorInfo: EditorInfo?): PrivateImeOptions = PrivateImeOptions(
             editorInfo?.privateImeOptions?.takeIf { it.startsWith(PRIVATE_IME_OPTIONS_PREFIX) }
