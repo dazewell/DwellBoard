@@ -747,6 +747,8 @@ public final class InputLogic {
                         // recapitalization and follow-up code should only trigger for alphabet/d-pad shift, see #1256
                         break;
                     }
+                    // DwellBoard: a Shift tap that lands on lower case is a request for lower case, so suggestions for the word being typed stop copying its capitals
+                    mWordComposer.setUnshiftedByUser(mWordComposer.isComposingWord() && element == KeyboardElement.ALPHABET);
                 }
                 performRecapitalization(sv);
                 inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
