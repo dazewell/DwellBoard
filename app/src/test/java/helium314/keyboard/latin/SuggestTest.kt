@@ -64,6 +64,32 @@ class SuggestTest {
         nextWordSuggestions = suggestionResults(emptyList())
     }
 
+    @Test fun `capitalized typed word gets lower case suggestions after Shift was tapped to lower case`() {
+        tapTypingSuggestions = suggestionResults(listOf(suggestion("test", 100), suggestion("tests", 90), suggestion("tested", 80)))
+        assertEquals(listOf("Test", "Tests", "Tested"),
+            getSuggestedWords(false, "Test", CapsMode.OFF).mSuggestedWordInfoList.map { it.mWord })
+        assertEquals(listOf("Test", "test", "tests", "tested"),
+            getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).mSuggestedWordInfoList.map { it.mWord })
+        // a locked or manual shift still wins
+        assertEquals(listOf("Test", "TEST", "TESTS", "TESTED"),
+            getSuggestedWords(false, "Test", CapsMode.MANUAL_LOCKED, unshiftedByUser = true).mSuggestedWordInfoList.map { it.mWord })
+    }
+
+    @Test fun `all caps typed word is not auto-corrected to lower case after caps lock was released`() {
+        enableAutocorrect(confidenceAggressive)
+        tapTypingSuggestions = suggestionResults(listOf(suggestion("no", 650000, currentTypingLocale)))
+        val result = getSuggestedWords(false, "NO", CapsMode.OFF, unshiftedByUser = true)
+        assert(!result.mWillAutoCorrect)
+        assertEquals(listOf("NO"), result.mSuggestedWordInfoList.map { it.mWord })
+    }
+
+    @Test fun `capitalized typed word is auto-corrected to lower case after Shift was tapped to lower case`() {
+        enableAutocorrect(confidenceAggressive)
+        tapTypingSuggestions = suggestionResults(listOf(suggestion("test", 650000, currentTypingLocale)))
+        assert(getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).mWillAutoCorrect)
+        assert(!getSuggestedWords(false, "Test", CapsMode.OFF).mWillAutoCorrect)
+    }
+
     @Test fun `'on' to 'in' if 'in' was used before in this context`() {
         val locale = Locale.ENGLISH
         val result = shouldBeAutoCorrected(
@@ -590,8 +616,9 @@ class SuggestTest {
         assertEquals(listOf("bur", "BUR", "BUT", "BIT", "BUY", "😢", "BUTTER"), result4.mSuggestedWordInfoList.map { it.mWord })
     }
 
-    private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode): SuggestedWords {
+    private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode, unshiftedByUser: Boolean = false): SuggestedWords {
         val wc = WordComposer()
+        wc.setUnshiftedByUser(unshiftedByUser)
         if (gesture) wc.setBatchInputPointers(InputPointers(1))
         if (typedWord.isNotEmpty()) {
             StringUtils.toCodePointArray(typedWord).forEach {

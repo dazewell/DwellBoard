@@ -662,6 +662,17 @@ class InputLogicTest {
         assertEquals("mail@example.com,", text)
     }
 
+    @Test fun `unshifted by user is copied for suggestions and cleared when the word ends`() {
+        val wc = WordComposer()
+        wc.setUnshiftedByUser(true)
+        assertEquals(true, wc.copy().isUnshiftedByUser)
+        wc.commitWord(LastComposedWord.COMMIT_TYPE_USER_TYPED_WORD, "", " ", NgramContext.EMPTY_PREV_WORDS_INFO)
+        assertEquals(false, wc.isUnshiftedByUser)
+        wc.setUnshiftedByUser(true)
+        wc.reset()
+        assertEquals(false, wc.isUnshiftedByUser)
+    }
+
     @Test fun `shift removes the automatically inserted space only`() {
         latinIME.prefs().edit {
             putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true)

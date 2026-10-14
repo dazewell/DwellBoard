@@ -50,6 +50,8 @@ public final class WordComposer {
     private int mCapsCount;
     private int mDigitsCount;
     private CapsMode mCapitalizedMode;
+    // DwellBoard: the user tapped Shift down to lower case while this word was composing, so suggestions should not follow the typed capitals
+    private boolean mUnshiftedByUser;
     // This is the number of code points entered so far. This is not limited to MAX_WORD_LENGTH.
     // In general, this contains the size of mPrimaryKeyCodes, except when this is greater than
     // MAX_WORD_LENGTH in which case mPrimaryKeyCodes only contain the first MAX_WORD_LENGTH
@@ -91,6 +93,7 @@ public final class WordComposer {
         mCapsCount = other.mCapsCount;
         mDigitsCount = other.mDigitsCount;
         mCapitalizedMode = other.mCapitalizedMode;
+        mUnshiftedByUser = other.mUnshiftedByUser; // DwellBoard
         mCodePointSize = other.mCodePointSize;
         mCursorPositionWithinWord = other.mCursorPositionWithinWord;
         mIsOnlyFirstCharCapitalized = other.mIsOnlyFirstCharCapitalized;
@@ -124,6 +127,7 @@ public final class WordComposer {
         mIsOnlyFirstCharCapitalized = false;
         mIsResumed = false;
         mIsBatchMode = false;
+        mUnshiftedByUser = false; // DwellBoard
         mRejectedBatchModeSuggestion = null;
         refreshTypedWordCache();
         mCursorPositionWithinWord = 0;
@@ -351,6 +355,10 @@ public final class WordComposer {
         return mCapsCount == size();
     }
 
+    public void setUnshiftedByUser(boolean unshifted) { mUnshiftedByUser = unshifted; } // DwellBoard
+
+    public boolean isUnshiftedByUser() { return mUnshiftedByUser; } // DwellBoard
+
     public boolean wasShiftedNoLock() {
         return mCapitalizedMode == CapsMode.AUTO || mCapitalizedMode == CapsMode.MANUAL;
     }
@@ -455,6 +463,7 @@ public final class WordComposer {
         mCodePointSize = 0;
         mIsOnlyFirstCharCapitalized = false;
         mCapitalizedMode = CapsMode.OFF;
+        mUnshiftedByUser = false; // DwellBoard
         refreshTypedWordCache();
         mAutoCorrection = null;
         mCursorPositionWithinWord = 0;
