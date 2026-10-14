@@ -481,10 +481,11 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
             val capsMode = keyboard.mId.element.capsMode
             if (capsMode == CapsMode.MANUAL || capsMode == CapsMode.MANUAL_LOCKED)
                 return capsMode
-            if (wordComposer.isUnshiftedByUser) return CapsMode.OFF // DwellBoard: Shift was tapped down to lower case
             // we have some auto-mode which we ignore
             // instead we determine mode from the typed word (that's how it was done for a long time, todo: maybe adjust if necessary?)
             if (wordComposer.isAllUpperCase && !wordComposer.isResumed) return CapsMode.MANUAL_LOCKED
+            // DwellBoard: Shift was tapped down to lower case; after the all caps check so unlocking caps lock does not turn "NO" into "no"
+            if (wordComposer.isUnshiftedByUser && wordComposer.isComposingWord) return CapsMode.OFF
             if (wordComposer.isOrWillBeOnlyFirstCharCapitalized) return CapsMode.MANUAL
             return CapsMode.OFF
         }

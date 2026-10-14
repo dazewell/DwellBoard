@@ -75,6 +75,21 @@ class SuggestTest {
             getSuggestedWords(false, "Test", CapsMode.MANUAL_LOCKED, unshiftedByUser = true).mSuggestedWordInfoList.map { it.mWord })
     }
 
+    @Test fun `all caps typed word is not auto-corrected to lower case after caps lock was released`() {
+        enableAutocorrect(confidenceAggressive)
+        tapTypingSuggestions = suggestionResults(listOf(suggestion("no", 650000, currentTypingLocale)))
+        val result = getSuggestedWords(false, "NO", CapsMode.OFF, unshiftedByUser = true)
+        assert(!result.mWillAutoCorrect)
+        assertEquals(listOf("NO"), result.mSuggestedWordInfoList.map { it.mWord })
+    }
+
+    @Test fun `capitalized typed word is auto-corrected to lower case after Shift was tapped to lower case`() {
+        enableAutocorrect(confidenceAggressive)
+        tapTypingSuggestions = suggestionResults(listOf(suggestion("test", 650000, currentTypingLocale)))
+        assert(getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).mWillAutoCorrect)
+        assert(!getSuggestedWords(false, "Test", CapsMode.OFF).mWillAutoCorrect)
+    }
+
     @Test fun `'on' to 'in' if 'in' was used before in this context`() {
         val locale = Locale.ENGLISH
         val result = shouldBeAutoCorrected(
