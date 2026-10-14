@@ -62,4 +62,6 @@
     <string name="dwell_emoji_columns_summary">More columns make emojis smaller and denser</string>
     <string name="dwell_emoji_columns_auto">Auto</string>
     <string name="dwell_emoji_columns_auto_count">Auto (%1$d)</string>
+    <string name="dwell_clear_emoji_search">Clear emoji search</string>
+    <string name="dwell_clear_emoji_search_summary">Start emoji search empty after leaving the emoji keyboard</string>
 </resources>

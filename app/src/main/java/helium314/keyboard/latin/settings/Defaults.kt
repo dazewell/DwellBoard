@@ -105,6 +105,7 @@ object Defaults {
     const val PREF_EMOJI_SKIN_TONE = ""
     const val PREF_RECENT_EMOJIS_COUNT = 0 // 0: device-size default
     const val PREF_EMOJI_COLUMNS = 0 // 0: automatic
+    const val PREF_CLEAR_EMOJI_SEARCH = true // DwellBoard: #emoji-search-clear
     @JvmField
     val PREF_SPACE_HORIZONTAL_SWIPE = KeyboardActionListener.SwipeAction.MOVE_CURSOR.name
     @JvmField

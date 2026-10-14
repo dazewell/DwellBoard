@@ -362,6 +362,8 @@ public final class EmojiPalettesView extends LinearLayout
     public void startEmojiPalettes(final KeyVisualAttributes keyVisualAttr,
                final EditorInfo editorInfo, final KeyboardActionListener keyboardActionListener) {
         initialize();
+        // DwellBoard: #emoji-search-clear - the one place every entry to the emoji keyboard passes, including the return from a search
+        helium314.keyboard.dwell.emoji.EmojiSearchReset.onEmojiKeyboardStarted(getContext());
 
         setupBottomRowKeyboard(editorInfo, keyboardActionListener);
         final KeyDrawParams params = new KeyDrawParams();
