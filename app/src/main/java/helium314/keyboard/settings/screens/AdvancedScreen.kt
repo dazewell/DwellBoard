@@ -78,6 +78,7 @@ fun AdvancedSettingsScreen(
         Settings.PREF_ABC_AFTER_SYMBOL_SPACE,
         Settings.PREF_ABC_AFTER_NUMPAD_SPACE,
         Settings.PREF_ABC_AFTER_EMOJI,
+        Settings.PREF_ABC_AFTER_EMOJI_SPACE, // DwellBoard: #emoji-space-abc
         Settings.PREF_ABC_AFTER_CLIP,
         Settings.PREF_CUSTOM_CURRENCY_KEY,
         Settings.PREF_MORE_POPUP_KEYS,
@@ -190,6 +191,10 @@ fun createAdvancedSettings(context: Context) = listOf(
     },
     Setting(context, Settings.PREF_ABC_AFTER_EMOJI, R.string.switch_keyboard_after, R.string.after_emoji) {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_EMOJI)
+    },
+    // DwellBoard: #emoji-space-abc
+    Setting(context, Settings.PREF_ABC_AFTER_EMOJI_SPACE, R.string.switch_keyboard_after, R.string.dwell_after_emoji_and_space) {
+        SwitchPreference(it, Defaults.PREF_ABC_AFTER_EMOJI_SPACE)
     },
     Setting(context, Settings.PREF_ABC_AFTER_CLIP, R.string.switch_keyboard_after, R.string.after_clip) {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_EMOJI)

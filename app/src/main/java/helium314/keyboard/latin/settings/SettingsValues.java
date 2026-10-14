@@ -337,6 +337,10 @@ public class SettingsValues {
         if (prefs.getBoolean(Settings.PREF_ABC_AFTER_NUMPAD_SPACE, Defaults.PREF_ABC_AFTER_NUMPAD_SPACE)) {
             mAlphaAfterSpace.add(KeyboardState.Mode.NUMPAD);
         }
+        // DwellBoard: #emoji-space-abc - emoji search types on the alphabet keyboard, so only the emoji palette itself is affected
+        if (prefs.getBoolean(Settings.PREF_ABC_AFTER_EMOJI_SPACE, Defaults.PREF_ABC_AFTER_EMOJI_SPACE)) {
+            mAlphaAfterSpace.add(KeyboardState.Mode.EMOJI);
+        }
         mRemoveRedundantPopups = prefs.getBoolean(Settings.PREF_REMOVE_REDUNDANT_POPUPS, Defaults.PREF_REMOVE_REDUNDANT_POPUPS);
         mSpaceBarText = prefs.getString(Settings.PREF_SPACE_BAR_TEXT, Defaults.PREF_SPACE_BAR_TEXT);
         mFontSizeMultiplier = prefs.getFloat(Settings.PREF_FONT_SCALE, Defaults.PREF_FONT_SCALE);
