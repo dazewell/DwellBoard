@@ -1771,8 +1771,6 @@ public class LatinIME extends InputMethodService implements
             if (isImeClosed(intent)) {
                 requestHideSelf(0);
             } else {
-                // DwellBoard: #emoji-search-clear - flag set only where the return is posted, so it is always consumed by it
-                helium314.keyboard.dwell.emoji.EmojiSearchReset.onReturnPosted();
                 mHandler.postDelayed(mKeyboardSwitcher::setEmojiKeyboard, 100);
                 if (intent.hasExtra(EmojiSearchActivity.EMOJI_KEY)) {
                      onTextInput(intent.getStringExtra(EmojiSearchActivity.EMOJI_KEY));

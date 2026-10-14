@@ -36,4 +36,4 @@ Sets how many recent emojis the emoji keyboard shows, up to three times the usua
 
 ### Clear emoji search <!-- #emoji-search-clear -->
 
-Emoji search starts empty again once you've left the emoji keyboard; returning from a search, with or without picking an emoji, keeps what you typed. Setting: Preferences → "Clear emoji search", on by default.
+Emoji search starts empty again once you've returned to the main keyboard yourself with ABC or the emoji key; searching and picking emojis in between keeps what you typed. Setting: Preferences → "Clear emoji search", on by default.
