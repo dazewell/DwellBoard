@@ -15,7 +15,7 @@ live anywhere else.
   gate, `runTests` is what `:app:testRunTestsUnitTest -PdwellTestBuildType=runTests` uses, `release` and
   `nouserlib` are minified release builds. Don't add a build type for a
   feature.
-- **`applicationId` stays `helium314.keyboard`** (debug adds `.debug`). The
+- **`applicationId` stays `helium314.keyboard.dazewell`** (debug adds `.debug`). The
   namespace `helium314.keyboard.latin` is what generated `R` and `BuildConfig`
   live under; fork code imports them from there.
 - **The native library** is built by ndk-build from `src/main/jni`. Its NDK

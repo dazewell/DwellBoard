@@ -17,6 +17,12 @@ a native (ndk-build) dictionary/gesture library, and it **merges from upstream
 regularly**. That last fact drives almost every rule below: every line you
 touch in an upstream file is a future merge conflict.
 
+- **The installed package is `helium314.keyboard.dazewell`** (debug:
+  `helium314.keyboard.dazewell.debug`). Install, `adb`-query and select that
+  one as the IME; a `helium314.keyboard` on the phone is HeliBoard or a build
+  from before the rename. The
+  code namespace, where `R` and `BuildConfig` live, stays
+  `helium314.keyboard.latin`.
 - Source root: `app/src/main/java`. Upstream code lives in `helium314.keyboard.**`
   and `com.android.inputmethod.**` (JNI bridge — never rename). Code this fork
   writes lives in `helium314.keyboard.dwell.<feature>`.

@@ -265,12 +265,12 @@ so fetch it with the artifact-API `curl -o` recipe in `dwellboard-branch-flow`
 (to a dir outside the repo) and install with `adb install -r <apk>`. Every
 staging build (PR label, dev push, dispatch) is the release variant signed with
 the committed `app/release.keystore` (passwords in the `LOCAL_PROPERTIES`
-secret / gitignored `local.properties`): it installs as `helium314.keyboard` and
+secret / gitignored `local.properties`): it installs as `helium314.keyboard.dazewell` and
 updates the installed build in place. Only if the secret is missing does it fall
-back to the debug variant, `helium314.keyboard.debug`, with a throwaway key. If
+back to the debug variant, `helium314.keyboard.dazewell.debug`, with a throwaway key. If
 the phone has a differently-signed build under that id the install fails, and only uninstalling resolves it — ask before doing that.
 A local alternative is `.\gradlew.bat :app:assembleDebug`, which installs
-side by side as `helium314.keyboard.debug`; say which one you handed over.
+side by side as `helium314.keyboard.dazewell.debug`; say which one you handed over.
 
 PR mechanics — requesting the billed Copilot review, its budget, the severity
 floor, and thread resolution — are normative in

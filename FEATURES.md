@@ -28,7 +28,7 @@ With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? afte
 
 ### DwellBoard name <!-- #dwellboard-name -->
 
-The app, its spell checker and its settings screen are labelled "DwellBoard", and built APKs are named `DwellBoard_<version>-<type>.apk`. The application id is unchanged, so it installs alongside HeliBoard and keeps existing data.
+The app, its spell checker and its settings screen are labelled "DwellBoard", and built APKs are named `DwellBoard_<version>-<type>.apk`. Its application id is `helium314.keyboard.dazewell`, so it installs alongside HeliBoard.
 
 ### Recent emoji count <!-- #recent-emoji-count -->
 
