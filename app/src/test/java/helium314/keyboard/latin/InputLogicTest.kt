@@ -726,6 +726,36 @@ class InputLogicTest {
         assertEquals("hello, there? ", text)
     }
 
+    @Test fun `punctuation typed with the cursor moved in front of a word goes behind the previous word`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        setText("cool lets go")
+        setCursorPosition(5)
+        input(',')
+        assertEquals("cool, ", textBeforeCursor)
+        assertEquals("cool, lets go", text)
+        functionalKeyPress(KeyCode.DELETE) // reverts like the typed-space swap
+        assertEquals("cool ,lets go", text)
+    }
+
+    @Test fun `punctuation in front of a word stays put without the setting, before a number or after a non-word`() {
+        setText("cool lets go")
+        setCursorPosition(5)
+        input(',')
+        assertEquals("cool ,lets go", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        setText("item 3 5")
+        setCursorPosition(7)
+        input(',')
+        assertEquals("item 3 ,5", text)
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        setText("x = y")
+        setCursorPosition(4)
+        input(',')
+        assertEquals("x = ,", text.take(5)) // not swapped; the instant space after it is a separate matter
+    }
+
     @Test fun `backspace reverts punctuation swapped with a typed space`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("hello ,")
