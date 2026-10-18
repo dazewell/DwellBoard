@@ -149,7 +149,7 @@ hard-line policy, docs.
 - **Resources and density.** dp/sp via resources or `TypedValue`, not raw
   pixels. Close cursors, streams, and `Canvas` saves.
 - **Package variants.** Variant-sensitive code uses `BuildConfig.APPLICATION_ID`
-  (debug is `helium314.keyboard.debug`), not hardcoded package names.
+  (`helium314.keyboard.dazewell`, debug `.dazewell.debug`), not hardcoded package names.
 
 ### Code quality
 
