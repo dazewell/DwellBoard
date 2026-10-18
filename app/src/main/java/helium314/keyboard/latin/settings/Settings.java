@@ -198,6 +198,8 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_ABC_AFTER_SYMBOL_SPACE = "abc_after_symbol_space";
     public static final String PREF_ABC_AFTER_NUMPAD_SPACE = "abc_after_numpad_space";
     public static final String PREF_ABC_AFTER_EMOJI_SPACE = "abc_after_emoji_space"; // DwellBoard: #emoji-space-abc
+    public static final String PREF_ABC_AFTER_SYMBOL_CHARS = "abc_after_symbol_chars"; // DwellBoard: #symbols-punctuation-abc
+    public static final String PREF_ABC_AFTER_SYMBOL_CHARS_LIST = "abc_after_symbol_chars_list"; // DwellBoard: #symbols-punctuation-abc
     public static final String PREF_REMOVE_REDUNDANT_POPUPS = "remove_redundant_popups";
     public static final String PREF_SPACE_BAR_TEXT = "space_bar_text";
     public static final String PREF_TIMESTAMP_FORMAT = "timestamp_format";

@@ -76,6 +76,9 @@ fun AdvancedSettingsScreen(
         Settings.PREF_ENABLE_EMOJI_ALT_PHYSICAL_KEY,
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) Settings.PREF_SHOW_SETUP_WIZARD_ICON else null,
         Settings.PREF_ABC_AFTER_SYMBOL_SPACE,
+        Settings.PREF_ABC_AFTER_SYMBOL_CHARS, // DwellBoard: #symbols-punctuation-abc
+        if (prefs.getBoolean(Settings.PREF_ABC_AFTER_SYMBOL_CHARS, Defaults.PREF_ABC_AFTER_SYMBOL_CHARS))
+            Settings.PREF_ABC_AFTER_SYMBOL_CHARS_LIST else null,
         Settings.PREF_ABC_AFTER_NUMPAD_SPACE,
         Settings.PREF_ABC_AFTER_EMOJI,
         Settings.PREF_ABC_AFTER_EMOJI_SPACE, // DwellBoard: #emoji-space-abc
@@ -183,6 +186,13 @@ fun createAdvancedSettings(context: Context) = listOf(
         R.string.switch_keyboard_after, R.string.after_symbol_and_space)
     {
         SwitchPreference(it, Defaults.PREF_ABC_AFTER_SYMBOL_SPACE)
+    },
+    // DwellBoard: #symbols-punctuation-abc
+    Setting(context, Settings.PREF_ABC_AFTER_SYMBOL_CHARS, R.string.switch_keyboard_after, R.string.dwell_after_symbol_chars) {
+        SwitchPreference(it, Defaults.PREF_ABC_AFTER_SYMBOL_CHARS)
+    },
+    Setting(context, Settings.PREF_ABC_AFTER_SYMBOL_CHARS_LIST, R.string.dwell_after_symbol_chars_list) {
+        TextInputPreference(it, Defaults.PREF_ABC_AFTER_SYMBOL_CHARS_LIST, stringResource(R.string.dwell_after_symbol_chars_info))
     },
     Setting(context, Settings.PREF_ABC_AFTER_NUMPAD_SPACE,
         R.string.switch_keyboard_after, R.string.after_numpad_and_space)

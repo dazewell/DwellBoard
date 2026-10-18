@@ -41,3 +41,7 @@ Emoji search starts empty again once you've returned to the main keyboard yourse
 ### Main keyboard after emoji and space <!-- #emoji-space-abc -->
 
 Pressing space or enter on the emoji keyboard after picking an emoji returns to the main keyboard, like the existing symbols and numpad options; emoji search is not affected. Setting: Advanced → "Switch to main keyboard after… Pressing enter or space after other keys in emoji view", off by default.
+
+### Main keyboard after punctuation <!-- #symbols-punctuation-abc -->
+
+Typing one of a chosen set of punctuation marks on the symbols keyboard returns to the main keyboard, so a "?" or "-" in a sentence needs no extra tap. Setting: Advanced → "Switch to main keyboard after… Typing certain punctuation in symbols view", off by default; the marks are editable below it, default ? ! ; - " ' ).
