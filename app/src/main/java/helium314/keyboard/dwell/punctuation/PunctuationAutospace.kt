@@ -51,6 +51,19 @@ object PunctuationAutospace {
                 && settings.mSpacingAndPunctuations.mCurrentLanguageHasSpaces
                 && isWordThenSpace(connection.getTextBeforeCursor(2, 0))
 
+    /**
+     * Like [swapsTypedSpace], for a space that was not just typed: the cursor was moved in front of a word
+     * ("cool |lets" with ',' becomes "cool, |lets"). The text after the cursor is only read when all else matches.
+     */
+    @JvmStatic
+    fun swapsSpaceBeforeWord(codePoint: Int, settings: SettingsValues, connection: RichInputConnection): Boolean =
+        !connection.hasSlowInputConnection() && !connection.hasSelection() && swapsTypedSpace(codePoint, settings, connection)
+                && startsWithLetter(connection.getTextAfterCursor(1, 0))
+
+    /** [after] is the text right after the cursor. A letter only, so "3 ,5" is left alone. */
+    @JvmStatic
+    fun startsWithLetter(after: CharSequence?): Boolean = !after.isNullOrEmpty() && Character.isLetter(after[0])
+
     /** [lastTwo] is the text right before the cursor: true for "d ", false for "  ", ", " or "= ". */
     @JvmStatic
     fun isWordThenSpace(lastTwo: CharSequence?): Boolean =

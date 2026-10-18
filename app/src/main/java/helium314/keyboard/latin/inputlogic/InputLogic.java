@@ -1617,6 +1617,10 @@ public final class InputLogic {
         if (SpaceState.WEAK == inputTransaction.getSpaceState() && !isFromSuggestionStrip
                 && helium314.keyboard.dwell.punctuation.PunctuationAutospace.swapsTypedSpace(codePoint, inputTransaction.getSettingsValues(), mConnection))
             return true;
+        // DwellBoard: a cursor move resets the state to NONE, but "cool |lets" + ',' should still become "cool, |lets"
+        if (SpaceState.NONE == inputTransaction.getSpaceState() && !isFromSuggestionStrip
+                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.swapsSpaceBeforeWord(codePoint, inputTransaction.getSettingsValues(), mConnection))
+            return true;
         return false;
     }
 

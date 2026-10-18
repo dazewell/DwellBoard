@@ -48,6 +48,14 @@ class PunctuationAutospaceTest {
         assertFalse(PunctuationAutospace.isWordThenSpace(null))
     }
 
+    @Test fun startsWithLetter() {
+        assertTrue(PunctuationAutospace.startsWithLetter("l"))
+        assertFalse(PunctuationAutospace.startsWithLetter("5"))
+        assertFalse(PunctuationAutospace.startsWithLetter(" "))
+        assertFalse(PunctuationAutospace.startsWithLetter(""))
+        assertFalse(PunctuationAutospace.startsWithLetter(null))
+    }
+
     @Test fun email() {
         assertTrue(PunctuationAutospace.looksLikeEmail("mail@example.com,"))
         assertFalse(PunctuationAutospace.looksLikeEmail("@bob,"))
