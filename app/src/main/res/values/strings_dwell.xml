@@ -66,4 +66,7 @@
     <string name="dwell_clear_emoji_search_summary">Start emoji search empty after leaving the emoji keyboard</string>
     <string name="dwell_space_row_gap">Gap above space bar row</string>
     <string name="dwell_after_emoji_and_space">Pressing enter or space after other keys in emoji view</string>
+    <string name="dwell_after_symbol_chars">Typing certain punctuation in symbols view</string>
+    <string name="dwell_after_symbol_chars_list">Punctuation that switches to main keyboard</string>
+    <string name="dwell_after_symbol_chars_info">Type the characters with no spaces or separators. Digits are ignored.</string>
 </resources>

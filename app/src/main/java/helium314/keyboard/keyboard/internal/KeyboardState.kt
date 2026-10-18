@@ -467,6 +467,10 @@ class KeyboardState(private val switchActions: SwitchActions) {
                 isInSpaceToAlpha = true
             }
         }
+        // DwellBoard: #symbols-punctuation-abc - runs after InputLogic committed the char, so auto caps already see it
+        if (helium314.keyboard.dwell.punctuation.SymbolsSwitchBack.shouldSwitch(mode, code,
+                isInLayoutSlide || symbolKeyState != ModifierKeyState.RELEASED || shiftKeyState != ModifierKeyState.RELEASED))
+            resetToAlpha(autoCapsFlags, recapitalizeMode)
 
         if (Constants.isLetterCode(code)) {
             // If the code is a letter, update keyboard shift state.

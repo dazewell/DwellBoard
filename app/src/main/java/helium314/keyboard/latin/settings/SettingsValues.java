@@ -140,6 +140,7 @@ public class SettingsValues {
     public final boolean mAlphaAfterEmojiInEmojiView;
     public final boolean mAlphaAfterClipHistoryEntry;
     public final EnumSet<KeyboardState.Mode> mAlphaAfterSpace = EnumSet.noneOf(KeyboardState.Mode.class);
+    public final int[] mAlphaAfterSymbolChars; // DwellBoard: #symbols-punctuation-abc
     public final boolean mRemoveRedundantPopups;
     public final String mSpaceBarText;
     public final float mFontSizeMultiplier;
@@ -343,6 +344,10 @@ public class SettingsValues {
         if (prefs.getBoolean(Settings.PREF_ABC_AFTER_EMOJI_SPACE, Defaults.PREF_ABC_AFTER_EMOJI_SPACE)) {
             mAlphaAfterSpace.add(KeyboardState.Mode.EMOJI);
         }
+        // DwellBoard: #symbols-punctuation-abc - empty when off, so the per-key check needs no extra flag
+        mAlphaAfterSymbolChars = prefs.getBoolean(Settings.PREF_ABC_AFTER_SYMBOL_CHARS, Defaults.PREF_ABC_AFTER_SYMBOL_CHARS)
+                ? helium314.keyboard.dwell.punctuation.SymbolsSwitchBack.parse(prefs.getString(Settings.PREF_ABC_AFTER_SYMBOL_CHARS_LIST, Defaults.PREF_ABC_AFTER_SYMBOL_CHARS_LIST))
+                : new int[0];
         mRemoveRedundantPopups = prefs.getBoolean(Settings.PREF_REMOVE_REDUNDANT_POPUPS, Defaults.PREF_REMOVE_REDUNDANT_POPUPS);
         mSpaceBarText = prefs.getString(Settings.PREF_SPACE_BAR_TEXT, Defaults.PREF_SPACE_BAR_TEXT);
         mFontSizeMultiplier = prefs.getFloat(Settings.PREF_FONT_SCALE, Defaults.PREF_FONT_SCALE);
