@@ -753,7 +753,7 @@ class InputLogicTest {
         setText("x = y")
         setCursorPosition(4)
         input(',')
-        assertEquals("x = ,", text.take(5)) // not swapped; the instant space after it is a separate matter
+        assertEquals("x = , y", text) // not swapped; the space after the comma is the instant space
         reset()
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         setText("cool lets go")
