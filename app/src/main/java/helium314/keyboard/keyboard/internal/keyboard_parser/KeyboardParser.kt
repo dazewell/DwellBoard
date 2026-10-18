@@ -85,6 +85,8 @@ class KeyboardParser(private val params: KeyboardParams, private val context: Co
             keysInRows.forEachIndexed { i, row ->
                 row.forEach { it.mHeight *= if (i == keysInRows.lastIndex) bottomRowScale else otherRowScale }
             }
+            // DwellBoard: after the bottom row scale, so the gap is taken out of the final row heights
+            helium314.keyboard.dwell.rowgap.SpaceRowGap.apply(keysInRows, Settings.getValues().mDwellSpaceRowGap, params)
         }
 
         return keysInRows

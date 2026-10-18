@@ -104,6 +104,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_KEYBOARD_HEIGHT_SCALE_PREFIX = "keyboard_height_scale";
     public static final String PREF_BOTTOM_ROW_SCALE_PREFIX = "bottom_row_scale";
     public static final String PREF_BOTTOM_PADDING_SCALE_PREFIX = "bottom_padding_scale";
+    public static final String PREF_DWELL_SPACE_ROW_GAP_PREFIX = "space_row_gap"; // DwellBoard: #space-row-gap
     public static final String PREF_SIDE_PADDING_SCALE_PREFIX = "side_padding_scale";
     public static final String PREF_KEY_GAP_SCALE_PREFIX = "key_gap_scale";
     public static final String PREF_FLOATING_HEIGHT_PREFIX = "floating_height";
