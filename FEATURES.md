@@ -36,7 +36,7 @@ Sets how many recent emojis the emoji keyboard shows, up to three times the usua
 
 ### Gap above space bar row <!-- #space-row-gap -->
 
-Adds empty space above the space bar row on the letter and symbol keyboards, up to one row's height; the rows above shrink so the keyboard stays the same height. Setting: Appearance → "Gap above space bar row", per orientation, 0% by default.
+Adds empty space above the space bar row on the letter and symbol keyboards, up to one row's height where the keys are wide enough for taps in it to still register; the rows above shrink so the keyboard stays the same height. Setting: Appearance → "Gap above space bar row", per orientation, 0% by default.
 
 ### Clear emoji search <!-- #emoji-search-clear -->
 
