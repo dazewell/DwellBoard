@@ -754,6 +754,12 @@ class InputLogicTest {
         setCursorPosition(4)
         input(',')
         assertEquals("x = ,", text.take(5)) // not swapped; the instant space after it is a separate matter
+        reset()
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        setText("cool lets go")
+        setCursorPosition(5, 7) // "le" selected
+        input(',')
+        assertEquals("cool ,ts go", text)
     }
 
     @Test fun `backspace reverts punctuation swapped with a typed space`() {

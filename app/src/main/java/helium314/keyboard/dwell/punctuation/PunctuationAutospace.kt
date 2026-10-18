@@ -57,7 +57,7 @@ object PunctuationAutospace {
      */
     @JvmStatic
     fun swapsSpaceBeforeWord(codePoint: Int, settings: SettingsValues, connection: RichInputConnection): Boolean =
-        !connection.hasSlowInputConnection() && swapsTypedSpace(codePoint, settings, connection)
+        !connection.hasSlowInputConnection() && !connection.hasSelection() && swapsTypedSpace(codePoint, settings, connection)
                 && startsWithLetter(connection.getTextAfterCursor(1, 0))
 
     /** [after] is the text right after the cursor. A letter only, so "3 ,5" is left alone. */
