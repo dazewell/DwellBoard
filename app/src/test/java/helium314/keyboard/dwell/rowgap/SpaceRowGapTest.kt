@@ -12,14 +12,11 @@ class SpaceRowGapTest {
         assertEquals(SpaceRowGap.MAX, SpaceRowGap.clamp(7f))
     }
 
-    @Test fun keepsTotalHeight() {
-        // 4 rows of 0.25 with a gap of half a row: rows shrink, the gap gives the height back
-        val rows = 4
-        val gap = 0.5f
-        val scale = SpaceRowGap.rowScale(rows, gap)
-        val total = rows * 0.25f * scale + gap * 0.25f
-        assertEquals(1f, total, 1e-6f)
-    }
+    // 4 rows of 0.25: half a row is 0.125 of the keyboard
+    @Test fun gapInAverageRows() = assertEquals(0.125f, SpaceRowGap.gapHeight(0.5f, 1f, 0.75f, 4), 1e-6f)
 
-    @Test fun largestGapLeavesRowsPositive() = assertEquals(0.5f, SpaceRowGap.rowScale(2, SpaceRowGap.MAX))
+    @Test fun outOfRangeStoredGapIsClamped() = assertEquals(0.25f, SpaceRowGap.gapHeight(9f, 1f, 0.75f, 4), 1e-6f)
+
+    // two equal rows at the maximum would eat the whole letter row; it keeps half instead
+    @Test fun upperRowsKeepHalfTheirHeight() = assertEquals(0.25f, SpaceRowGap.gapHeight(SpaceRowGap.MAX, 1f, 0.5f, 2), 1e-6f)
 }

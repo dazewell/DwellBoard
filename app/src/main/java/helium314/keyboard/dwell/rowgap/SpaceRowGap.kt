@@ -12,9 +12,11 @@ import helium314.keyboard.latin.settings.findIndexOfDefaultSetting
 /**
  * Extra empty space between the last letter row and the row holding the space bar.
  *
- * The keyboard keeps its height: every row shrinks a little to make room. The gap is added to
- * the letter row's height but not to its visible keys, so like the normal key gap, a touch in it
- * still hits the key above instead of falling into a dead zone.
+ * The keyboard keeps its height and the space row keeps its own, so it still matches the emoji
+ * and clipboard bottom row: the rows above shrink to make room. Each half of the gap belongs to
+ * the hit box of the key next to it but not to its drawn rect. Halving matters: the nearest-key
+ * grid in ProximityInfo only lists keys within about one key width of their drawn rect, so a
+ * gap owned by one side alone could leave untappable cells at its far edge.
  */
 object SpaceRowGap {
     const val MAX = 1f
@@ -31,26 +33,36 @@ object SpaceRowGap {
         return clamp(runCatching { prefs.getFloat(key, default) }.getOrDefault(default))
     }
 
-    /** Factor applied to every row so the keyboard height stays the same once [gap] rows are taken out. */
-    fun rowScale(rowCount: Int, gap: Float) = 1f - gap / rowCount
+    /**
+     * Relative gap height for [gap] rows, given the summed heights of all rows ([total]) and of the
+     * rows above the space row ([upper]). Capped at half of [upper] so those rows keep half their height.
+     */
+    fun gapHeight(gap: Float, total: Float, upper: Float, rowCount: Int) =
+        minOf(clamp(gap) * total / rowCount, upper / 2)
 
     @JvmStatic
     fun apply(rows: List<List<KeyParams>>, storedGap: Float) {
-        val gap = clamp(storedGap)
-        if (gap == 0f) return
+        if (clamp(storedGap) == 0f) return
         val nonEmpty = rows.filter { it.isNotEmpty() }
         if (nonEmpty.size < 2) return
         // only when the bottom row really is the space row; a layout without functional keys has none
-        if (nonEmpty.last().none { it.mCode == Constants.CODE_SPACE }) return
-        val total = nonEmpty.sumOf { it.first().mHeight.toDouble() }.toFloat()
-        if (total <= 0f || nonEmpty.any { row -> row.any { it.mHeight <= 0f } }) return
-        val scale = rowScale(nonEmpty.size, gap)
-        // exactly the height the scaling took out, so the rows still add up to the same total
-        val relativeGap = gap * total / nonEmpty.size
-        nonEmpty.forEach { row -> row.forEach { it.mHeight *= scale } }
-        nonEmpty[nonEmpty.size - 2].forEach {
-            it.mHeight += relativeGap
-            it.mDwellGapBelow = relativeGap
+        val spaceRow = nonEmpty.last()
+        if (spaceRow.none { it.mCode == Constants.CODE_SPACE }) return
+        if (nonEmpty.any { row -> row.any { it.mHeight <= 0f } }) return
+        val upperRows = nonEmpty.subList(0, nonEmpty.size - 1)
+        val upper = upperRows.sumOf { it.first().mHeight.toDouble() }.toFloat()
+        val total = upper + spaceRow.first().mHeight
+        val gapHeight = gapHeight(storedGap, total, upper, nonEmpty.size)
+        val scale = 1f - gapHeight / upper
+        upperRows.forEach { row -> row.forEach { it.mHeight *= scale } }
+        val half = gapHeight / 2
+        upperRows.last().forEach {
+            it.mHeight += half
+            it.mDwellGapBelow = half
+        }
+        spaceRow.forEach {
+            it.mHeight += half
+            it.mDwellGapAbove = half
         }
     }
 }

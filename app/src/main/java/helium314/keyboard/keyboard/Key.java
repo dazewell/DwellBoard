@@ -316,13 +316,13 @@ public class Key implements Comparable<Key> {
         mWidth = Math.round(keyParams.mAbsoluteWidth - horizontalGapFloat);
         // height is always rounded down, because rounding up may make the keyboard too high to fit, leading to issues
         // DwellBoard: the space row gap is part of the hit box but not of the drawn key
-        mHeight = (int) (keyParams.mAbsoluteHeight - keyParams.mKeyboardParams.mVerticalGap - keyParams.mDwellGapBelow * keyParams.mKeyboardParams.mBaseHeight);
+        mHeight = (int) (keyParams.mAbsoluteHeight - keyParams.mKeyboardParams.mVerticalGap - (keyParams.mDwellGapBelow + keyParams.mDwellGapAbove) * keyParams.mKeyboardParams.mBaseHeight);
         if (!isSpacer() && (mWidth == 0 || mHeight == 0)) {
             throw new IllegalStateException("key needs positive width and height");
         }
         // Horizontal gap is divided equally to both sides of the key.
         mX = Math.round(keyParams.xPos + horizontalGapFloat / 2);
-        mY = Math.round(keyParams.yPos);
+        mY = Math.round(keyParams.yPos + keyParams.mDwellGapAbove * keyParams.mKeyboardParams.mBaseHeight); // DwellBoard
         mHitBox.set(Math.round(keyParams.xPos), Math.round(keyParams.yPos), Math.round(keyParams.xPos + keyParams.mAbsoluteWidth) + 1,
                 Math.round(keyParams.yPos + keyParams.mAbsoluteHeight));
         mHashCode = computeHashCode(this);
@@ -985,7 +985,7 @@ public class Key implements Comparable<Key> {
         private final KeyboardParams mKeyboardParams; // for reading gaps and keyboard width / height
         public float mWidth;
         public float mHeight; // also should allow negative values, indicating absolute height is defined
-        public float mDwellGapBelow; // DwellBoard: relative height of SpaceRowGap included in mHeight
+        public float mDwellGapBelow, mDwellGapAbove; // DwellBoard: relative SpaceRowGap height included in mHeight
 
         // params that may change
         public float mAbsoluteWidth;
@@ -1294,6 +1294,7 @@ public class Key implements Comparable<Key> {
             mWidth = keyParams.mWidth;
             mHeight = keyParams.mHeight;
             mDwellGapBelow = keyParams.mDwellGapBelow; // DwellBoard
+            mDwellGapAbove = keyParams.mDwellGapAbove;
             isSpacer = keyParams.isSpacer;
             mKeyboardParams = keyParams.mKeyboardParams;
             mEnabled = keyParams.mEnabled;
