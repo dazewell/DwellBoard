@@ -126,7 +126,7 @@ jobs:
       - name: Build debug (no keystore configured)
         if: env.HAS_KEYSTORE != 'true'
         run: |
-          echo "::warning::LOCAL_PROPERTIES secret not set — building the debug variant (helium314.keyboard.debug) with a throwaway signature. It installs alongside, but cannot update, a previous debug build."
+          echo "::warning::LOCAL_PROPERTIES secret not set — building the debug variant (helium314.keyboard.dazewell.debug) with a throwaway signature. It installs alongside, but cannot update, a previous debug build."
           ./gradlew :app:assembleDebug
           mkdir -p out
           BUILT=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
