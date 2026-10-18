@@ -75,7 +75,10 @@ object SpaceRowGap {
         val total = upper + spaceRow.first().mHeight
 
         // KeyboardBuilder.addSplit narrows keys later; the limit has to use the narrowed width
-        var keySlotWidth = params.mDefaultKeyWidth * params.mBaseWidth
+        // ProximityInfo uses the most common key width, which is narrower than the default in rows
+        // with more keys; the narrowest upper-row key is a safe stand-in
+        val narrowest = upperRows.minOf { row -> row.filter { !it.isSpacer && it.mWidth > 0f }.minOfOrNull { it.mWidth } ?: Float.MAX_VALUE }
+        var keySlotWidth = minOf(params.mDefaultKeyWidth, narrowest) * params.mBaseWidth
         if (params.mId.isSplitLayout && params.mId.element.isAlphaOrSymbol)
             keySlotWidth /= 1f + Settings.getValues().mSplitKeyboardSpacerRelativeWidth
         val cellWidth = (params.mOccupiedWidth + params.GRID_WIDTH - 1) / params.GRID_WIDTH
