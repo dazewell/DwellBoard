@@ -83,6 +83,7 @@ fun AppearanceScreen(
             Settings.PREF_KEY_GAP_SCALE_PREFIX else null,
         Settings.PREF_KEYBOARD_HEIGHT_SCALE_PREFIX,
         Settings.PREF_BOTTOM_ROW_SCALE_PREFIX,
+        Settings.PREF_DWELL_SPACE_ROW_GAP_PREFIX, // DwellBoard
         Settings.PREF_BOTTOM_PADDING_SCALE_PREFIX,
         Settings.PREF_SIDE_PADDING_SCALE_PREFIX,
         Settings.PREF_SPACE_BAR_TEXT,
@@ -283,6 +284,17 @@ fun createAppearanceSettings(context: Context) = listOf(
             dimensions = listOf(stringResource(R.string.landscape), stringResource(R.string.folded)),
             defaults = Defaults.PREF_BOTTOM_ROW_SCALE,
             range = 0.5f..2f,
+            description = { "${(100 * it).toInt()}%" }
+        ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
+    },
+    // DwellBoard: #space-row-gap, percent of one row's height
+    Setting(context, Settings.PREF_DWELL_SPACE_ROW_GAP_PREFIX, R.string.dwell_space_row_gap) { setting ->
+        KeyboardScalePreference(
+            name = setting.title,
+            baseKey = setting.key,
+            dimensions = listOf(stringResource(R.string.landscape), stringResource(R.string.folded)),
+            defaults = Defaults.PREF_DWELL_SPACE_ROW_GAP,
+            range = 0f..helium314.keyboard.dwell.rowgap.SpaceRowGap.MAX,
             description = { "${(100 * it).toInt()}%" }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
