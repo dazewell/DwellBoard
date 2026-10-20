@@ -45,8 +45,18 @@ jobs:
         run: |
           set -e
           git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA" || true
+          # An upstream merge brings in HeliBoard's own commits, which carry no
+          # #tag. Exclude whatever a merge commit in the PR pulled in through
+          # its second parent (the base side of "git merge base"), and anything
+          # already on origin/base. Fork commits on top of the merge are still
+          # checked.
+          exclude=""
+          for m in $(git rev-list --merges "$BASE_SHA".."$HEAD_SHA"); do
+            p2=$(git rev-parse --verify -q "$m^2" || true)
+            [ -n "$p2" ] && exclude="$exclude ^$p2"
+          done
           fail=0
-          for sha in $(git rev-list --no-merges "$BASE_SHA".."$HEAD_SHA"); do
+          for sha in $(git rev-list --no-merges "$BASE_SHA".."$HEAD_SHA" $exclude); do
             subject=$(git log -1 --format=%s "$sha")
             if git log -1 --format=%B "$sha" | grep -Eq '(^|[^A-Za-z0-9_])#([a-z][a-z0-9-]*|[0-9][a-z0-9-]*[a-z][a-z0-9-]*)'; then
               continue
@@ -68,7 +78,7 @@ jobs:
           # before dedupe so "(#foo" and "#foo" collapse to one entry. Merge
           # commits are excluded, matching the presence check above.
           missing=0
-          slugs=$(git log --no-merges --format=%B "$BASE_SHA".."$HEAD_SHA" | grep -oE '(^|[^A-Za-z0-9_])#([a-z][a-z0-9-]*|[0-9][a-z0-9-]*[a-z][a-z0-9-]*)' | while IFS= read -r match; do printf '%s\n' "${match##*#}"; done | sort -u)
+          slugs=$(git log --no-merges --format=%B "$BASE_SHA".."$HEAD_SHA" $exclude | grep -oE '(^|[^A-Za-z0-9_])#([a-z][a-z0-9-]*|[0-9][a-z0-9-]*[a-z][a-z0-9-]*)' | while IFS= read -r match; do printf '%s\n' "${match##*#}"; done | sort -u)
           for slug in $slugs; do
             case "$slug" in
               ci|docs|build|chore|infra|deps|test|release|slug|tag) continue ;;
