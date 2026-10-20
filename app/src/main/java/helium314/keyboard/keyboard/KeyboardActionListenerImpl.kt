@@ -373,6 +373,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
             // this is a noticeable performance improvement when moving through long words
             val newPosition = connection.expectedSelectionStart + moveSteps
             connection.setSelection(newPosition, newPosition)
+            inputLogic.resyncComposingAfterCursorMoveInsideWord() // DwellBoard: the word stays composing, see ComposingResync
             return true
         }
 
