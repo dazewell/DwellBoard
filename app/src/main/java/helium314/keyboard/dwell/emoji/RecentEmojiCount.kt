@@ -14,7 +14,7 @@ object RecentEmojiCount {
     const val MAX_COLUMNS = 12
 
     /** Upper bound for the stored list, so lowering the setting and raising it again loses nothing. */
-    const val MAX_STORED = 39 * MAX_FACTOR // largest device default (39) times MAX_FACTOR
+    const val MAX_STORED = 80 * MAX_FACTOR // largest device default (config_emoji_keyboard_max_recents_key_count, 80) times MAX_FACTOR
 
     /** The device-size default number of recents. */
     fun baseCount(context: Context) = context.resources.getInteger(R.integer.config_emoji_keyboard_max_recents_key_count)

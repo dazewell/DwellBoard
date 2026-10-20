@@ -12,7 +12,7 @@ class RecentEmojiCountTest {
         assertEquals(117, RecentEmojiCount.count(39, 500))
         assertEquals(32, RecentEmojiCount.count(32, -3))
     }
-    @Test fun storageCoversLargestDefault() = assertEquals(RecentEmojiCount.MAX_STORED, RecentEmojiCount.count(39, 1000))
+    @Test fun storageCoversLargestDefault() = assertEquals(RecentEmojiCount.MAX_STORED, RecentEmojiCount.count(80, 1000))
     @Test fun columnsAutoOrClamped() {
         assertEquals(0, RecentEmojiCount.columns(0))
         assertEquals(4, RecentEmojiCount.columns(2))
