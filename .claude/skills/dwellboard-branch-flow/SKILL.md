@@ -347,7 +347,7 @@ git push origin base                                     # ruleset: fast-forward
 
 $b = .\.github\scripts\new-branch-name.ps1 -Slug upstream-merge
 git switch -c $b origin/dev
-git merge base                                           # a real merge commit; exempt from the #tag rule
+git merge base                                           # a real merge commit; exempt from the #tag rule, and so are the upstream commits it pulls in (CI skips what a merge brings via its second parent)
 ```
 
 Resolve conflicts: our side is the `// DwellBoard:` marked lines and
