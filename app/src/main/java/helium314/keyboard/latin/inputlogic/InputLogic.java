@@ -461,10 +461,12 @@ public final class InputLogic {
         return mWordComposer.moveCursorByAndReturnIfInsideComposingWord(distance);
     }
 
-    // DwellBoard: setSelection empties the connection's composing text while the editor keeps the span; if the word no longer matches the text, rebuild it from the text
+    // DwellBoard: see ComposingResync; a word that no longer matches the text is rebuilt right away, like a move out of the word
     public void resyncComposingAfterCursorMoveInsideWord() {
-        if (!helium314.keyboard.dwell.cursor.ComposingResync.afterMoveInsideWord(mConnection, mWordComposer.getTypedWord(), mWordComposer.getCursorPositionWithinWord()))
-            mLatinIME.mHandler.postResumeSuggestions(false);
+        if (helium314.keyboard.dwell.cursor.ComposingResync.afterMoveInsideWord(mConnection, mWordComposer.getTypedWord(), mWordComposer.getCursorPositionWithinWord()))
+            return;
+        finishInput();
+        restartSuggestionsOnWordTouchedByCursor(Settings.getValues());
     }
 
     /**
