@@ -613,11 +613,15 @@ class InputLogicTest {
         assertEquals("hello, ", text)
         chainInput("there")
         assertEquals("hello, there", text)
-        // the inserted space is removed again when more punctuation follows
+        // the inserted space moves behind more punctuation that follows
         chainInput("!?")
-        assertEquals("hello, there!?", text)
+        assertEquals("hello, there!? ", text)
         chainInput(" ")
         assertEquals("hello, there!? ", text)
+        chainInput("you?.")
+        assertEquals("hello, there!? you?.", text) // a period keeps the deferred space
+        input('a')
+        assertEquals("hello, there!? you?. a", text)
     }
 
     @Test fun `no immediate autospace without the setting, or with space after the cursor`() {
@@ -725,7 +729,19 @@ class InputLogicTest {
         input('?')
         assertEquals("hello? ", text)
         input('!')
-        assertEquals("hello?!", text) // like typed "there!?", see above
+        assertEquals("hello?! ", text)
+        input('a')
+        assertEquals("hello?! a", text)
+    }
+
+    @Test fun `shift removes the space right after punctuation following a swiped word`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        latinIME.prefs().edit { putBoolean(Settings.PREF_SHIFT_REMOVES_AUTOSPACE, true) }
+        glideTypingInput("hello")
+        input(',')
+        assertEquals("hello, ", text)
+        functionalKeyPress(KeyCode.SHIFT)
+        assertEquals("hello,", text)
     }
 
     @Test fun `punctuation after a swiped word keeps the deferred space without the setting, and for a period`() {

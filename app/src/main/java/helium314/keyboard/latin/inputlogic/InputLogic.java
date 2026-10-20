@@ -1278,7 +1278,8 @@ public final class InputLogic {
                 // setting phantom space state after ending a sentence with a non-word.
                 // A double quote behaves like it's usually followed by space if we're inside
                 // a double quote.
-                if (wasComposingWord
+                // DwellBoard: or right after an inserted space that this punctuation removed again, so "wow!!" still gets one
+                if ((wasComposingWord || SpaceState.AUTO_SPACE_AFTER_PUNCTUATION == inputTransaction.getSpaceState())
                         && settingsValues.mAutospaceAfterPunctuation
                         && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
                     if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint) && !isInsideDoubleQuoteOrAfterDigit)
