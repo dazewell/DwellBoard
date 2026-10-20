@@ -35,8 +35,8 @@ android {
         applicationId = "helium314.keyboard.dazewell"
         minSdk = 21
         targetSdk = 37
-        versionCode = 4200
-        versionName = "4.2-beta1"
+        versionCode = 4300
+        versionName = "4.3-beta1"
         // DwellBoard: staging.yml sets DWELL_BUILD_SHA so each CI build shows which commit it is (About screen, app info). Unset locally.
         versionNameSuffix = System.getenv("DWELL_BUILD_SHA")?.takeIf { it.isNotBlank() }?.let { "+$it" } ?: ""
         ndk {
@@ -77,7 +77,7 @@ android {
             isJniDebuggable = false
             signingConfig = signingConfigs.getByName("debug")
             applicationIdSuffix = ".debug"
-            isDefault = true
+            //isDefault = true // would be nice as default, but breaks unit test handling in Android Studio
         }
 
         androidComponents.onVariants { variant: ApplicationVariant ->
