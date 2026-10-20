@@ -28,11 +28,10 @@ import java.util.Map;
  * typist over time.
  */
 public class UserHistoryDictionary extends ExpandableBinaryDictionary {
-    static final String NAME = UserHistoryDictionary.class.getSimpleName();
+    public static final String NAME = UserHistoryDictionary.class.getSimpleName();
     /** start of the dictionary name of a learning context, followed by its id */
     static final String CONTEXT_NAME_PREFIX = NAME + ".ctx-";
 
-    // TODO: Make this constructor private
     UserHistoryDictionary(final Context context, final Locale locale, @NonNull final String learningContext) {
         super(context, getUserHistoryDictName(locale, learningContext), locale, Dictionary.TYPE_USER_HISTORY, null);
         if (mLocale != null && mLocale.toString().length() > 1) {
