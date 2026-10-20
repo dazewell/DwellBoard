@@ -1268,6 +1268,8 @@ public final class InputLogic {
                 // between swappers and strippers), so we should not stay in phantom space state if
                 // the separator is a stripper. Hence the additional test above.
                 mSpaceState = SpaceState.PHANTOM;
+                // DwellBoard: a swiped or picked word leaves this phantom state, so , ; : ! ? would never get their space right away; stays phantom if it can't be inserted now
+                insertSpaceAfterCommit = settingsValues.mAutospaceAfterPunctuation && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint);
             } else {
                 // mSpaceState is still SpaceState.NONE, but some characters should typically
                 // be followed by space. Set phantom space state for such characters if the user

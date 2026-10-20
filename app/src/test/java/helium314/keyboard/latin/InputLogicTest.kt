@@ -701,6 +701,49 @@ class InputLogicTest {
         assertEquals("helxlo", text)
     }
 
+    @Test fun `space right after punctuation following a swiped word`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        glideTypingInput("hello")
+        input(',')
+        assertEquals("hello, ", text)
+        assertEquals(SpaceState.AUTO_SPACE_AFTER_PUNCTUATION, spaceState)
+        input('a')
+        assertEquals("hello, a", text)
+    }
+
+    @Test fun `next swiped word after punctuation following a swiped word gets no second space`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        glideTypingInput("hello")
+        input(',')
+        glideTypingInput("there")
+        assertEquals("hello, there", text)
+    }
+
+    @Test fun `space right after punctuation following a picked suggestion`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        pickSuggestion("hello")
+        input('?')
+        assertEquals("hello? ", text)
+        input('!')
+        assertEquals("hello?!", text) // like typed "there!?", see above
+    }
+
+    @Test fun `punctuation after a swiped word keeps the deferred space without the setting, and for a period`() {
+        glideTypingInput("hello")
+        input(',')
+        assertEquals("hello,", text)
+        assertEquals(SpaceState.PHANTOM, spaceState)
+        input('a')
+        assertEquals("hello, a", text)
+
+        setText("")
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        glideTypingInput("hello")
+        input('.')
+        assertEquals("hello.", text)
+        assertEquals(SpaceState.PHANTOM, spaceState)
+    }
+
     @Test fun `space after semicolon, exclamation and question mark following a number, but not inside numbers`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("25!")
@@ -939,8 +982,9 @@ class InputLogicTest {
                 val base = if (swapped || oldAutoSpace && (insert in listOf(".", ",", ";", ":", "!", "?") || (insert == "/" && oldBefore.endsWith(": ")))) oldBefore.dropLast(1) + insert else oldBefore + insert
                 val expected = if (swapped || spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION) "$base " else base
                 assertEquals(expected, textBeforeCursor)
-            } else // in some cases autospace might be suppressed
-                assert(oldBefore + phantomSpaceToInsert + insert == textBeforeCursor || oldBefore + insert == textBeforeCursor)
+            } else // in some cases autospace might be suppressed, and punctuation may get its space right away
+                assert(oldBefore + phantomSpaceToInsert + insert == textBeforeCursor || oldBefore + insert == textBeforeCursor
+                        || (spaceState == SpaceState.AUTO_SPACE_AFTER_PUNCTUATION && "$oldBefore$insert " == textBeforeCursor))
         }
         assertEquals(oldAfter, textAfterCursor)
         assertEquals(textBeforeCursor + textAfterCursor, getTextFromConnection())
