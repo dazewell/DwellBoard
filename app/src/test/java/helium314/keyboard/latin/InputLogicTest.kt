@@ -935,6 +935,15 @@ class InputLogicTest {
         assertEquals("jelxlo", text)
     }
 
+    @Test fun `space swipe inside a composing word changed after the cursor rebuilds the word from the text`() {
+        chainInput("hello")
+        ShadowInputMethodService.text = "helpo" // same start, changed after where the cursor lands
+        spaceSwipe(-2)
+        assertEquals("helpo", composer.typedWord)
+        input('x')
+        assertEquals("helxpo", text)
+    }
+
     @Test fun `picking a suggestion after a space swipe into the middle of the composing word`() {
         chainInput("hello")
         spaceSwipe(-2)

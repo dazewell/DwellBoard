@@ -12,9 +12,9 @@ import helium314.keyboard.latin.RichInputConnection
 object ComposingResync {
     /**
      * Sets the same composing region again, which splits the cache back into committed and composing text, the
-     * way restartSuggestions does. Returns false without touching anything if the cached text before the cursor
-     * does not end with the part of [typedWord] before [cursorCodePoints]: the word is then out of step with the
-     * editor, and a region taken from it could cover text after the word.
+     * way restartSuggestions does. Returns false without touching anything if the text around the cursor is not
+     * [typedWord] split at [cursorCodePoints]: the word is then out of step with the editor, and a region taken
+     * from it could cover other text.
      */
     @JvmStatic
     fun afterMoveInsideWord(connection: RichInputConnection, typedWord: String, cursorCodePoints: Int): Boolean {
@@ -24,6 +24,11 @@ object ComposingResync {
         if (charsBefore > cursor) return false
         val before = connection.getTextBeforeCursor(charsBefore, 0) ?: return false
         if (before.toString() != typedWord.substring(0, charsBefore)) return false
+        // the text after the cursor is not cached, so it is only read when there is a part of the word left to check
+        if (charsBefore < typedWord.length) {
+            val after = connection.getTextAfterCursor(typedWord.length - charsBefore, 0) ?: return false
+            if (after.toString() != typedWord.substring(charsBefore)) return false
+        }
         val start = cursor - charsBefore
         connection.setComposingRegion(start, start + typedWord.length)
         return true
