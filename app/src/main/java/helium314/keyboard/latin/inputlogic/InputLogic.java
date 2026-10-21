@@ -461,6 +461,14 @@ public final class InputLogic {
         return mWordComposer.moveCursorByAndReturnIfInsideComposingWord(distance);
     }
 
+    // DwellBoard: see ComposingResync; a word that no longer matches the text is rebuilt right away, like a move out of the word
+    public void resyncComposingAfterCursorMoveInsideWord() {
+        if (helium314.keyboard.dwell.cursor.ComposingResync.afterMoveInsideWord(mConnection, mWordComposer.getTypedWord(), mWordComposer.getCursorPositionWithinWord()))
+            return;
+        finishInput();
+        restartSuggestionsOnWordTouchedByCursor(Settings.getValues());
+    }
+
     /**
      * React to a code input. It may be a code point to insert, or a symbolic value that influences
      * the keyboard behavior.

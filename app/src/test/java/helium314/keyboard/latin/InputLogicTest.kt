@@ -896,6 +896,63 @@ class InputLogicTest {
         assertEquals(5, cursor)
     }
 
+    private fun spaceSwipe(steps: Int) {
+        latinIME.mKeyboardActionListener.onHorizontalSpaceSwipe(steps)
+        handleMessages()
+        checkConnectionConsistency()
+    }
+
+    @Test fun `typing after a space swipe inside the composing word and back to its end`() {
+        chainInput("hello")
+        spaceSwipe(-2)
+        spaceSwipe(2)
+        input('x')
+        assertEquals("hellox", text)
+        input(' ')
+        chainInput("ab")
+        repeat(4) { functionalKeyPress(KeyCode.DELETE) }
+        assertEquals("hello", text)
+        chainInput("yz")
+        assertEquals("helloyz", text)
+    }
+
+    @Test fun `separator after a space swipe inside the composing word and back to its end`() {
+        chainInput("hello")
+        spaceSwipe(-3)
+        spaceSwipe(1)
+        spaceSwipe(2)
+        input(',')
+        input('a')
+        assertEquals("hello,a", text)
+    }
+
+    @Test fun `space swipe inside a composing word the app changed rebuilds the word from the text`() {
+        chainInput("hello")
+        ShadowInputMethodService.text = "jello" // changed by the app without telling the keyboard
+        spaceSwipe(-2)
+        assertEquals("jello", composer.typedWord)
+        input('x')
+        assertEquals("jelxlo", text)
+    }
+
+    @Test fun `space swipe inside a composing word changed after the cursor rebuilds the word from the text`() {
+        chainInput("hello")
+        ShadowInputMethodService.text = "helpo" // same start, changed after where the cursor lands
+        spaceSwipe(-2)
+        assertEquals("helpo", composer.typedWord)
+        input('x')
+        assertEquals("helxpo", text)
+    }
+
+    @Test fun `picking a suggestion after a space swipe into the middle of the composing word`() {
+        chainInput("hello")
+        spaceSwipe(-2)
+        pickSuggestion("help")
+        assertEquals("help", text)
+        input('s')
+        assertEquals("help s", text)
+    }
+
     // ------- helper functions ---------
 
     // should be called before every test, so the same state is guaranteed
