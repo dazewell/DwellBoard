@@ -634,6 +634,16 @@ class InputLogicTest {
         assertEquals("hello, there", text)
     }
 
+    @Test fun `immediate autospace happens in front of a line break`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        for (lineBreak in listOf("\n\n", "\r\n")) {
+            setText("test text${lineBreak}more")
+            setCursorPosition(9)
+            input(',')
+            assertEquals("test text, ${lineBreak}more", text)
+        }
+    }
+
     @Test fun `space is inserted right after dash with spaces around, but not in hyphenated words`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("Look here -")
