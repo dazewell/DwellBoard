@@ -3,6 +3,11 @@
     <string name="dwell_dont_learn_capitalized">Learn capitalized words in lowercase</string>
     <string name="dwell_dont_learn_capitalized_summary">Capitalized (e.g. \"Hello\") and ALL CAPS (e.g. \"HELLO\") words are learned in lowercase; mixed case words (e.g. \"HELlo\") are learned as typed.</string>
     <string name="dwell_app_name" translatable="false">DwellBoard</string>
+    <!-- looked up by name as "theme_name_" + theme id, so they need tools:keep against resource shrinking -->
+    <string name="theme_name_dwell_gboard_light" tools:keep="@string/theme_name_dwell_gboard_light">Gboard style (light)</string>
+    <string name="theme_name_dwell_gboard_dark" tools:keep="@string/theme_name_dwell_gboard_dark">Gboard style (dark)</string>
+    <string name="theme_name_dwell_gboard_swapped_light" tools:keep="@string/theme_name_dwell_gboard_swapped_light">Gboard style swapped (light)</string>
+    <string name="theme_name_dwell_gboard_swapped_dark" tools:keep="@string/theme_name_dwell_gboard_swapped_dark">Gboard style swapped (dark)</string>
     <string name="dwell_spell_checker_service_name">DwellBoard Spell Checker</string>
     <string name="dwell_ime_settings">DwellBoard Settings</string>
     <string name="dwell_android_spell_checker_settings">DwellBoard Spell Checker Settings</string>
