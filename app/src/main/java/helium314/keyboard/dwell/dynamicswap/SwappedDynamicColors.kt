@@ -39,7 +39,8 @@ import helium314.keyboard.latin.utils.isDarkColor
  *
  * Kept as a copy so upstream's class stays untouched. When upstream changes DynamicColors,
  * diff it against this file and carry the change over; the only intended differences are the
- * class header, [dark], the swapped getBackground / getKeyBackground and the companion.
+ * class header, [dark], the swapped getBackground / getKeyBackground, adjustedKeyBackground
+ * derived from background, and the companion.
  */
 @RequiresApi(Build.VERSION_CODES.S)
 class SwappedDynamicColors(context: Context, dark: Boolean, override val themeStyle: String, override val hasKeyBorders: Boolean, private var keyboardBackground: Drawable? = null) : Colors {
@@ -124,7 +125,9 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
     private val doubleAdjustedFunctionalKey: Int = darken(adjustedFunctionalKey)
 
     /** brightened variant of [keyBackground] used in night mode */
-    private val adjustedKeyBackground: Int = brighten(keyBackground)
+    // swapped: from background, which now holds upstream's lighter night key color; the darker keys
+    // would put pressed keys and functional keys at the background's own shade
+    private val adjustedKeyBackground: Int = brighten(background)
     /** further brightened variant of [adjustedKeyBackground] */
     private val doubleAdjustedKeyBackground: Int = brighten(adjustedKeyBackground)
     private var backgroundSetupDone = false
