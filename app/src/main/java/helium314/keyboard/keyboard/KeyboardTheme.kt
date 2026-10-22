@@ -68,6 +68,8 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         fun getAvailableDefaultColors(prefs: SharedPreferences, isNight: Boolean) = listOfNotNull(
             if (!isNight) THEME_LIGHT else null, THEME_DARK,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) THEME_DYNAMIC else null,
+            // DwellBoard: Dynamic colors with background and keys swapped, listed beside the original
+            *helium314.keyboard.dwell.dynamicswap.SwappedDynamicColors.availableThemes(isNight),
             if (prefs.getString(Settings.PREF_THEME_STYLE, Defaults.PREF_THEME_STYLE) == STYLE_HOLO) THEME_HOLO_WHITE else null,
             THEME_DARKER,
             THEME_BLACK,
@@ -152,6 +154,10 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) DynamicColors(context, themeStyle, hasBorders, backgroundImage)
                     else getThemeColors(THEME_LIGHT, themeStyle, context, prefs, isNight)
                 }
+                // DwellBoard: null below Android 12, falls back like THEME_DYNAMIC does
+                helium314.keyboard.dwell.dynamicswap.SwappedDynamicColors.THEME_LIGHT, helium314.keyboard.dwell.dynamicswap.SwappedDynamicColors.THEME_DARK ->
+                    helium314.keyboard.dwell.dynamicswap.SwappedDynamicColors.create(themeName, themeStyle, hasBorders, context, backgroundImage)
+                        ?: getThemeColors(THEME_LIGHT, themeStyle, context, prefs, isNight)
                 THEME_LIGHT -> DefaultColors(
                     themeStyle,
                     hasBorders,

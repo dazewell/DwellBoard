@@ -49,3 +49,7 @@ Pressing space or enter on the emoji keyboard after picking an emoji returns to 
 ### Main keyboard after punctuation <!-- #symbols-punctuation-abc -->
 
 Typing one of a chosen set of punctuation marks on the symbols keyboard returns to the main keyboard, so a "?" or "-" in a sentence needs no extra tap. Setting: Advanced → "Switch to main keyboard after… Typing certain punctuation in symbols view", off by default; the marks are editable below it, default ? ! ; - " ' ).
+
+### Dynamic colors swapped <!-- #dynamic-swapped-theme -->
+
+Two color themes, "Dynamic colors swapped (light)" and "(dark)", that use your wallpaper's Material You colors the other way round: a near-white or near-black background with keys in the accent color. Pick them under Appearance → Colors; Android 12 and newer. Keys only show their color with key borders on.
