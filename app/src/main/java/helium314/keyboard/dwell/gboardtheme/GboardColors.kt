@@ -44,7 +44,8 @@ import helium314.keyboard.latin.utils.isDarkColor
  * class stays untouched. When upstream changes DynamicColors, diff it against this file and
  * carry the change over. Intended differences: the class header, [dark] and [swapped], the
  * color getters, functional and action keys drawn in [functionalKey] with [functionalKeyText]
- * at night too, adjustedKeyBackground taken from the lighter surface, and the companion.
+ * at night too, adjustedKeyBackground taken from the lighter surface, pressedKey for day
+ * letter keys taken from the darker one, and the companion.
  */
 @RequiresApi(Build.VERSION_CODES.S)
 class GboardColors(context: Context, dark: Boolean, private val swapped: Boolean, override val themeStyle: String, override val hasKeyBorders: Boolean, private var keyboardBackground: Drawable? = null) : Colors {
@@ -140,6 +141,8 @@ class GboardColors(context: Context, dark: Boolean, private val swapped: Boolean
 
     /** brightened variant of the lighter night surface, the keys unless [swapped] */
     private val adjustedKeyBackground: Int = brighten(if (swapped) background else keyBackground)
+    /** day pressed letter key, darkened from the darker day surface, the background unless [swapped] */
+    private val pressedKey: Int = darken(if (swapped) keyBackground else background)
     /** further brightened variant of [adjustedKeyBackground] */
     private val doubleAdjustedKeyBackground: Int = brighten(adjustedKeyBackground)
     private var backgroundSetupDone = false
@@ -198,7 +201,7 @@ class GboardColors(context: Context, dark: Boolean, private val swapped: Boolean
                 else pressedStateList(adjustedKeyBackground, background)
 
             keyStateList =
-                if (!isNight) pressedStateList(adjustedBackground, keyBackground)
+                if (!isNight) pressedStateList(pressedKey, keyBackground)
                 else pressedStateList(adjustedKeyBackground, keyBackground)
 
             functionalKeyStateList = pressedStateList(pressedFunctionalKey, functionalKey)
