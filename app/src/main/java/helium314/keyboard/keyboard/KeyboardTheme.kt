@@ -47,6 +47,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
         const val STYLE_MATERIAL = "Material"
         const val STYLE_HOLO = "Holo"
         const val STYLE_ROUNDED = "Rounded"
+        const val STYLE_PILL = helium314.keyboard.dwell.pillstyle.PillStyle.STYLE // DwellBoard: Gboard-like style
 
         // new themes that are just colors
         const val THEME_LIGHT = "light"
@@ -84,7 +85,7 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             if (!isNight) THEME_SAND else null,
             THEME_VIOLETTE
         )
-        val STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED)
+        val STYLES = arrayOf(STYLE_MATERIAL, STYLE_HOLO, STYLE_ROUNDED, STYLE_PILL)
 
         // These should be aligned with Keyboard.themeId and Keyboard.Case.keyboardTheme
         // attributes' values in attrs.xml.
@@ -100,7 +101,10 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             KeyboardTheme(THEME_ID_LXX_BASE, R.style.KeyboardTheme_LXX_Base),
             KeyboardTheme(THEME_ID_LXX_BASE_BORDER, R.style.KeyboardTheme_LXX_Base_Border),
             KeyboardTheme(THEME_ID_ROUNDED_BASE, R.style.KeyboardTheme_Rounded_Base),
-            KeyboardTheme(THEME_ID_ROUNDED_BASE_BORDER, R.style.KeyboardTheme_Rounded_Base_Border)
+            KeyboardTheme(THEME_ID_ROUNDED_BASE_BORDER, R.style.KeyboardTheme_Rounded_Base_Border),
+            // DwellBoard: Pill style, ids live in PillStyle so TextKeyData can test them
+            KeyboardTheme(helium314.keyboard.dwell.pillstyle.PillStyle.THEME_ID_BASE, R.style.KeyboardTheme_Dwell_Pill_Base),
+            KeyboardTheme(helium314.keyboard.dwell.pillstyle.PillStyle.THEME_ID_BASE_BORDER, R.style.KeyboardTheme_Dwell_Pill_Base_Border)
         )
 
         // named colors, with names from old settings
@@ -123,13 +127,15 @@ private constructor(val themeId: Int, @JvmField val mStyleId: Int) {
             val matchingId = when (style) {
                 STYLE_HOLO -> THEME_ID_HOLO_BASE
                 STYLE_ROUNDED -> if (borders) THEME_ID_ROUNDED_BASE_BORDER else THEME_ID_ROUNDED_BASE
+                // DwellBoard: own theme ids rather than Rounded's, so the layout parser can tell Pill apart
+                STYLE_PILL -> if (borders) helium314.keyboard.dwell.pillstyle.PillStyle.THEME_ID_BASE_BORDER else helium314.keyboard.dwell.pillstyle.PillStyle.THEME_ID_BASE
                 else -> if (borders) THEME_ID_LXX_BASE_BORDER else THEME_ID_LXX_BASE
             }
             return KEYBOARD_THEMES.firstOrNull { it.themeId == matchingId } ?: KEYBOARD_THEMES[DEFAULT_THEME_ID]
         }
 
         fun getThemeActionAndEmojiKeyLabelFlags(themeId: Int): Int {
-            return if (themeId == THEME_ID_LXX_BASE || themeId == THEME_ID_ROUNDED_BASE) Key.LABEL_FLAGS_KEEP_BACKGROUND_ASPECT_RATIO else 0
+            return if (themeId == THEME_ID_LXX_BASE || themeId == THEME_ID_ROUNDED_BASE || themeId == helium314.keyboard.dwell.pillstyle.PillStyle.THEME_ID_BASE) Key.LABEL_FLAGS_KEEP_BACKGROUND_ASPECT_RATIO else 0 // DwellBoard: borderless Pill keeps Rounded's round action key
         }
 
         @JvmStatic

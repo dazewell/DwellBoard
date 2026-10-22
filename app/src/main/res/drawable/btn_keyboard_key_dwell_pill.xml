@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pill style with key borders. Pressed colours come from the tint list, so states only pick the shape. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Action keys. -->
+    <item android:state_active="true"
+          android:drawable="@drawable/btn_keyboard_key_dwell_pill_round" />
+    <!-- Empty background keys. -->
+    <item android:state_empty="true" android:state_pressed="true"
+          android:drawable="@drawable/btn_keyboard_key_dwell_pill_rect" />
+    <item android:state_empty="true"
+          android:drawable="@android:color/transparent" />
+    <!-- Normal, functional and space keys. -->
+    <item android:drawable="@drawable/btn_keyboard_key_dwell_pill_rect" />
+</selector>

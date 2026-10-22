@@ -61,6 +61,7 @@ public class KeyboardView extends View {
     private final Drawable mFunctionalKeyBackground;
     private final Drawable mActionKeyBackground;
     private final Drawable mSpacebarBackground;
+    private final Drawable mDwellPillKeyBackground; // DwellBoard: null outside the Pill style
     private final float mSpacebarIconWidthRatio;
     private final Rect mKeyBackgroundPadding = new Rect();
     private static final float KET_TEXT_SHADOW_RADIUS_DISABLED = -1.0f;
@@ -122,6 +123,7 @@ public class KeyboardView extends View {
             mActionKeyBackground = mColors.selectAndColorDrawable(keyboardViewAttr, ColorType.ACTION_KEY_POPUP_KEYS_BACKGROUND);
         else
             mActionKeyBackground = mColors.selectAndColorDrawable(keyboardViewAttr, ColorType.ACTION_KEY_BACKGROUND);
+        mDwellPillKeyBackground = helium314.keyboard.dwell.pillstyle.PillStyle.pillKeyBackground(context, mColors);
 
         mSpacebarIconWidthRatio = keyboardViewAttr.getFloat(
                 R.styleable.KeyboardView_spacebarIconWidthRatio, 1.0f);
@@ -341,7 +343,9 @@ public class KeyboardView extends View {
         if (!key.isSpacer()) {
             final Drawable background = key.selectBackgroundDrawable(
                     mKeyBackground, mFunctionalKeyBackground, mSpacebarBackground, mActionKeyBackground);
-            onDrawKeyBackground(key, canvas, background);
+            // DwellBoard: ?123 shares its background type with shift and delete, but only it is a pill
+            onDrawKeyBackground(key, canvas, mDwellPillKeyBackground != null && helium314.keyboard.dwell.pillstyle.PillStyle.isPillKey(key)
+                    ? helium314.keyboard.dwell.pillstyle.PillStyle.withStateOf(mDwellPillKeyBackground, background) : background);
         }
         onDrawKeyTopVisuals(key, canvas, paint, params);
 
@@ -504,7 +508,8 @@ public class KeyboardView extends View {
             canvas.drawText(hintLabel, 0, hintLabel.length(), hintX, hintBaseline + adjustmentY, paint);
         } else if (hintIcon != null) {
             int iconSize = (int) (key.selectHintTextSize(params) * mHintFontSizeMultiplier);
-            boolean isFunctionalKeyAndRoundedStyle = mColors.getThemeStyle().equals(STYLE_ROUNDED) && (key.hasFunctionalBackground() || key.hasActionKeyBackground());
+            boolean isFunctionalKeyAndRoundedStyle = mColors.getThemeStyle().equals(STYLE_ROUNDED) && (key.hasFunctionalBackground() || key.hasActionKeyBackground())
+                    || helium314.keyboard.dwell.pillstyle.PillStyle.isPillShaped(mColors, key); // DwellBoard: keep the hint inside the pill
             float hintX, hintBaseline;
             if (key.hasHintLabel()) {
                 // The hint icon is placed just right of the key label. Used mainly on "phone number" layout.
@@ -525,6 +530,11 @@ public class KeyboardView extends View {
             float adjustmentY = isFunctionalKeyAndRoundedStyle
                                       ? iconSize * 0.5f
                                       : params.mHintLabelVerticalAdjustment * iconSize;
+            if (helium314.keyboard.dwell.pillstyle.PillStyle.hintInsideRoundEnd(mColors, key, mDefaultKeyLabelFlags)) { // DwellBoard: a pill has no corner to put it in
+                hintX = helium314.keyboard.dwell.pillstyle.PillStyle.hintIconLeft(keyWidth, keyHeight, iconSize);
+                hintBaseline = helium314.keyboard.dwell.pillstyle.PillStyle.hintIconTop(keyWidth, keyHeight, iconSize);
+                adjustmentY = 0;
+            }
             hintIcon.setColorFilter(key.selectHintTextColor(params), PorterDuff.Mode.MULTIPLY);
             drawIcon(canvas, hintIcon, (int)hintX, (int)(hintBaseline + adjustmentY), iconSize, iconSize);
         } else if (key.getPopupKeys() != null && ! key.hasNoPanelAutoPopupKey()
@@ -567,6 +577,8 @@ public class KeyboardView extends View {
                 hintX = keyWidth + hintBaseline + labelCharWidth * 0.1f;
             else
                 hintX = key.hasFunctionalBackground() || key.hasActionKeyBackground() ? keyWidth / 2.0f : keyWidth - mKeyHintLetterPadding - labelCharWidth / 2.0f;
+        } else if (helium314.keyboard.dwell.pillstyle.PillStyle.isPillShaped(mColors, key)) { // DwellBoard: a corner hint would sit outside the pill
+            hintX = keyWidth / 2.0f;
         } else {
             hintX = keyWidth - mKeyHintLetterPadding - TypefaceUtils.getReferenceCharWidth(paint) / 2.0f;
         }

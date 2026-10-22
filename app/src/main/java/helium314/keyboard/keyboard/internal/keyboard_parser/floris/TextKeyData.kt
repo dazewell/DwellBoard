@@ -408,6 +408,8 @@ sealed interface KeyData : AbstractKeyData {
     }
 
     private fun getDefaultBackground(params: KeyboardParams): Int {
+        // DwellBoard: the Pill style draws the globe like a letter key, as Gboard does
+        if (label == KeyLabel.LANGUAGE_SWITCH && helium314.keyboard.dwell.pillstyle.PillStyle.isPillTheme(params.mThemeId)) return Key.BACKGROUND_TYPE_NORMAL
         // functional keys
         when (label) { // or use code?
             KeyLabel.SYMBOL_ALPHA, KeyLabel.SYMBOL, KeyLabel.ALPHA, KeyLabel.COMMA, KeyLabel.PERIOD, KeyLabel.DELETE,

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Pill style, see helium314.keyboard.dwell.pillstyle.PillStyle. Built on Rounded and overrides
+     only the gaps, the theme id and, with key borders, the key shapes. -->
+<resources>
+    <!-- Without key borders keys are only drawn when pressed, so Rounded's drawables stay. -->
+    <style name="KeyboardTheme.Dwell_Pill_Base" parent="KeyboardTheme.Rounded_Base">
+        <item name="keyboardStyle">@style/Keyboard.Dwell_Pill_Base</item>
+    </style>
+    <style name="Keyboard.Dwell_Pill_Base" parent="Keyboard">
+        <!-- Aligned with PillStyle.THEME_ID_* -->
+        <item name="themeId">PillBase</item>
+        <item name="horizontalGap">@fraction/dwell_pill_key_horizontal_gap</item>
+        <item name="verticalGap">@fraction/dwell_pill_key_vertical_gap</item>
+    </style>
+
+    <style name="KeyboardTheme.Dwell_Pill_Base_Border" parent="KeyboardTheme.Rounded_Base_Border">
+        <item name="keyboardStyle">@style/Keyboard.Dwell_Pill_Base_Border</item>
+        <item name="keyboardViewStyle">@style/KeyboardView.Dwell_Pill_Base_Border</item>
+        <item name="mainKeyboardViewStyle">@style/MainKeyboardView.Dwell_Pill_Base_Border</item>
+        <item name="emojiPalettesViewStyle">@style/EmojiPalettesView.Dwell_Pill_Base_Border</item>
+        <item name="clipboardHistoryViewStyle">@style/ClipboardHistoryView.Dwell_Pill_Base_Border</item>
+    </style>
+    <style name="Keyboard.Dwell_Pill_Base_Border" parent="Keyboard.Dwell_Pill_Base">
+        <item name="themeId">PillBaseBorder</item>
+    </style>
+    <style name="KeyboardView.Dwell_Pill_Base_Border" parent="KeyboardView.Rounded_Base_Border">
+        <item name="keyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="spacebarBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+    </style>
+    <style name="MainKeyboardView.Dwell_Pill_Base_Border" parent="MainKeyboardView.Rounded_Base_Border">
+        <item name="keyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="spacebarBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+    </style>
+    <style name="EmojiPalettesView.Dwell_Pill_Base_Border" parent="EmojiPalettesView.Rounded_Base_Border">
+        <item name="keyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="spacebarBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+    </style>
+    <style name="ClipboardHistoryView.Dwell_Pill_Base_Border" parent="ClipboardHistoryView.Rounded_Base_Border">
+        <item name="keyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+        <item name="functionalKeyBackground">@drawable/btn_keyboard_key_dwell_pill</item>
+    </style>
+</resources>

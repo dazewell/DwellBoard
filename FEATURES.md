@@ -38,6 +38,10 @@ Sets how many recent emojis the emoji keyboard shows, up to three times the usua
 
 Adds empty space above the space bar row on the letter and symbol keyboards, up to one row's height where the keys are wide enough for taps in it to still register; the rows above shrink so the keyboard stays the same height. Setting: Appearance → "Gap above space bar row", per orientation, 0% by default.
 
+### Pill keyboard style <!-- #pill-style -->
+
+A Gboard-like style: flat keys with no bottom edge, roomier gaps in portrait, pill-shaped ?123 and action keys, and the globe key coloured like a letter. Looks best with key borders on; the key gap setting still applies. Setting: Appearance → Style → "Pill"; Material stays the default.
+
 ### Clear emoji search <!-- #emoji-search-clear -->
 
 Emoji search starts empty again once you've returned to the main keyboard yourself with ABC or the emoji key; searching and picking emojis in between keeps what you typed. Setting: Preferences → "Clear emoji search", on by default.
