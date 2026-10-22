@@ -61,7 +61,8 @@ class SwappedDynamicColors private constructor(
         @RequiresApi(Build.VERSION_CODES.S)
         private fun palette(context: Context, dark: Boolean): IntArray {
             val ids = if (dark) intArrayOf(
-                android.R.color.system_accent1_200,
+                // bright enough that DefaultColors turns the action key icon gray, white is unreadable on it
+                android.R.color.system_accent1_100,
                 android.R.color.system_neutral1_900,
                 android.R.color.system_accent1_700,
                 android.R.color.system_accent1_800,
