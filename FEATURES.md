@@ -50,6 +50,6 @@ Pressing space or enter on the emoji keyboard after picking an emoji returns to 
 
 Typing one of a chosen set of punctuation marks on the symbols keyboard returns to the main keyboard, so a "?" or "-" in a sentence needs no extra tap. Setting: Advanced → "Switch to main keyboard after… Typing certain punctuation in symbols view", off by default; the marks are editable below it, default ? ! ; - " ' ).
 
-### Dynamic colors swapped <!-- #dynamic-swapped-theme -->
+### Gboard style themes <!-- #dynamic-swapped-theme --> <!-- #gboard-themes -->
 
-Two color themes, "Dynamic colors swapped (light)" and "(dark)", that are Dynamic colors with the background and key colors swapped: in light, a white background with keys in the wallpaper-tinted shade. Pick them under Appearance → Colors; Android 12 and newer. Keys only show their color with key borders on.
+Four color themes matching Gboard's current Dynamic Color look: "Gboard style" light and dark, with white keys on a tinted background and one shade for all function keys and Enter, plus "Gboard style swapped" versions with background and key colors exchanged. Pick them under Appearance → Colors; Android 12 and newer. Keys only show their color with key borders on.

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-package helium314.keyboard.dwell.dynamicswap
+package helium314.keyboard.dwell.gboardtheme
 
 import android.content.Context
 import android.content.res.ColorStateList
@@ -32,48 +32,59 @@ import helium314.keyboard.latin.utils.isBrightColor
 import helium314.keyboard.latin.utils.isDarkColor
 
 /**
- * Upstream's DynamicColors (latin/common/Colors.kt) with the keyboard background and key colors
- * swapped: white keys on a tinted background become tinted keys on a white background.
+ * Gboard's current Dynamic Color theme, and the same with background and key colors swapped.
  * Light and dark are separate themes, so [dark] replaces upstream's system night check and
  * either can sit in the day or night slot.
  *
- * Kept as a copy so upstream's class stays untouched. When upstream changes DynamicColors,
- * diff it against this file and carry the change over; the only intended differences are the
- * class header, [dark], the swapped getBackground / getKeyBackground, adjustedKeyBackground
- * derived from background, and the companion.
+ * The colors were sampled from Gboard 18.4 on Android 16 and matched to Material color roles
+ * (Android 14+); older versions get the nearest palette tones. Gboard gives every function key
+ * and Enter the same secondary container color.
+ *
+ * The drawing is a copy of upstream's DynamicColors (latin/common/Colors.kt), so upstream's
+ * class stays untouched. When upstream changes DynamicColors, diff it against this file and
+ * carry the change over. Intended differences: the class header, [dark] and [swapped], the
+ * color getters, functional and action keys drawn in [functionalKey] with [functionalKeyText]
+ * at night too, adjustedKeyBackground taken from the lighter surface, and the companion.
  */
 @RequiresApi(Build.VERSION_CODES.S)
-class SwappedDynamicColors(context: Context, dark: Boolean, override val themeStyle: String, override val hasKeyBorders: Boolean, private var keyboardBackground: Drawable? = null) : Colors {
+class GboardColors(context: Context, dark: Boolean, private val swapped: Boolean, override val themeStyle: String, override val hasKeyBorders: Boolean, private var keyboardBackground: Drawable? = null) : Colors {
 
     private val isNight = dark
+    private val hasRoles = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 
     private val accent = getAccent(context)
     private val gesture = getGesture(context)
     private val background = getBackground(context)
     private val keyBackground = getKeyBackground(context)
     private val functionalKey = getFunctionalKey(context)
+    private val functionalKeyText = getFunctionalKeyText(context)
     private val spaceBar = getKeyBackground(context)
     private val keyText = getKeyText(context)
     private val keyHintText = getKeyHintText(context)
     private val spaceBarText = getSpaceBarText(context)
 
+    /** [role] on Android 14+, else the palette [tone] nearest to it */
+    private fun color(context: Context, role: Int, tone: Int) = ContextCompat.getColor(context, if (hasRoles) role else tone)
+
     private fun getAccent(context: Context) = if (isNight) ContextCompat.getColor(context, android.R.color.system_accent1_100)
         else ContextCompat.getColor(context, android.R.color.system_accent1_200)
     private fun getGesture(context: Context) = if (isNight) accent
         else ContextCompat.getColor(context, android.R.color.system_accent1_600)
-    // swapped: upstream has background neutral1_900 / _50 and keys neutral1_800 / _0
-    private fun getBackground(context: Context) = if (isNight) ContextCompat.getColor(context, android.R.color.system_neutral1_800)
-        else ContextCompat.getColor(context, android.R.color.system_neutral1_0)
-    private fun getKeyBackground(context: Context) = if (isNight) ContextCompat.getColor(context, android.R.color.system_neutral1_900)
-        else ContextCompat.getColor(context, android.R.color.system_neutral1_50)
-    private fun getFunctionalKey(context: Context) = if (isNight) ContextCompat.getColor(context, android.R.color.system_accent2_300)
-        else ContextCompat.getColor(context, android.R.color.system_accent2_100)
-    private fun getKeyText(context: Context) = if (isNight) ContextCompat.getColor(context, android.R.color.system_neutral1_50)
-        else ContextCompat.getColor(context, android.R.color.system_accent3_900)
-    private fun getKeyHintText(context: Context) = if (isNight) keyText
-        else ContextCompat.getColor(context, android.R.color.system_accent3_700)
-    private fun getSpaceBarText(context: Context) = if (isNight) ColorUtils.setAlphaComponent(ContextCompat.getColor(context, android.R.color.system_neutral1_50), 127)
-        else ColorUtils.setAlphaComponent(ContextCompat.getColor(context, android.R.color.system_accent3_700), 127)
+    private fun getSurface(context: Context) = if (isNight) color(context, android.R.color.system_surface_container_dark, android.R.color.system_neutral1_900)
+        else color(context, android.R.color.system_surface_container_light, android.R.color.system_neutral1_50)
+    private fun getKeySurface(context: Context) = if (isNight) color(context, android.R.color.system_surface_bright_dark, android.R.color.system_neutral2_800)
+        else color(context, android.R.color.system_surface_container_lowest_light, android.R.color.system_neutral1_0)
+    private fun getBackground(context: Context) = if (swapped) getKeySurface(context) else getSurface(context)
+    private fun getKeyBackground(context: Context) = if (swapped) getSurface(context) else getKeySurface(context)
+    private fun getFunctionalKey(context: Context) = if (isNight) color(context, android.R.color.system_secondary_container_dark, android.R.color.system_accent2_700)
+        else color(context, android.R.color.system_secondary_container_light, android.R.color.system_accent2_100)
+    private fun getFunctionalKeyText(context: Context) = if (isNight) color(context, android.R.color.system_on_secondary_container_dark, android.R.color.system_accent2_100)
+        else color(context, android.R.color.system_on_secondary_container_light, android.R.color.system_accent2_700)
+    private fun getKeyText(context: Context) = if (isNight) color(context, android.R.color.system_on_surface_dark, android.R.color.system_neutral1_100)
+        else color(context, android.R.color.system_on_surface_light, android.R.color.system_neutral1_900)
+    private fun getKeyHintText(context: Context) = if (isNight) color(context, android.R.color.system_on_surface_variant_dark, android.R.color.system_neutral2_200)
+        else color(context, android.R.color.system_on_surface_variant_light, android.R.color.system_neutral2_700)
+    private fun getSpaceBarText(context: Context) = getKeyHintText(context)
 
     override fun haveColorsChanged(context: Context) =
         accent != getAccent(context)
@@ -81,6 +92,7 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
                 || background != getBackground(context)
                 || keyBackground != getKeyBackground(context)
                 || functionalKey != getFunctionalKey(context)
+                || functionalKeyText != getFunctionalKeyText(context)
                 || keyText != getKeyText(context)
                 || keyHintText != getKeyHintText(context)
                 || spaceBarText != getSpaceBarText(context)
@@ -123,11 +135,11 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
     private val adjustedFunctionalKey: Int = darken(functionalKey)
     /** further darkened variant of [adjustedFunctionalKey] */
     private val doubleAdjustedFunctionalKey: Int = darken(adjustedFunctionalKey)
+    /** [functionalKey] when pressed; the night one is dark, so it brightens */
+    private val pressedFunctionalKey: Int = if (!isNight) doubleAdjustedFunctionalKey else brighten(functionalKey)
 
-    /** brightened variant of [keyBackground] used in night mode */
-    // swapped: from background, which now holds upstream's lighter night key color; the darker keys
-    // would put pressed keys and functional keys at the background's own shade
-    private val adjustedKeyBackground: Int = brighten(background)
+    /** brightened variant of the lighter night surface, the keys unless [swapped] */
+    private val adjustedKeyBackground: Int = brighten(if (swapped) background else keyBackground)
     /** further brightened variant of [adjustedKeyBackground] */
     private val doubleAdjustedKeyBackground: Int = brighten(adjustedKeyBackground)
     private var backgroundSetupDone = false
@@ -189,13 +201,9 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
                 if (!isNight) pressedStateList(adjustedBackground, keyBackground)
                 else pressedStateList(adjustedKeyBackground, keyBackground)
 
-            functionalKeyStateList =
-                if (!isNight) pressedStateList(doubleAdjustedFunctionalKey, functionalKey)
-                else pressedStateList(functionalKey, doubleAdjustedKeyBackground)
+            functionalKeyStateList = pressedStateList(pressedFunctionalKey, functionalKey)
 
-            actionKeyStateList =
-                if (!isNight) pressedStateList(gesture, accent)
-                else pressedStateList(doubleAdjustedAccent, accent)
+            actionKeyStateList = functionalKeyStateList
 
             spaceBarStateList =
                 if (themeStyle == STYLE_HOLO) pressedStateList(spaceBar, spaceBar)
@@ -217,8 +225,7 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
 
             actionKeyStateList =
                 if (themeStyle == STYLE_HOLO) pressedStateList(accent, Color.TRANSPARENT)
-                else if (!isNight) pressedStateList(gesture, accent)
-                else pressedStateList(doubleAdjustedAccent, accent)
+                else pressedStateList(pressedFunctionalKey, functionalKey)
 
             spaceBarStateList =
                 if (!isNight) pressedStateList(gesture, adjustedFunctionalKey)
@@ -228,33 +235,33 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
 
         actionKeyIconColorFilter = when {
             themeStyle == STYLE_HOLO -> keyTextFilter
-            // the white icon may not have enough contrast, and can't be adjusted by the user
-            isBrightColor(accent) -> colorFilter(Color.DKGRAY)
-            else -> null
+            else -> colorFilter(functionalKeyText)
         }
     }
 
     override fun get(color: ColorType): Int = when (color) {
-        TOOL_BAR_KEY_ENABLED_BACKGROUND, EMOJI_CATEGORY_SELECTED, ACTION_KEY_BACKGROUND, CLIPBOARD_PIN -> accent
+        TOOL_BAR_KEY_ENABLED_BACKGROUND, EMOJI_CATEGORY_SELECTED, CLIPBOARD_PIN -> accent
+        ACTION_KEY_BACKGROUND -> functionalKey
         SHIFT_KEY_ICON -> if (accentShiftedIcon) accent else keyText
         AUTOFILL_BACKGROUND_CHIP, GESTURE_PREVIEW, POPUP_KEYS_BACKGROUND, MORE_SUGGESTIONS_BACKGROUND, KEY_PREVIEW_BACKGROUND -> adjustedBackground
         TOOL_BAR_EXPAND_KEY_BACKGROUND -> if (!isNight) accent else doubleAdjustedBackground
         GESTURE_TRAIL -> gesture
         KEY_TEXT, SUGGESTION_AUTO_CORRECT, REMOVE_SUGGESTION_ICON, EMOJI_KEY_TEXT, KEY_PREVIEW_TEXT, POPUP_KEY_TEXT,
-            KEY_ICON, POPUP_KEY_ICON, ONE_HANDED_MODE_BUTTON, EMOJI_CATEGORY, TOOL_BAR_KEY, FUNCTIONAL_KEY_TEXT,
+            KEY_ICON, POPUP_KEY_ICON, ONE_HANDED_MODE_BUTTON, EMOJI_CATEGORY, TOOL_BAR_KEY,
             EMOJI_SEARCH_TEXT, CLIPBOARD_SUGGESTION_ICON -> keyText
         KEY_HINT_TEXT -> keyHintText
         SPACE_BAR_TEXT -> spaceBarText
-        FUNCTIONAL_KEY_BACKGROUND, EMOJI_SEARCH_BACKGROUND -> if (!isNight) functionalKey else doubleAdjustedKeyBackground
+        FUNCTIONAL_KEY_BACKGROUND, EMOJI_SEARCH_BACKGROUND -> functionalKey
+        FUNCTIONAL_KEY_TEXT, ACTION_KEY_ICON -> functionalKeyText
         SPACE_BAR_BACKGROUND -> spaceBar
         MORE_SUGGESTIONS_WORD_BACKGROUND, MAIN_BACKGROUND -> background
         KEY_BACKGROUND -> keyBackground
-        ACTION_KEY_POPUP_KEYS_BACKGROUND -> if (themeStyle == STYLE_HOLO) adjustedBackground else accent
+        ACTION_KEY_POPUP_KEYS_BACKGROUND -> if (themeStyle == STYLE_HOLO) adjustedBackground else functionalKey
         STRIP_BACKGROUND -> if (!hasKeyBorders && themeStyle == STYLE_MATERIAL) adjustedBackground else background
         CLIPBOARD_SUGGESTION_BACKGROUND -> keyBackground
         NAVIGATION_BAR -> navBar
         MORE_SUGGESTIONS_HINT, SUGGESTED_WORD, SUGGESTION_TYPED_WORD, SUGGESTION_VALID_WORD -> adjustedKeyText
-        ACTION_KEY_ICON, TOOL_BAR_EXPAND_KEY -> Color.WHITE
+        TOOL_BAR_EXPAND_KEY -> Color.WHITE
     }
 
     override fun setColor(drawable: Drawable, color: ColorType) {
@@ -325,20 +332,31 @@ class SwappedDynamicColors(context: Context, dark: Boolean, override val themeSt
     }
 
     companion object {
-        const val THEME_LIGHT = "dwell_dynamic_swapped_light"
-        const val THEME_DARK = "dwell_dynamic_swapped_dark"
+        const val THEME_LIGHT = "dwell_gboard_light"
+        const val THEME_DARK = "dwell_gboard_dark"
+        const val THEME_SWAPPED_LIGHT = "dwell_gboard_swapped_light"
+        const val THEME_SWAPPED_DARK = "dwell_gboard_swapped_dark"
+        @JvmField val THEMES = setOf(THEME_LIGHT, THEME_DARK, THEME_SWAPPED_LIGHT, THEME_SWAPPED_DARK)
 
-        /** Entries for the color theme list, light only for the day slot like upstream's Light. */
+        /** Entries for the color theme list, light ones only for the day slot like upstream's Light. */
         @JvmStatic
         fun availableThemes(isNight: Boolean): Array<String?> =
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) emptyArray()
-            else arrayOf(if (!isNight) THEME_LIGHT else null, THEME_DARK)
+            else arrayOf(
+                if (!isNight) THEME_LIGHT else null, THEME_DARK,
+                if (!isNight) THEME_SWAPPED_LIGHT else null, THEME_SWAPPED_DARK,
+            )
 
         /** Null below Android 12, where there is no system palette; the caller falls back. */
         @JvmStatic
         fun create(themeName: String, themeStyle: String, hasKeyBorders: Boolean, context: Context, keyboardBackground: Drawable?): Colors? =
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) null
-            else SwappedDynamicColors(context, themeName == THEME_DARK, themeStyle, hasKeyBorders, keyboardBackground)
+            else GboardColors(
+                context,
+                dark = themeName == THEME_DARK || themeName == THEME_SWAPPED_DARK,
+                swapped = themeName == THEME_SWAPPED_LIGHT || themeName == THEME_SWAPPED_DARK,
+                themeStyle, hasKeyBorders, keyboardBackground,
+            )
     }
 }
 
