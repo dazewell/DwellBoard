@@ -60,6 +60,33 @@ object PillStyle {
         return drawable
     }
 
+    /**
+     * Whether a top-right hint icon has to move inside the round end. Not when the background keeps
+     * its aspect ratio (no key borders): that circle is Rounded's, and so is the hint placement.
+     */
+    @JvmStatic
+    fun hintInsideRoundEnd(colors: Colors, key: Key, defaultLabelFlags: Int) = isPillShaped(colors, key)
+            && !key.hasHintLabel() && !key.hasShiftedLetterHintIcon() && !key.needsToKeepBackgroundAspectRatio(defaultLabelFlags)
+
+    // The pill fills the key, so its top-right round end is a circle of radius min(w, h) / 2 centred
+    // at (w - r, r). The icon goes on that circle's 45° line, pulled in until its far corner clears
+    // the edge. Rounded's fixed corner offset puts it outside the curve once the key is near square.
+    private const val HALF_DIAGONAL = 0.7071f
+    private const val EDGE_MARGIN = 0.15f
+
+    private fun hintIconCenterOffset(keyWidth: Int, keyHeight: Int, iconSize: Int): Float {
+        val r = minOf(keyWidth, keyHeight) / 2f
+        return (r - iconSize * (HALF_DIAGONAL + EDGE_MARGIN)).coerceAtLeast(0f) * HALF_DIAGONAL
+    }
+
+    @JvmStatic
+    fun hintIconLeft(keyWidth: Int, keyHeight: Int, iconSize: Int): Float =
+        keyWidth - minOf(keyWidth, keyHeight) / 2f + hintIconCenterOffset(keyWidth, keyHeight, iconSize) - iconSize / 2f
+
+    @JvmStatic
+    fun hintIconTop(keyWidth: Int, keyHeight: Int, iconSize: Int): Float =
+        minOf(keyWidth, keyHeight) / 2f - hintIconCenterOffset(keyWidth, keyHeight, iconSize) - iconSize / 2f
+
     /** [pill] in the pressed state the key just gave [selected]. */
     @JvmStatic
     fun withStateOf(pill: Drawable, selected: Drawable): Drawable {

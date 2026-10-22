@@ -530,6 +530,11 @@ public class KeyboardView extends View {
             float adjustmentY = isFunctionalKeyAndRoundedStyle
                                       ? iconSize * 0.5f
                                       : params.mHintLabelVerticalAdjustment * iconSize;
+            if (helium314.keyboard.dwell.pillstyle.PillStyle.hintInsideRoundEnd(mColors, key, mDefaultKeyLabelFlags)) { // DwellBoard: a pill has no corner to put it in
+                hintX = helium314.keyboard.dwell.pillstyle.PillStyle.hintIconLeft(keyWidth, keyHeight, iconSize);
+                hintBaseline = helium314.keyboard.dwell.pillstyle.PillStyle.hintIconTop(keyWidth, keyHeight, iconSize);
+                adjustmentY = 0;
+            }
             hintIcon.setColorFilter(key.selectHintTextColor(params), PorterDuff.Mode.MULTIPLY);
             drawIcon(canvas, hintIcon, (int)hintX, (int)(hintBaseline + adjustmentY), iconSize, iconSize);
         } else if (key.getPopupKeys() != null && ! key.hasNoPanelAutoPopupKey()
