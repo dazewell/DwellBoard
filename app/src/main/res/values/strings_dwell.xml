@@ -69,4 +69,6 @@
     <string name="dwell_after_symbol_chars">Typing certain punctuation in symbols view</string>
     <string name="dwell_after_symbol_chars_list">Punctuation that switches to main keyboard</string>
     <string name="dwell_after_symbol_chars_info">Type the characters with no spaces or separators. Digits are ignored.</string>
+    <!-- Looked up by name as style_name_<style>, hence tools:keep and no dwell_ prefix -->
+    <string name="style_name_Pill" tools:keep="@string/style_name_Pill">Pill</string>
 </resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<!-- Landscape rows are already short, so Pill keeps the stock gaps there. -->
+<resources>
+    <fraction name="dwell_pill_key_horizontal_gap">@fraction/config_key_horizontal_gap_holo</fraction>
+    <fraction name="dwell_pill_key_vertical_gap">@fraction/config_key_vertical_gap_holo</fraction>
+</resources>

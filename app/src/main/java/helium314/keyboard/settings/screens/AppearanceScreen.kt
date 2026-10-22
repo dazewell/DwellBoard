@@ -133,7 +133,8 @@ fun createAppearanceSettings(context: Context) = listOf(
         val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
         if ((b?.value ?: 0) < 0)
             Log.v("irrelevant", "stupid way to trigger recomposition on preference change")
-        val items = KeyboardTheme.STYLES.map { it.getStringResourceOrName("style_name_", ctx) to it }
+        // DwellBoard: Pill is a key shape style only, it has no icon set to offer here
+        val items = KeyboardTheme.STYLES.filter { it != KeyboardTheme.STYLE_PILL }.map { it.getStringResourceOrName("style_name_", ctx) to it }
         ListPreference(
             setting,
             items,
