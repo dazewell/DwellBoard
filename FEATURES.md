@@ -52,4 +52,4 @@ Typing one of a chosen set of punctuation marks on the symbols keyboard returns 
 
 ### Dynamic colors swapped <!-- #dynamic-swapped-theme -->
 
-Two color themes, "Dynamic colors swapped (light)" and "(dark)", that use your wallpaper's Material You colors the other way round: a near-white or near-black background with keys in the accent color. Pick them under Appearance → Colors; Android 12 and newer. Keys only show their color with key borders on.
+Two color themes, "Dynamic colors swapped (light)" and "(dark)", that are Dynamic colors with the background and key colors swapped: in light, a white background with keys in the wallpaper-tinted shade. Pick them under Appearance → Colors; Android 12 and newer. Keys only show their color with key borders on.
