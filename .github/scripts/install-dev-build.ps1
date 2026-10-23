@@ -72,17 +72,23 @@ function Get-DevRuns {
     @($Result.workflow_runs | Sort-Object created_at -Descending)
 }
 
-# 2. Find the dev build for the merge commit. The run appears a little after the
-# push; if none shows up and the merge only touched ignored paths, say so.
+# 2. Find the dev build for the merge commit. staging.yml skips pushes that touch
+# only docs, .github, hooks or agent files (its paths-ignore); for those say so
+# at once. Otherwise the run is coming, so poll for it until the build deadline
+# rather than guessing from a short wait (Actions queues can be slow).
 $BuildDeadline = (Get-Date).AddMinutes($BuildWaitMinutes)
-$Run = $null
-for ($i = 0; $i -lt 12 -and -not $Run; $i++) {
-    $Run = Get-DevRuns | Where-Object { $_.head_sha -eq $Sha } | Select-Object -First 1
-    if (-not $Run) { Start-Sleep -Seconds 10 }
-}
-if (-not $Run) {
-    Out-Result 'no-staging-run' 'No staging.yml run for the merge commit; it likely touched only ignored paths (docs, .github, hooks, agent files).' $null $Sha
+$Files = @(Invoke-Gh @('api', '--paginate', "repos/$Repository/pulls/$PullRequest/files", '--jq', '.[].filename'))
+$Ignored = '\.md$|^\.github/|^docs/|^\.githooks/|^\.claude/'
+if (-not @($Files | Where-Object { $_ -notmatch $Ignored })) {
+    Out-Result 'no-staging-run' 'The merge touched only paths staging.yml ignores (docs, .github, hooks, agent files).' $null $Sha
     return
+}
+$Run = $null
+while (-not $Run) {
+    $Run = Get-DevRuns | Where-Object { $_.head_sha -eq $Sha } | Select-Object -First 1
+    if ($Run) { break }
+    if ((Get-Date) -ge $BuildDeadline) { Out-Result 'build-failed' 'No staging.yml run appeared for the merge commit in time.' $null $Sha; return }
+    Start-Sleep -Seconds 15
 }
 
 while ($Run.status -ne 'completed') {
@@ -93,8 +99,15 @@ while ($Run.status -ne 'completed') {
 
 if ($Run.conclusion -eq 'cancelled') {
     # Superseded by a later push to dev: that run's build contains this merge.
-    $Run = Get-DevRuns | Where-Object { $_.conclusion -eq 'success' -and [datetime]$_.created_at -ge [datetime]$Run.created_at } | Select-Object -Last 1
-    if (-not $Run) { Out-Result 'build-failed' 'Merge-commit run was cancelled and no later dev build succeeded yet.' $null $Sha; return }
+    $Cancelled = $Run
+    $Run = $null
+    while (-not $Run) {
+        $Later = @(Get-DevRuns | Where-Object { [datetime]$_.created_at -ge [datetime]$Cancelled.created_at -and $_.id -ne $Cancelled.id })
+        $Run = $Later | Where-Object { $_.conclusion -eq 'success' } | Select-Object -Last 1
+        if ($Run -or @($Later | Where-Object { $_.status -ne 'completed' }).Count -eq 0 -or (Get-Date) -ge $BuildDeadline) { break }
+        Start-Sleep -Seconds 20
+    }
+    if (-not $Run) { Out-Result 'build-failed' 'Merge-commit run was cancelled and no later dev build succeeded.' $Cancelled $Sha; return }
 } elseif ($Run.conclusion -ne 'success') {
     Out-Result 'build-failed' "Dev build concluded $($Run.conclusion)." $Run $Sha
     return
