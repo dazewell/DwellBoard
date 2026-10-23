@@ -344,16 +344,8 @@ public final class EmojiPalettesView extends LinearLayout
 
     @Override
     public String getDescription(String emoji) {
-        if (sDictionaryFacilitator == null) {
-            return null;
-        }
-
-        var wordProperty = sDictionaryFacilitator.getWordProperty(EmojiParserKt.getEmojiNeutralVersion(emoji));
-        if (wordProperty == null || ! wordProperty.mHasShortcuts) {
-            return null;
-        }
-
-        return wordProperty.mShortcutTargets.get(0).mWord;
+        // DwellBoard: #emoji-name-fallback - also tries other spellings and the other enabled languages' emoji dictionaries
+        return helium314.keyboard.dwell.emoji.EmojiNames.INSTANCE.describe(getContext(), sDictionaryFacilitator, emoji);
     }
 
     public void setHardwareAcceleratedDrawingEnabled(final boolean enabled) {
@@ -497,6 +489,7 @@ public final class EmojiPalettesView extends LinearLayout
     }
 
     public static void closeDictionaryFacilitator() {
+        helium314.keyboard.dwell.emoji.EmojiNames.INSTANCE.close(); // DwellBoard: #emoji-name-fallback - dictionaries or languages changed
         if (sDictionaryFacilitator != null) {
             sDictionaryFacilitator.closeDictionaries();
             sDictionaryFacilitator = null;
