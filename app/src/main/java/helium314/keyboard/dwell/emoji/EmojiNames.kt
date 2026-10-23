@@ -100,6 +100,6 @@ object EmojiNames {
     }
 
     private const val VARIATION_SELECTOR_CP = 0xFE0F
-    private const val VARIATION_SELECTOR = "️"
+    private const val VARIATION_SELECTOR = "\uFE0F"
     private val SKIN_TONES = 0x1F3FB..0x1F3FF
 }

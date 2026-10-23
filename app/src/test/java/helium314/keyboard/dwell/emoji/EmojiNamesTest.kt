@@ -7,21 +7,21 @@ import kotlin.test.assertEquals
 
 class EmojiNamesTest {
     @Test fun plainEmojiAlsoTriesWithVariationSelector() {
-        assertEquals(listOf("☺", "☺️"), EmojiNames.candidates("☺", "☺"))
+        assertEquals(listOf("\u263A", "\u263A\uFE0F"), EmojiNames.candidates("\u263A", "\u263A"))
     }
 
     @Test fun qualifiedEmojiAlsoTriesWithoutVariationSelector() {
-        assertEquals(listOf("❤️", "❤"), EmojiNames.candidates("❤️", "❤️"))
+        assertEquals(listOf("\u2764\uFE0F", "\u2764"), EmojiNames.candidates("\u2764\uFE0F", "\u2764\uFE0F"))
     }
 
     @Test fun tonedEmojiFallsBackToBase() {
-        val toned = "👍🏽" // thumbs up, medium skin tone
-        assertEquals(listOf(toned, "👍"), EmojiNames.candidates(toned, toned))
+        val toned = "\uD83D\uDC4D\uD83C\uDFFD" // thumbs up, medium skin tone
+        assertEquals(listOf(toned, "\uD83D\uDC4D"), EmojiNames.candidates(toned, toned))
     }
 
     @Test fun neutralVersionComesFirst() {
-        val toned = "👍🏽"
-        assertEquals(listOf("👍", toned), EmojiNames.candidates(toned, "👍"))
+        val toned = "\uD83D\uDC4D\uD83C\uDFFD"
+        assertEquals(listOf("\uD83D\uDC4D", toned), EmojiNames.candidates(toned, "\uD83D\uDC4D"))
     }
 
     @Test fun currentLanguageFirstThenSubtypeOrder() {
@@ -35,7 +35,7 @@ class EmojiNamesTest {
     }
 
     @Test fun multiCodePointWithoutSelectorIsNotPadded() {
-        val flag = "🇺🇸"
+        val flag = "\uD83C\uDDFA\uD83C\uDDF8"
         assertEquals(listOf(flag), EmojiNames.candidates(flag, flag))
     }
 }
