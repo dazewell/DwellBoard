@@ -78,6 +78,7 @@ steps from memory or read raw logs. Each prints short JSON (`pwsh -File`).
 | Billed Copilot review | `request-copilot-review.ps1 -PullRequest <n> -Wait` |
 | APK for dazewell to test (returns the phone download link) | `request-apk-build.ps1 -PullRequest <n> -Wait` |
 | Install that APK on the connected phone | `install-apk.ps1 -PullRequest <n>` |
+| After the merge: wait for the `dev` build, install it | `install-dev-build.ps1 -PullRequest <n>` |
 | `FEATURES.md` 70-word check | `features-wordcount.ps1` |
 | End-of-session leftovers (dirty tree, unpushed, processes) | `worktree-check.ps1` |
 | Branch name | `new-branch-name.ps1 <slug>` |
@@ -341,11 +342,29 @@ run the script**, every time you are about to ask dazewell to test something:
 ```
 
 It builds the PR head once (reusing a build that exists), and returns the run
-and `downloadUrl` as JSON. Put `downloadUrl` in your `ask_user` prompt: dazewell
-opens it on his phone (signed in to GitHub) and downloads the APK without
-visiting the PR. To install on the connected phone instead, run
-`install-apk.ps1 -PullRequest <n>`.
-Mechanics are in `dwellboard-workflow` step 9.
+and `downloadUrl` as JSON. **Install it on his phone yourself; don't hand him a link.**
+Run `install-apk.ps1 -PullRequest <n>`, which builds (or reuses) the head's APK
+and installs it with `adb install -r`. Act on its `status`:
+
+- `no-device` (APK already downloaded): ask him to plug in the phone, enable USB
+  debugging and accept the prompt, then re-run. Never skip the install silently.
+- `multiple-devices`: ask which serial, re-run with `-Serial`.
+- `signature-mismatch`: a differently-signed build is installed. Ask before
+  uninstalling it; it loses that build's data.
+- `build-failed` / `install-failed`: report the run or output; no test request.
+
+Only after `installed`, ask him to test, and put `downloadUrl` in the ask as a
+fallback. Mechanics are in `dwellboard-workflow` step 9.
+
+### 11. After the merge, install the `dev` build
+
+Once the PR is handed back and still open, start
+`.\.github\scripts\install-dev-build.ps1 -PullRequest <n>` in the background
+(ledger entry, stopped per `dwellboard-process-lifecycle`). It waits for the
+merge, finds the `staging.yml` build of the merge commit on `dev`, polls 30
+minutes for a phone and installs. Report its `status`; `no-staging-run` is
+expected for docs, `.github` and hook-only merges. If the session ends first,
+he can run the same command.
 
 **Never merge.** The merge decision is dazewell's.
 

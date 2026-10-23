@@ -262,7 +262,11 @@ returns the artifact link) — never label by hand
 `DwellBoard.apk` on the rolling **`staging`** pre-release (the README link).
 Nothing is sent anywhere else. `gh run download` unpacks the APK (it is a zip),
 so fetch it with the artifact-API `curl -o` recipe in `dwellboard-branch-flow`
-(to a dir outside the repo) and install with `adb install -r <apk>`. Every
+(to a dir outside the repo) and install with `adb install -r <apk>`. You don't
+do that by hand: **`install-apk.ps1 -PullRequest <n>`** builds or reuses the
+head's APK and installs it on the phone. On `no-device`, ask dazewell to connect
+it (USB debugging on, accept the prompt) and re-run; on `signature-mismatch`, ask
+before uninstalling. Every
 staging build (PR label, dev push, dispatch) is the release variant signed with
 the committed `app/release.keystore` (passwords in the `LOCAL_PROPERTIES`
 secret / gitignored `local.properties`): it installs as `helium314.keyboard.dazewell` and
@@ -300,10 +304,11 @@ prose he has to read to the end to discover is prose he may not reach for hours.
 Issue an explicit `ask_user` prompt: it interrupts deliberately, stays visibly
 unanswered until he acts, and his reply comes back attached to the question.
 
-Make it **specific and short**: which build to install (artifact and the PR or
-commit it came from, or the debug APK), the exact thing to try, and what a pass
-versus a fail looks like. "Please test the build" wastes the interruption;
-"Install the staging artifact from PR #12, copy three things, open clipboard
+**Install first, then ask.** The build is already on his phone when you ask (see
+step 9); never hand him a link to install himself unless the phone is not
+reachable. The ask says which PR or commit is installed, the exact thing to
+try, and what a pass versus a fail looks like. "Please test the build" wastes the interruption;
+"PR #12 is installed on your phone: copy three things, open clipboard
 history and long-press the second — a pin option should appear and survive a
 reboot" spends it well. **One round at a time** — a list of six checks is a
 task, not a question, and it stalls. The same applies to any request for his
@@ -321,7 +326,10 @@ the three independent cleanup checks and the evidence-grading labels are in
 
 ### 10. Land it
 
-Landing into `dev` is dazewell's decision by default. The merge procedure, and
+Landing into `dev` is dazewell's decision by default. Once the PR is handed
+back, start `install-dev-build.ps1 -PullRequest <n>` in the background (agent
+file, step 11): it waits for the merge and installs the resulting `dev` build on
+his phone. The merge procedure, and
 the narrow conditional authority under which a session holding a named approval
 may press the button, are normative in `dwellboard-branch-flow`. **Never write
 "ready to merge"** — nothing in this pipeline establishes it, because nobody
