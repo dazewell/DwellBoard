@@ -320,10 +320,9 @@ class EmojiSearchActivity : ComponentActivity() {
                 finish()
             }
 
-            override fun getDescription(emoji: String): String? = if (Settings.getValues().mShowEmojiDescriptions)
-                dictionaryFacilitator?.getWordProperty(getEmojiNeutralVersion(emoji))?.let {
-                    if (it.mHasShortcuts) it.mShortcutTargets[0]?.mWord else null
-                } else null
+            // DwellBoard: #emoji-name-fallback - also tries other spellings and the other enabled languages' emoji dictionaries
+            override fun getDescription(emoji: String): String? =
+                helium314.keyboard.dwell.emoji.EmojiNames.describe(this@EmojiSearchActivity, dictionaryFacilitator, emoji)
 
             override fun onRemoveRecentsKey(key: Key?) {}
         })

@@ -46,6 +46,10 @@ A Gboard-like style: flat keys with no bottom edge, roomier gaps in portrait, pi
 
 Emoji search starts empty again once you've returned to the main keyboard yourself with ABC or the emoji key; searching and picking emojis in between keeps what you typed. Setting: Preferences → "Clear emoji search", on by default.
 
+### Emoji names from any language <!-- #emoji-name-fallback -->
+
+Long-pressing an emoji shows its name even when the current language's emoji dictionary lacks one: the emoji dictionaries of your other enabled languages are tried next, and a skin-tone variant falls back to its base emoji's name. Setting: Preferences → "Show emoji description on long press", on by default; needs an emoji dictionary.
+
 ### Main keyboard after emoji and space <!-- #emoji-space-abc -->
 
 Pressing space or enter on the emoji keyboard after picking an emoji returns to the main keyboard, like the existing symbols and numpad options; emoji search is not affected. Setting: Advanced → "Switch to main keyboard after… Pressing enter or space after other keys in emoji view", off by default.
