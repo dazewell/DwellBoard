@@ -358,21 +358,13 @@ fallback. Mechanics are in `dwellboard-workflow` step 9.
 
 ### 11. After the merge, install the `dev` build
 
-Merging is his, and the build he will live with is the one `staging.yml` makes
-from the merge commit on `dev`. Once the PR is handed back and still open, start
-this as a background process, recorded in the process ledger and stopped per
-`dwellboard-process-lifecycle`:
-
-```powershell
-.\.github\scripts\install-dev-build.ps1 -PullRequest <n>
-```
-
-It waits for the merge, finds the `dev` build for the merge commit (falling back
-to the next successful one if a later push cancelled it), polls for a phone for
-30 minutes, and installs. Report its `status`: `installed` with `builtSha`;
-`no-device` means ask him to connect and re-run; `no-staging-run` is expected for
-docs, `.github` and hook-only merges. If the session ends first, he can run the
-same command himself.
+Once the PR is handed back and still open, start
+`.\.github\scripts\install-dev-build.ps1 -PullRequest <n>` in the background
+(ledger entry, stopped per `dwellboard-process-lifecycle`). It waits for the
+merge, finds the `staging.yml` build of the merge commit on `dev`, polls 30
+minutes for a phone and installs. Report its `status`; `no-staging-run` is
+expected for docs, `.github` and hook-only merges. If the session ends first,
+he can run the same command.
 
 **Never merge.** The merge decision is dazewell's.
 
