@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.dwell.emoji
 
+import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -21,6 +22,16 @@ class EmojiNamesTest {
     @Test fun neutralVersionComesFirst() {
         val toned = "👍🏽"
         assertEquals(listOf("👍", toned), EmojiNames.candidates(toned, "👍"))
+    }
+
+    @Test fun currentLanguageFirstThenSubtypeOrder() {
+        val (en, ru, he) = listOf(Locale.ENGLISH, Locale.forLanguageTag("ru"), Locale.forLanguageTag("he"))
+        assertEquals(listOf(he, en, ru), EmojiNames.fallbackLocales(listOf(en, ru, he, en), he, null))
+    }
+
+    @Test fun languageTheCallerHasOpenIsLeftOut() {
+        val (en, ru) = listOf(Locale.ENGLISH, Locale.forLanguageTag("ru"))
+        assertEquals(listOf(ru), EmojiNames.fallbackLocales(listOf(en, ru), en, en))
     }
 
     @Test fun multiCodePointWithoutSelectorIsNotPadded() {

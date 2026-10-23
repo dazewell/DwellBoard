@@ -21,7 +21,8 @@ import java.util.Locale
  * Only called on long-press, on the main thread, like every caller of [close].
  */
 object EmojiNames {
-    private var fallbacksExclude: Locale? = null
+    // main thread only, so no locking
+    private var fallbacksLocales: List<Locale>? = null
     private var fallbacks: List<Dictionary>? = null
 
     /** [primary] is the caller's already open dictionary for the current language, if it has one. */
@@ -38,7 +39,7 @@ object EmojiNames {
     fun close() {
         fallbacks?.forEach { it.close() }
         fallbacks = null
-        fallbacksExclude = null
+        fallbacksLocales = null
     }
 
     private inline fun lookUp(candidates: List<String>, property: (String) -> WordProperty?): String? {
@@ -50,22 +51,27 @@ object EmojiNames {
     }
 
     /**
-     * Emoji dictionaries of the enabled languages, current one first, then in subtype order, leaving out
-     * [exclude], the one the caller already has open. Kept open until [close] or a change of [exclude].
+     * Emoji dictionaries of [fallbackLocales]. The locale list is re-read on every long-press, since
+     * enabled languages or downloaded dictionaries can change without [close] being called, and the
+     * dictionaries are reopened only when it differs.
      */
     private fun fallbacks(context: Context, exclude: Locale?): List<Dictionary> {
-        fallbacks?.takeIf { fallbacksExclude == exclude }?.let { return it }
+        val locales = fallbackLocales(DictionaryInfoUtils.getLocalesWithEmojiDicts(context),
+            RichInputMethodManager.getInstance().currentSubtype.locale, exclude)
+        fallbacks?.takeIf { fallbacksLocales == locales }?.let { return it }
         close()
-        val current = RichInputMethodManager.getInstance().currentSubtype.locale
-        val locales = DictionaryInfoUtils.getLocalesWithEmojiDicts(context).sortedBy { it != current }.distinct()
-        val dicts = locales.filter { it != exclude }.mapNotNull { locale ->
+        val dicts = locales.mapNotNull { locale ->
             DictionaryInfoUtils.getCachedDictForLocaleAndType(locale, Dictionary.TYPE_EMOJI, context)
                 ?.let { DictionaryFactory.getDictionary(it, locale) }
         }
         fallbacks = dicts
-        fallbacksExclude = exclude
+        fallbacksLocales = locales
         return dicts
     }
+
+    /** [enabled] with [current] first and [exclude], the one the caller already has open, left out. */
+    internal fun fallbackLocales(enabled: List<Locale>, current: Locale, exclude: Locale?): List<Locale> =
+        enabled.sortedBy { it != current }.distinct().filter { it != exclude }
 
     /**
      * Spellings to look up, most specific first: the neutral version upstream used, the label itself,
