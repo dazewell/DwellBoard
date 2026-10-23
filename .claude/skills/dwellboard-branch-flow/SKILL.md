@@ -181,7 +181,9 @@ gh pr create --base dev --head <YYYY-MM-DD>_<slug> --title "<title>" --body "<bo
 `ci.yml` compiles and unit-tests every PR push and is the no-local-tools gate;
 say so in the body. `process-rules.yml` also runs on every PR. For a test APK,
 add the `build-apk` label: `staging.yml` builds the APK and uploads it unzipped
-as an Actions artifact. Fetch it with (`gh run download` would unpack the APK):
+as an Actions artifact. Agents install it with `install-apk.ps1` (PR) or
+`install-dev-build.ps1` (after the merge) instead of by hand; the manual recipe
+(`gh run download` would unpack the APK):
 
 ```powershell
 gh run list --repo dazewell/DwellBoard --workflow staging.yml --branch <branch> --limit 3
