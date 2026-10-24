@@ -1000,6 +1000,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             final android.graphics.Rect hitBox = mCurrentKey.getHitBox();
             if (!mInHorizontalSwipe && (y < hitBox.top || y >= hitBox.bottom || x >= hitBox.right)) {
                 sTimerProxy.cancelKeyTimersOf(this);
+                setReleasedKeyGraphics(mCurrentKey, true);
                 cancelTrackingForAction();
                 return;
             }
