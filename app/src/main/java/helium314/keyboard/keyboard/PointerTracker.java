@@ -994,8 +994,9 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         } else if (code == Constants.CODE_ENTER || code == KeyCode.SHIFT_ENTER) {
             // DwellBoard: #enter-swipe, the delete slider without the delete. Swipe handling skips the usual
             // drag-off-key cancel, so redo it here before the swipe starts, and ignore a first move to the right,
-            // otherwise a slip would send or silently swallow Enter. Leaving to the left is the swipe itself,
-            // which may need more than the key's remaining width in words mode.
+            // otherwise a slip would send or silently swallow Enter. Leaving to the left starts the swipe at once,
+            // so release sends nothing even before the first step, which may need more than the key's remaining
+            // width in words mode.
             if (mIsTrackingForActionDisabled) return;
             final android.graphics.Rect hitBox = mCurrentKey.getHitBox();
             if (!mInHorizontalSwipe && (y < hitBox.top || y >= hitBox.bottom || x >= hitBox.right)) {
@@ -1003,6 +1004,10 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 setReleasedKeyGraphics(mCurrentKey, true);
                 cancelTrackingForAction();
                 return;
+            }
+            if (!mInHorizontalSwipe && x < hitBox.left) {
+                sTimerProxy.cancelKeyTimersOf(this);
+                mInHorizontalSwipe = true;
             }
             int steps = (x - mStartX) / (sPointerStep * sv.mEnterSwipe);
             if (steps > 0 && !mInHorizontalSwipe) return;
