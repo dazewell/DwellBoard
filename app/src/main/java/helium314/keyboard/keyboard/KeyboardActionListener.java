@@ -123,6 +123,7 @@ public interface KeyboardActionListener {
 
     void onMoveDeletePointer(int steps);
     void onUpWithDeletePointerActive();
+    default void onMoveEnterPointer(int steps) {} // DwellBoard: #enter-swipe
     void resetMetaState();
 
     KeyboardActionListener EMPTY_LISTENER = new Adapter();

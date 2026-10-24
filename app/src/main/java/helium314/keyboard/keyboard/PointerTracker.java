@@ -769,6 +769,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             case Constants.CODE_SPACE -> sv.mSpaceSwipeHorizontal != KeyboardActionListener.SwipeAction.NONE
                     || sv.mSpaceSwipeVertical != KeyboardActionListener.SwipeAction.NONE;
             case KeyCode.DELETE -> sv.mDeleteSwipe > 0;
+            case Constants.CODE_ENTER, KeyCode.SHIFT_ENTER -> sv.mEnterSwipe > 0; // DwellBoard: #enter-swipe
             default -> false;
         };
     }
@@ -945,7 +946,8 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         // see https://github.com/openboard-team/openboard/issues/411
         // delete swipe is excluded because it already has a distance threshold,
         // see https://github.com/openboard-team/openboard/pull/566
-        if (code != KeyCode.DELETE && SystemClock.elapsedRealtime() < mStartTime + fastTypingTimeout && sTypingTimeRecorder.isInFastTyping(eventTime))
+        // DwellBoard: #enter-swipe has the same threshold; held back here, a quick slide off enter would send it
+        if (code != KeyCode.DELETE && code != Constants.CODE_ENTER && code != KeyCode.SHIFT_ENTER && SystemClock.elapsedRealtime() < mStartTime + fastTypingTimeout && sTypingTimeRecorder.isInFastTyping(eventTime))
             return;
         if (code == Constants.CODE_SPACE) {
             int dX = x - mStartX;
@@ -988,6 +990,34 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 }
                 mStartX += steps * sPointerStep;
                 sListener.onMoveDeletePointer(steps);
+            }
+        } else if (code == Constants.CODE_ENTER || code == KeyCode.SHIFT_ENTER) {
+            // DwellBoard: #enter-swipe, the delete slider without the delete. Swipe handling skips the usual
+            // drag-off-key cancel, so redo it here before the swipe starts, and ignore a first move to the right,
+            // otherwise a slip would send or silently swallow Enter. Leaving to the left starts the swipe at once,
+            // so release sends nothing even before the first step, which may need more than the key's remaining
+            // width in words mode.
+            if (mIsTrackingForActionDisabled) return;
+            final android.graphics.Rect hitBox = mCurrentKey.getHitBox();
+            if (!mInHorizontalSwipe && (y < hitBox.top || y >= hitBox.bottom || x >= hitBox.right)) {
+                sTimerProxy.cancelKeyTimersOf(this);
+                setReleasedKeyGraphics(mCurrentKey, true);
+                cancelTrackingForAction();
+                return;
+            }
+            if (!mInHorizontalSwipe && x < hitBox.left) {
+                sTimerProxy.cancelKeyTimersOf(this);
+                mInHorizontalSwipe = true;
+            }
+            int steps = (x - mStartX) / (sPointerStep * sv.mEnterSwipe);
+            if (steps > 0 && !mInHorizontalSwipe) return;
+            if (steps != 0) {
+                if (!mInHorizontalSwipe) {
+                    sTimerProxy.cancelKeyTimersOf(this);
+                    mInHorizontalSwipe = true;
+                }
+                mStartX += steps * sPointerStep;
+                sListener.onMoveEnterPointer(steps);
             }
         }
     }
