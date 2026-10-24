@@ -1271,6 +1271,10 @@ public final class InputLogic {
                     insertSpaceAfterCommit = true;
             }
 
+            // DwellBoard: temporary probe DWELL_SMOKE_comma-space, comes out before merge
+            if (!insertSpaceAfterCommit && settingsValues.mAutospaceAfterPunctuation && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint))
+                helium314.keyboard.dwell.punctuation.AutospaceProbe.notTried(inputTransaction.getSpaceState(), wasComposingWord, Character.isLetter(mConnection.getCodePointBeforeCursor()), mConnection.hasSlowInputConnection());
+
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
             mConnection.commitCodePoint(codePoint);
@@ -2295,13 +2299,16 @@ public final class InputLogic {
      * Sets the space state so that a space typed by the user afterwards is not inserted a second time.
      */
     private void insertSpaceRightAfterPunctuation(final SettingsValues settingsValues) {
+        final boolean probeSlow = mConnection.hasSlowInputConnection(); // DwellBoard: temporary probe DWELL_SMOKE_comma-space
         // DwellBoard: read even on a "slow" connection: one read per punctuation mark, while skipping left the space out for up to 10 minutes after a single slow read
         final CharSequence after = mConnection.getTextAfterCursor(1, 0);
         // DwellBoard: a line break after the cursor ("text,|\n\nmore") is not a space, the punctuation still gets its own
-        if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0)) && after.charAt(0) != '\n' && after.charAt(0) != '\r') return; // there already is a space
-        if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.looksLikeEmail(mConnection.textBeforeCursorUntilLastWhitespaceOrDoubleSlash())) return;
-        if (insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues))
+        if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0)) && after.charAt(0) != '\n' && after.charAt(0) != '\r') { helium314.keyboard.dwell.punctuation.AutospaceProbe.skipped("space after cursor", probeSlow); return; } // there already is a space
+        if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.looksLikeEmail(mConnection.textBeforeCursorUntilLastWhitespaceOrDoubleSlash())) { helium314.keyboard.dwell.punctuation.AutospaceProbe.skipped("looks like email", probeSlow); return; }
+        if (insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues)) {
             mSpaceState = SpaceState.AUTO_SPACE_AFTER_PUNCTUATION;
+            if (probeSlow) helium314.keyboard.dwell.punctuation.AutospaceProbe.insertedWhileSlow();
+        } else helium314.keyboard.dwell.punctuation.AutospaceProbe.skipped("options, language or url", probeSlow);
     }
 
     private boolean textBeforeCursorMayBeUrlOrSimilar(final SettingsValues settingsValues, final Boolean forAutoSpace) {
