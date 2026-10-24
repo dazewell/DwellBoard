@@ -252,18 +252,22 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
         keyboardSwitcher.onLongPressAlphaSymbolForNumpad()
     }
 
-    override fun onMoveDeletePointer(steps: Int) {
+    override fun onMoveDeletePointer(steps: Int) = moveSelectionStart(steps, settings.current.mDeleteSwipe == 2) // DwellBoard: #enter-swipe
+
+    // DwellBoard: #enter-swipe selects like delete swipe, with its own letters/words mode
+    override fun onMoveEnterPointer(steps: Int) = moveSelectionStart(steps, settings.current.mEnterSwipe == 2)
+
+    private fun moveSelectionStart(steps: Int, isSwipeWords: Boolean) {
         inputLogic.finishInput()
         val end = connection.expectedSelectionEnd
-        val actualSteps = actualSteps(steps)
+        val actualSteps = actualSteps(steps, isSwipeWords)
         val start = connection.expectedSelectionStart + actualSteps
         if (start > end) return
         gestureMoveBackHaptics()
         connection.setSelection(start, end)
     }
 
-    private fun actualSteps(steps: Int): Int {
-        val isSwipeWords = settings.current.mDeleteSwipe == 2
+    private fun actualSteps(steps: Int, isSwipeWords: Boolean): Int {
         val multiplier = if (isSwipeWords) 50 else 4 // arbitrary but hopefully high enough numbers
         val text = if (steps > 0) connection.getSelectedText(0) ?: return steps
         else connection.getTextBeforeCursor(-steps * multiplier, 0) ?: return steps
