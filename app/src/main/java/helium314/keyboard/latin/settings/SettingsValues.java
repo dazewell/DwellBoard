@@ -287,8 +287,7 @@ public class SettingsValues {
             Defaults.PREF_TOUCHPAD_SENSITIVITY);
         mTouchpadEdgeScroll = prefs.getBoolean(Settings.PREF_TOUCHPAD_EDGE_SCROLL, Defaults.PREF_TOUCHPAD_EDGE_SCROLL);
         mDeleteSwipe = prefs.getInt(Settings.PREF_DELETE_SWIPE, Defaults.PREF_DELETE_SWIPE);
-        // DwellBoard: #enter-swipe, clamped because PointerTracker divides by it
-        mEnterSwipe = Math.max(0, Math.min(2, prefs.getInt(Settings.PREF_ENTER_SWIPE, Defaults.PREF_ENTER_SWIPE)));
+        mEnterSwipe = helium314.keyboard.dwell.enterswipe.EnterSwipe.read(prefs); // DwellBoard: #enter-swipe, falls back on a bad stored value
         mAutospaceAfterPunctuation = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, Defaults.PREF_AUTOSPACE_AFTER_PUNCTUATION);
         mAutospaceAfterSuggestion = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_SUGGESTION, Defaults.PREF_AUTOSPACE_AFTER_SUGGESTION);
         mAutospaceAfterGestureTyping = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_GESTURE_TYPING, Defaults.PREF_AUTOSPACE_AFTER_GESTURE_TYPING);
