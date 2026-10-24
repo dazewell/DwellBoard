@@ -946,7 +946,8 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         // see https://github.com/openboard-team/openboard/issues/411
         // delete swipe is excluded because it already has a distance threshold,
         // see https://github.com/openboard-team/openboard/pull/566
-        if (code != KeyCode.DELETE && SystemClock.elapsedRealtime() < mStartTime + fastTypingTimeout && sTypingTimeRecorder.isInFastTyping(eventTime))
+        // DwellBoard: #enter-swipe has the same threshold; held back here, a quick slide off enter would send it
+        if (code != KeyCode.DELETE && code != Constants.CODE_ENTER && code != KeyCode.SHIFT_ENTER && SystemClock.elapsedRealtime() < mStartTime + fastTypingTimeout && sTypingTimeRecorder.isInFastTyping(eventTime))
             return;
         if (code == Constants.CODE_SPACE) {
             int dX = x - mStartX;
