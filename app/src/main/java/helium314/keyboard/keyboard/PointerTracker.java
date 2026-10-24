@@ -769,6 +769,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             case Constants.CODE_SPACE -> sv.mSpaceSwipeHorizontal != KeyboardActionListener.SwipeAction.NONE
                     || sv.mSpaceSwipeVertical != KeyboardActionListener.SwipeAction.NONE;
             case KeyCode.DELETE -> sv.mDeleteSwipe > 0;
+            case Constants.CODE_ENTER, KeyCode.SHIFT_ENTER -> sv.mEnterSwipe > 0; // DwellBoard: #enter-swipe
             default -> false;
         };
     }
@@ -988,6 +989,26 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 }
                 mStartX += steps * sPointerStep;
                 sListener.onMoveDeletePointer(steps);
+            }
+        } else if (code == Constants.CODE_ENTER || code == KeyCode.SHIFT_ENTER) {
+            // DwellBoard: #enter-swipe, the delete slider without the delete. Swipe handling skips the usual
+            // drag-off-key cancel, so redo it here before the swipe starts, and ignore a first move to the right,
+            // otherwise a slip would send or silently swallow Enter.
+            if (mIsTrackingForActionDisabled) return;
+            if (!mInHorizontalSwipe && !mCurrentKey.isOnKey(x, y)) {
+                sTimerProxy.cancelKeyTimersOf(this);
+                cancelTrackingForAction();
+                return;
+            }
+            int steps = (x - mStartX) / (sPointerStep * sv.mEnterSwipe);
+            if (steps > 0 && !mInHorizontalSwipe) return;
+            if (steps != 0) {
+                if (!mInHorizontalSwipe) {
+                    sTimerProxy.cancelKeyTimersOf(this);
+                    mInHorizontalSwipe = true;
+                }
+                mStartX += steps * sPointerStep;
+                sListener.onMoveEnterPointer(steps);
             }
         }
     }

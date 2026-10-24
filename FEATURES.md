@@ -61,3 +61,7 @@ Typing one of a chosen set of punctuation marks on the symbols keyboard returns 
 ### Gboard style themes <!-- #dynamic-swapped-theme --> <!-- #gboard-themes -->
 
 Four color themes matching Gboard's current Dynamic Color look: "Gboard style" light and dark, with keys lighter than a tinted background and one shade for all function keys and Enter, plus "Gboard style swapped" versions with background and key colors exchanged. Pick them under Appearance → Colors; Android 12 and newer. Keys only show their color with key borders on.
+
+### Enter swipe <!-- #enter-swipe -->
+
+Like delete swipe, but on the enter key and nothing is deleted: hold enter and slide left to select letters or words before the cursor, then release to keep the selection for cutting, copying or typing over. Sliding off the key still cancels enter. Setting: Advanced → "Enter swipe" (Off, Letters, Words), off by default.
