@@ -1272,8 +1272,9 @@ public final class InputLogic {
             }
 
             // DwellBoard: temporary probe DWELL_SMOKE_comma-space, comes out before merge
-            if (!insertSpaceAfterCommit && settingsValues.mAutospaceAfterPunctuation && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint))
-                helium314.keyboard.dwell.punctuation.AutospaceProbe.notTried(inputTransaction.getSpaceState(), wasComposingWord, Character.isLetter(mConnection.getCodePointBeforeCursor()), mConnection.hasSlowInputConnection());
+            if (!insertSpaceAfterCommit && !wasComposingWord && settingsValues.mAutospaceAfterPunctuation && settingsValues.shouldInsertSpacesAutomatically()
+                    && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint) && Character.isLetter(mConnection.getCodePointBeforeCursor()))
+                helium314.keyboard.dwell.punctuation.AutospaceProbe.notTried(inputTransaction.getSpaceState(), mConnection.hasSlowInputConnection());
 
             enterInlineEmojiSearchIfNeeded(codePoint, settingsValues);
 
