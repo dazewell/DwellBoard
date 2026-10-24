@@ -233,6 +233,16 @@ class InputLogicTest {
         assertEquals("hello. a there", text)
     }
 
+    @Test fun `comma gets its space while the connection counts as slow`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        chainInput("hello")
+        // one slow read, e.g. the app was busy for 200 ms, keeps this state for up to 10 minutes
+        RichInputConnection::class.java.getDeclaredField("mLastSlowInputConnectionTime").apply { isAccessible = true }
+            .setLong(connection, android.os.SystemClock.uptimeMillis())
+        input(',')
+        assertEquals("hello, ", text)
+    }
+
     @Test fun noAutospaceInUrlField() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("example.net")
