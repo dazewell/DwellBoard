@@ -1266,8 +1266,11 @@ public final class InputLogic {
                         mSpaceState = SpaceState.PHANTOM;
                 }
                 // DwellBoard: digits never compose a word, but ; ! ? can't be inside a number, so "25!" gets its space too
+                // DwellBoard: a lone closing quote ('word",' with no opening one typed here) sets no phantom space, so the punctuation after it must ask for its own
                 else if (!wasComposingWord && settingsValues.mAutospaceAfterPunctuation
-                        && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediateAfterNumber(codePoint, mConnection.getCodePointBeforeCursor()))
+                        && (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediateAfterNumber(codePoint, mConnection.getCodePointBeforeCursor())
+                            || (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint)
+                                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isQuoteAfterWord(mConnection.getTextBeforeCursor(2, 0)))))
                     insertSpaceAfterCommit = true;
             }
 
@@ -2295,8 +2298,7 @@ public final class InputLogic {
      * Sets the space state so that a space typed by the user afterwards is not inserted a second time.
      */
     private void insertSpaceRightAfterPunctuation(final SettingsValues settingsValues) {
-        // DwellBoard: without a reliable look at the text after the cursor an existing space could be doubled
-        if (mConnection.hasSlowInputConnection()) return;
+        // DwellBoard: read even on a "slow" connection: one read per punctuation mark, while skipping left the space out for up to 10 minutes after a single slow read
         final CharSequence after = mConnection.getTextAfterCursor(1, 0);
         // DwellBoard: a line break after the cursor ("text,|\n\nmore") is not a space, the punctuation still gets its own
         if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0)) && after.charAt(0) != '\n' && after.charAt(0) != '\r') return; // there already is a space
