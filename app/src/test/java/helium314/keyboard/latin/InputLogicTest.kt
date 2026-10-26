@@ -243,6 +243,15 @@ class InputLogicTest {
         assertEquals("hello, ", text)
     }
 
+    @Test fun `comma after a closing quote gets its space`() {
+        for (typed in listOf("\"test\",", "say \"test\",", "\"тест\",", "a: \"тест\",", "\"a\", \"b\",", "test\",", "тест\",", "see test\",")) {
+            reset()
+            latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+            chainInput(typed)
+            assertEquals("$typed ", text, "for $typed")
+        }
+    }
+
     @Test fun noAutospaceInUrlField() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("example.net")

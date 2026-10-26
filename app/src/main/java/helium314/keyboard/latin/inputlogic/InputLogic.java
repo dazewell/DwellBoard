@@ -1266,8 +1266,11 @@ public final class InputLogic {
                         mSpaceState = SpaceState.PHANTOM;
                 }
                 // DwellBoard: digits never compose a word, but ; ! ? can't be inside a number, so "25!" gets its space too
+                // DwellBoard: a lone closing quote ('word",' with no opening one typed here) sets no phantom space, so the punctuation after it must ask for its own
                 else if (!wasComposingWord && settingsValues.mAutospaceAfterPunctuation
-                        && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediateAfterNumber(codePoint, mConnection.getCodePointBeforeCursor()))
+                        && (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediateAfterNumber(codePoint, mConnection.getCodePointBeforeCursor())
+                            || (helium314.keyboard.dwell.punctuation.PunctuationAutospace.isImmediate(codePoint)
+                                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isQuoteAfterWord(mConnection.getTextBeforeCursor(2, 0)))))
                     insertSpaceAfterCommit = true;
             }
 

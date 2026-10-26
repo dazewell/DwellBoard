@@ -19,6 +19,11 @@ object PunctuationAutospace {
     fun isImmediateAfterNumber(codePoint: Int, codePointBefore: Int): Boolean =
         (codePoint == ';'.code || codePoint == '!'.code || codePoint == '?'.code) && Character.isDigit(codePointBefore)
 
+    /** [lastTwo] is the text right before the cursor: true for `d"`, false for `("`, ` "` or `""`. */
+    @JvmStatic
+    fun isQuoteAfterWord(lastTwo: CharSequence?): Boolean =
+        lastTwo != null && lastTwo.length == 2 && lastTwo[1] == '"' && Character.isLetterOrDigit(lastTwo[0])
+
     @JvmStatic
     fun isDash(codePoint: Int): Boolean = codePoint == '-'.code || codePoint == '–'.code || codePoint == '—'.code
 
