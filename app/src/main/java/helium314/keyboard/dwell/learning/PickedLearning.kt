@@ -19,4 +19,12 @@ object PickedLearning {
      */
     fun learnAsValid(enabled: Boolean, picked: Boolean, inMainDictionary: Boolean): Boolean =
         inMainDictionary || (enabled && picked)
+
+    /**
+     * Whether a pick confirms the form that is learned. "Learn capitalized words in lowercase" can turn a tapped
+     * "Monday" into "monday", which the user never confirmed; learning that as valid would let it win over the
+     * dictionary's "Monday" after one tap.
+     */
+    fun learnsTappedForm(picked: Boolean, tappedWord: String, wordToLearn: String): Boolean =
+        picked && wordToLearn == tappedWord
 }

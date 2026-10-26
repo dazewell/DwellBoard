@@ -342,7 +342,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
             addWordToUserHistory(
                 preferredGroup, ngramContextForCurrentWord, wordToLearn,
                 wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive,
-                sv.mLearnOnlyPicked, picked // DwellBoard: "learn new words only when tapped"
+                sv.mLearnOnlyPicked, picked, // DwellBoard: "learn new words only when tapped"
+                helium314.keyboard.dwell.learning.PickedLearning.learnsTappedForm(picked, currentWord, wordToLearn)
             )
             ngramContextForCurrentWord = ngramContextForCurrentWord.getNextNgramContext(WordInfo(wordToLearn))
 
@@ -355,7 +356,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
 
     private fun addWordToUserHistory(
         dictionaryGroup: DictionaryGroup, ngramContext: NgramContext, word: String, wasAutoCapitalized: Boolean,
-        timeStampInSeconds: Int, blockPotentiallyOffensive: Boolean, learnOnlyPicked: Boolean, picked: Boolean
+        timeStampInSeconds: Int, blockPotentiallyOffensive: Boolean, learnOnlyPicked: Boolean, picked: Boolean,
+        pickedAsTapped: Boolean
     ) {
         val userHistoryDictionary = dictionaryGroup.getSubDict(Dictionary.TYPE_USER_HISTORY) ?: return
 
@@ -412,7 +414,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
             return
         // We demote unrecognized words (frequency <= 0) by specifying them as "invalid".
         // We don't add words with 0-frequency (assuming they would be profanity etc.).
-        val isValid = helium314.keyboard.dwell.learning.PickedLearning.learnAsValid(learnOnlyPicked, picked, mainFreq > 0) // DwellBoard: was mainFreq > 0
+        val isValid = helium314.keyboard.dwell.learning.PickedLearning.learnAsValid(learnOnlyPicked, pickedAsTapped, mainFreq > 0) // DwellBoard: was mainFreq > 0
         UserHistoryDictionary.addToDictionary(userHistoryDictionary, ngramContext, wordToUse, isValid, timeStampInSeconds)
     }
 

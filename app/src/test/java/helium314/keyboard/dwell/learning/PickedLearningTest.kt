@@ -27,4 +27,10 @@ class PickedLearningTest {
         assertFalse(PickedLearning.learnAsValid(true, false, false))
         assertTrue(PickedLearning.learnAsValid(false, false, true))
     }
+
+    @Test fun onlyTheTappedFormCountsAsConfirmed() {
+        assertTrue(PickedLearning.learnsTappedForm(true, "zorblat", "zorblat"))
+        assertFalse(PickedLearning.learnsTappedForm(true, "Monday", "monday"))
+        assertFalse(PickedLearning.learnsTappedForm(false, "zorblat", "zorblat"))
+    }
 }
