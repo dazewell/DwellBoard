@@ -122,7 +122,7 @@ public interface DictionaryFacilitator {
     /** adds the word to user history dictionary, calls adjustConfindences, and might add it to personal dictionary if the setting is enabled */
     void addToUserHistory(final String suggestion, final boolean wasAutoCapitalized,
             @NonNull final NgramContext ngramContext, final long timeStampInSeconds,
-            final boolean blockPotentiallyOffensive);
+            final boolean blockPotentiallyOffensive, final boolean picked); // DwellBoard: picked, for "learn new words only when tapped"
 
     /** adjust confidences for multilingual typing */
     void adjustConfidences(final String word, final boolean wasAutoCapitalized);

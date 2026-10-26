@@ -114,7 +114,7 @@ class SingleDictionaryFacilitator(private val dict: Dictionary) : DictionaryFaci
 
     override fun addToUserHistory(
         suggestion: String, wasAutoCapitalized: Boolean, ngramContext: NgramContext,
-        timeStampInSeconds: Long, blockPotentiallyOffensive: Boolean
+        timeStampInSeconds: Long, blockPotentiallyOffensive: Boolean, picked: Boolean
     ) {}
 
     override fun adjustConfidences(word: String, wasAutoCapitalized: Boolean) {}

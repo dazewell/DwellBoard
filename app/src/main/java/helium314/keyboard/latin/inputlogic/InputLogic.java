@@ -1711,7 +1711,7 @@ public final class InputLogic {
     }
 
     private void performAdditionToUserHistoryDictionary(final SettingsValues settingsValues,
-            final String suggestion, @NonNull final NgramContext ngramContext) {
+            final String suggestion, @NonNull final NgramContext ngramContext, final boolean picked) {
         // For addition to user history we want suggestions (even if just for autocorrect) or a gestured word.
         // That's to avoid unintended additions in some sensitive fields, or fields that
         // expect to receive non-words.
@@ -1735,7 +1735,7 @@ public final class InputLogic {
         }
         final int timeStampInSeconds = (int)TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
         mDictionaryFacilitator.addToUserHistory(word, wasAutoCapitalized, ngramContext,
-                timeStampInSeconds, settingsValues.mBlockPotentiallyOffensive);
+                timeStampInSeconds, settingsValues.mBlockPotentiallyOffensive, picked);
     }
 
     private void addToHistoryIfEmoji(final String text, final SettingsValues settingsValues) {
@@ -1755,7 +1755,8 @@ public final class InputLogic {
             false,
             mConnection.getNgramContextFromNthPreviousWord(settingsValues.mSpacingAndPunctuations, 2),
             (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()),
-            settingsValues.mBlockPotentiallyOffensive
+            settingsValues.mBlockPotentiallyOffensive,
+            true // DwellBoard: an emoji is always chosen on purpose, so "learn new words only when tapped" treats it as picked
         );
     }
 
@@ -2483,7 +2484,9 @@ public final class InputLogic {
             startTimeMillis = SystemClock.elapsedRealtime();
         }
         // Add the word to the user history dictionary
-        performAdditionToUserHistoryDictionary(settingsValues, chosenWord, ngramContext);
+        // DwellBoard: a strip pick is the confirmation "learn new words only when tapped" waits for
+        performAdditionToUserHistoryDictionary(settingsValues, chosenWord, ngramContext,
+                commitType == LastComposedWord.COMMIT_TYPE_MANUAL_PICK);
         if (DebugFlags.DEBUG_ENABLED) {
             long runTimeMillis = SystemClock.elapsedRealtime() - startTimeMillis;
             Log.d(TAG, "commitChosenWord() : " + runTimeMillis + " ms to run "

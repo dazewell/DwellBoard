@@ -1298,7 +1298,7 @@ class ShadowFacilitator2 {
     @Implementation
     fun addToUserHistory(suggestion: String, wasAutoCapitalized: Boolean,
                          ngramContext: NgramContext, timeStampInSeconds: Long,
-                         blockPotentiallyOffensive: Boolean) {
+                         blockPotentiallyOffensive: Boolean, picked: Boolean) {
         lastAddedWord = suggestion
     }
     companion object {

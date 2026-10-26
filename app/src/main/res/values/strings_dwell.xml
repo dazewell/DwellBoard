@@ -2,6 +2,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="dwell_dont_learn_capitalized">Learn capitalized words in lowercase</string>
     <string name="dwell_dont_learn_capitalized_summary">Capitalized (e.g. \"Hello\") and ALL CAPS (e.g. \"HELLO\") words are learned in lowercase; mixed case words (e.g. \"HELlo\") are learned as typed.</string>
+    <string name="dwell_learn_only_picked">Learn new words only when tapped</string>
+    <string name="dwell_learn_only_picked_summary">A word that is in no dictionary is remembered when you tap it in the suggestion strip, not when you type a space after it. The typed word is always shown in the strip.</string>
     <string name="dwell_app_name" translatable="false">DwellBoard</string>
     <!-- looked up by name as "theme_name_" + theme id, so they need tools:keep against resource shrinking -->
     <string name="theme_name_dwell_gboard_light" tools:keep="@string/theme_name_dwell_gboard_light">Gboard style (light)</string>

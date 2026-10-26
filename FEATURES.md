@@ -22,6 +22,10 @@ Keeps learned words, predictions and recent emojis separate for chosen sets of a
 
 Shows the words a learning context has learned that are not in the dictionary (the menu adds the rest), grouped by language, alphabetically or most frequent first. Search, tick the unwanted ones and delete them along with their predictions. Open it from a context's menu, or tap Default under Learning contexts.
 
+### Learn new words only when tapped <!-- #learn-only-picked -->
+
+Words that are in no dictionary are learned only when you tap them in the suggestion strip, not when you type a space after them; the strip then always shows what you typed. Known words still learn as you type. Setting: Text correction → "Learn new words only when tapped", off by default.
+
 ### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 
 With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? after a number, or a dash after "word ", adds the space right away; a space you type yourself is not doubled. The same marks typed after "word ", also with the cursor before the next word, move in front of that space: "word ," becomes "word, ". Setting: Text correction → "Autospace after punctuation", off by default.
