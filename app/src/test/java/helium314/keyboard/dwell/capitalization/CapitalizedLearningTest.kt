@@ -16,11 +16,15 @@ class CapitalizedLearningTest {
         listOf("", "hello", "iPhone", "HELlo", "McDonald", "NASA's").forEach { assertFalse(CapitalizedLearning.isSimplyCapitalized(it), it) }
     }
 
-    @Test fun lowercasesOnlyWhenOnAndNotSentenceStart() {
+    @Test fun lowercasesOnlyWhenOnAndKeepsPlainCapitalizedAtSentenceStart() {
         val en = Locale.ENGLISH
         assertEquals("HELLO", CapitalizedLearning.wordToLearn(false, "HELLO", false, false, en))
-        assertEquals("HELLO", CapitalizedLearning.wordToLearn(true, "HELLO", true, false, en))
-        assertEquals("HELLO", CapitalizedLearning.wordToLearn(true, "HELLO", false, true, en))
+        assertEquals("Hello", CapitalizedLearning.wordToLearn(true, "Hello", true, false, en))
+        assertEquals("Hello", CapitalizedLearning.wordToLearn(true, "Hello", false, true, en))
+        // #40: the sentence-start path would otherwise decapitalize "CAPS" to "cAPS"
+        assertEquals("caps", CapitalizedLearning.wordToLearn(true, "CAPS", true, false, en))
+        assertEquals("words", CapitalizedLearning.wordToLearn(true, "WORDS", false, true, en))
+        assertEquals("HELLO", CapitalizedLearning.wordToLearn(false, "HELLO", true, false, en))
         assertEquals("hello", CapitalizedLearning.wordToLearn(true, "HELLO", false, false, en))
         assertEquals("hello", CapitalizedLearning.wordToLearn(true, "Hello", false, false, en))
         assertEquals("iPhone", CapitalizedLearning.wordToLearn(true, "iPhone", false, false, en))

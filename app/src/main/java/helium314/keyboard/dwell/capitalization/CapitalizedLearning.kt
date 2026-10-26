@@ -25,16 +25,31 @@ object CapitalizedLearning {
     }
 
     /**
-     *  The form of [word] to put into the user history. Words at the beginning of a sentence (or auto-capitalized)
-     *  are already decapitalized by the user history logic where that is safe, so they are returned unchanged.
+     *  The form of [word] to put into the user history. Plain "Hello" words at the beginning of a sentence (or
+     *  auto-capitalized) are already decapitalized by the user history logic where that is safe, so they are returned
+     *  unchanged. ALL CAPS words are lowercased everywhere, as that logic would only lowercase their first letter.
      *  So are single letters and their short contractions: learning "I" or "I'm" as "i" or "i'm" would
      *  compete with the autocorrection to "I".
      */
     @JvmStatic
-    fun wordToLearn(enabled: Boolean, word: String, wasAutoCapitalized: Boolean, isBeginningOfSentence: Boolean, locale: Locale): String =
-        if (enabled && !wasAutoCapitalized && !isBeginningOfSentence && isSimplyCapitalized(word) && !isSingleLetter(word))
-            word.lowercase(locale)
-        else word
+    fun wordToLearn(enabled: Boolean, word: String, wasAutoCapitalized: Boolean, isBeginningOfSentence: Boolean, locale: Locale): String {
+        if (!enabled || !isSimplyCapitalized(word) || isSingleLetter(word)) return word
+        // The user history logic only lowercases the first letter of a sentence-start word, which turns "CAPS" into
+        // "cAPS". Only a plain "Hello" can be left to it, an ALL CAPS word is lowercased here wherever it is.
+        if ((wasAutoCapitalized || isBeginningOfSentence) && !isAllCaps(word)) return word
+        return word.lowercase(locale)
+    }
+
+    /** A capitalized word with a second uppercase letter, so with no lowercase one ("HELLO", not "Hello"). */
+    private fun isAllCaps(word: String): Boolean {
+        var i = Character.charCount(word.codePointAt(0))
+        while (i < word.length) { // no String.codePoints(): minSdk 21
+            val cp = word.codePointAt(i)
+            if (Character.isUpperCase(cp)) return true
+            i += Character.charCount(cp)
+        }
+        return false
+    }
 
     /** "I", "A", or a single letter with an apostrophe suffix of at most two letters ("I'm", "I'll", not "O'Neil"). */
     private fun isSingleLetter(word: String): Boolean {
