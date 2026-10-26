@@ -13,11 +13,20 @@ object AutospaceProbe {
 
     private val off get() = Settings.getValues().mIncognitoModeEnabled
 
-    /** The punctuation followed a letter, but no word was being composed, so the space was not even tried. */
+    /**
+     * The punctuation got no space and none was even tried. Only the kind of the character before it is logged
+     * (never the character), and digits and white space are left out, since "1,000" is meant to stay without one.
+     */
     @JvmStatic
-    fun notTried(spaceState: Int, slowConnection: Boolean) {
+    fun notTried(spaceState: Int, wasComposingWord: Boolean, codePointBefore: Int, slowConnection: Boolean) {
+        val kind = when {
+            Character.isLetter(codePointBefore) -> "letter"
+            codePointBefore == '"'.code -> "double quote"
+            Character.isDigit(codePointBefore) || Character.isWhitespace(codePointBefore) || codePointBefore < 0 -> return
+            else -> "other"
+        }
         if (off) return
-        Log.w(TAG, "DWELL_SMOKE_comma-space not tried after a letter: spaceState=$spaceState slow=$slowConnection")
+        Log.w(TAG, "DWELL_SMOKE_comma-space not tried after $kind: spaceState=$spaceState composing=$wasComposingWord slow=$slowConnection")
     }
 
     /** The space was tried but left out; [reason] is a fixed label. */
