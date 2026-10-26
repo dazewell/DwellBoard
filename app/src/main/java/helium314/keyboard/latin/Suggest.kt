@@ -136,7 +136,8 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
         val indexOfTypedWord = 1 + if (hasAutoCorrection) SuggestedWords.INDEX_OF_AUTO_CORRECTION else SuggestedWords.INDEX_OF_TYPED_WORD
         if (
             (hasAutoCorrection
-                || (Settings.getValues().mCenterSuggestionTextToEnter && !wordComposer.isResumed)
+                // DwellBoard: "learn new words only when tapped" needs the typed word on the strip to be tapped
+                || ((Settings.getValues().mCenterSuggestionTextToEnter || Settings.getValues().mLearnOnlyPicked) && !wordComposer.isResumed)
                 || typedWordWasCapitalized
             ) && suggestionsList.size >= indexOfTypedWord && capitalizedTypedWord.isNotEmpty()) {
             if (typedWordFirstOccurrenceWordInfo != null) {

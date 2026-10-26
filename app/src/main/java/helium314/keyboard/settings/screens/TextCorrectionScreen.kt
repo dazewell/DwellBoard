@@ -71,6 +71,8 @@ fun TextCorrectionScreen(
         Settings.PREF_AUTO_CAP,
         if (prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
             Settings.PREF_DONT_LEARN_CAPITALIZED else null,
+        if (suggestionsEnabled && prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
+            Settings.PREF_LEARN_ONLY_PICKED else null, // DwellBoard: without the strip nothing can be picked
         R.string.settings_category_space,
         Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD,
         Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION,
@@ -287,6 +289,11 @@ fun createCorrectionSettings(context: Context) = listOf(
         R.string.dwell_dont_learn_capitalized, R.string.dwell_dont_learn_capitalized_summary
     ) {
         SwitchPreference(it, Defaults.PREF_DONT_LEARN_CAPITALIZED)
+    },
+    Setting(context, Settings.PREF_LEARN_ONLY_PICKED,
+        R.string.dwell_learn_only_picked, R.string.dwell_learn_only_picked_summary
+    ) {
+        SwitchPreference(it, Defaults.PREF_LEARN_ONLY_PICKED)
     },
     Setting(context, Settings.PREF_SPELLCHECK_SUGGEST,
         R.string.spell_check_suggestions, R.string.spell_check_suggestions_summary

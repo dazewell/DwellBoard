@@ -305,7 +305,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
 
     override fun addToUserHistory(
         suggestion: String, wasAutoCapitalized: Boolean, ngramContext: NgramContext,
-        timeStampInSeconds: Long, blockPotentiallyOffensive: Boolean
+        timeStampInSeconds: Long, blockPotentiallyOffensive: Boolean, picked: Boolean
     ) {
         // Update the spelling cache before learning. Words that are not yet added to user history
         // and appear in no other language model are not considered valid.
@@ -341,7 +341,9 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
             // add to history for preferred dictionary group, to avoid mixing languages in history
             addWordToUserHistory(
                 preferredGroup, ngramContextForCurrentWord, wordToLearn,
-                wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive
+                wasCurrentWordAutoCapitalized, timeStampInSeconds.toInt(), blockPotentiallyOffensive,
+                sv.mLearnOnlyPicked, picked, // DwellBoard: "learn new words only when tapped"
+                helium314.keyboard.dwell.learning.PickedLearning.learnsTappedForm(picked, currentWord, wordToLearn)
             )
             ngramContextForCurrentWord = ngramContextForCurrentWord.getNextNgramContext(WordInfo(wordToLearn))
 
@@ -354,7 +356,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
 
     private fun addWordToUserHistory(
         dictionaryGroup: DictionaryGroup, ngramContext: NgramContext, word: String, wasAutoCapitalized: Boolean,
-        timeStampInSeconds: Int, blockPotentiallyOffensive: Boolean
+        timeStampInSeconds: Int, blockPotentiallyOffensive: Boolean, learnOnlyPicked: Boolean, picked: Boolean,
+        pickedAsTapped: Boolean
     ) {
         val userHistoryDictionary = dictionaryGroup.getSubDict(Dictionary.TYPE_USER_HISTORY) ?: return
 
@@ -403,9 +406,15 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 word
             }
         }
+        // DwellBoard: with "learn new words only when tapped", a typed word is learned only if something already knows
+        // it. Checked on the stored form and in lowercase, since lookups are case-sensitive and "Hello" is a known word.
+        if (!helium314.keyboard.dwell.learning.PickedLearning.shouldLearn(learnOnlyPicked, picked) {
+                mainFreq > 0 || userHistoryDictionary.getFrequency(wordToUse) > 0 || isValidSpellingWord(wordToUse)
+                    || isValidSpellingWord(wordToUse.lowercase(dictionaryGroup.locale)) })
+            return
         // We demote unrecognized words (frequency <= 0) by specifying them as "invalid".
         // We don't add words with 0-frequency (assuming they would be profanity etc.).
-        val isValid = mainFreq > 0
+        val isValid = helium314.keyboard.dwell.learning.PickedLearning.learnAsValid(learnOnlyPicked, pickedAsTapped, mainFreq > 0) // DwellBoard: was mainFreq > 0
         UserHistoryDictionary.addToDictionary(userHistoryDictionary, ngramContext, wordToUse, isValid, timeStampInSeconds)
     }
 
