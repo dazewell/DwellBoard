@@ -72,7 +72,7 @@ fun TextCorrectionScreen(
         if (prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
             Settings.PREF_DONT_LEARN_CAPITALIZED else null,
         if (suggestionsEnabled && prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
-            Settings.PREF_LEARN_ONLY_PICKED else null, // DwellBoard
+            Settings.PREF_LEARN_ONLY_PICKED else null, // DwellBoard: without the strip nothing can be picked
         R.string.settings_category_space,
         Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD,
         Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION,
