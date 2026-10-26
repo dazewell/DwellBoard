@@ -31,10 +31,18 @@ object CapitalizedLearning {
      *  compete with the autocorrection to "I".
      */
     @JvmStatic
-    fun wordToLearn(enabled: Boolean, word: String, wasAutoCapitalized: Boolean, isBeginningOfSentence: Boolean, locale: Locale): String =
-        if (enabled && !wasAutoCapitalized && !isBeginningOfSentence && isSimplyCapitalized(word) && !isSingleLetter(word))
-            word.lowercase(locale)
-        else word
+    fun wordToLearn(enabled: Boolean, word: String, wasAutoCapitalized: Boolean, isBeginningOfSentence: Boolean, locale: Locale): String {
+        if (!enabled || !isSimplyCapitalized(word) || isSingleLetter(word)) return word
+        // The user history logic only lowercases the first letter of a sentence-start word, which turns "CAPS" into
+        // "cAPS". Only a plain "Hello" can be left to it, an ALL CAPS word is lowercased here wherever it is.
+        if ((wasAutoCapitalized || isBeginningOfSentence) && !isAllCaps(word)) return word
+        return word.lowercase(locale)
+    }
+
+    /** A capitalized word with a second uppercase letter, so with no lowercase one ("HELLO", not "Hello"). */
+    private fun isAllCaps(word: String): Boolean {
+        return word.codePoints().skip(1).anyMatch { Character.isUpperCase(it) }
+    }
 
     /** "I", "A", or a single letter with an apostrophe suffix of at most two letters ("I'm", "I'll", not "O'Neil"). */
     private fun isSingleLetter(word: String): Boolean {

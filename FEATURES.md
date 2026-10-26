@@ -12,7 +12,7 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
 
 ### Learn capitalized words in lowercase <!-- #no-learn-capitalized -->
 
-Learns capitalized ("Hello") and ALL CAPS ("HELLO") words in lowercase; mixed case like "HELlo" is learned as typed. Words at the start of a sentence are unaffected. Setting: Text correction → "Learn capitalized words in lowercase", off by default.
+Learns capitalized ("Hello") and ALL CAPS ("HELLO") words in lowercase; mixed case like "HELlo" is learned as typed. A capitalized word at the start of a sentence is unaffected. Setting: Text correction → "Learn capitalized words in lowercase", off by default.
 
 ### Learning contexts <!-- #learning-contexts -->
 
