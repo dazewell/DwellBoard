@@ -16,7 +16,7 @@ class CapitalizedLearningTest {
         listOf("", "hello", "iPhone", "HELlo", "McDonald", "NASA's").forEach { assertFalse(CapitalizedLearning.isSimplyCapitalized(it), it) }
     }
 
-    @Test fun lowercasesOnlyWhenOnAndNotSentenceStart() {
+    @Test fun lowercasesOnlyWhenOnAndKeepsPlainCapitalizedAtSentenceStart() {
         val en = Locale.ENGLISH
         assertEquals("HELLO", CapitalizedLearning.wordToLearn(false, "HELLO", false, false, en))
         assertEquals("Hello", CapitalizedLearning.wordToLearn(true, "Hello", true, false, en))
