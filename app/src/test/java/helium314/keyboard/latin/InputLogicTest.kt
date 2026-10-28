@@ -233,6 +233,17 @@ class InputLogicTest {
         assertEquals("hello. a there", text)
     }
 
+    @Test fun `letter after a comma typed in front of an existing space gets its space`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
+        setText("some text goes right here")
+        setCursorPosition(9) // after text
+        input(',')
+        assertEquals("some text, goes right here", text) // no second space yet
+        "and".forEach { input(it) }
+        assertEquals("some text, and", textBeforeCursor)
+        assertEquals("some text, and goes right here", text)
+    }
+
     @Test fun `comma gets its space while the connection counts as slow`() {
         latinIME.prefs().edit { putBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, true) }
         chainInput("hello")
