@@ -2302,8 +2302,13 @@ public final class InputLogic {
         // DwellBoard: read even on a "slow" connection: one read per punctuation mark, while skipping left the space out for up to 10 minutes after a single slow read
         final CharSequence after = mConnection.getTextAfterCursor(1, 0);
         // DwellBoard: a line break after the cursor ("text,|\n\nmore") is not a space, the punctuation still gets its own
-        if (!TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0)) && after.charAt(0) != '\n' && after.charAt(0) != '\r') return; // there already is a space
+        final boolean spaceAlreadyThere = !TextUtils.isEmpty(after) && Character.isWhitespace(after.charAt(0)) && after.charAt(0) != '\n' && after.charAt(0) != '\r';
         if (helium314.keyboard.dwell.punctuation.PunctuationAutospace.looksLikeEmail(mConnection.textBeforeCursorUntilLastWhitespaceOrDoubleSlash())) return;
+        if (spaceAlreadyThere) {
+            // DwellBoard: "text|" + " more" typed ",and": no second space now, but the next letter still needs one in front of it
+            mSpaceState = SpaceState.PHANTOM;
+            return;
+        }
         if (insertAutomaticSpaceIfOptionsAndTextAllow(settingsValues))
             mSpaceState = SpaceState.AUTO_SPACE_AFTER_PUNCTUATION;
     }
