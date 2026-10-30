@@ -2,6 +2,7 @@
 package helium314.keyboard.dwell.learning
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -32,5 +33,12 @@ class PickedLearningTest {
         assertTrue(PickedLearning.learnsTappedForm(true, "zorblat", "zorblat"))
         assertFalse(PickedLearning.learnsTappedForm(true, "Monday", "monday"))
         assertFalse(PickedLearning.learnsTappedForm(false, "zorblat", "zorblat"))
+    }
+
+    @Test fun typedWordGoesLeftOfTheCenter() {
+        assertEquals(2, PickedLearning.typedWordIndexLeft(4, 2))
+        assertEquals(2, PickedLearning.typedWordIndexLeft(2, 1))
+        assertEquals(1, PickedLearning.typedWordIndexLeft(1, 1))
+        assertEquals(1, PickedLearning.typedWordIndexLeft(1, 2))
     }
 }

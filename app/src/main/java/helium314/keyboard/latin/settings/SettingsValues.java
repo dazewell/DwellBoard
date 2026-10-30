@@ -125,6 +125,7 @@ public class SettingsValues {
     public final boolean mAddToPersonalDictionary;
     public final boolean mDontLearnCapitalized;
     public final boolean mLearnOnlyPicked;
+    public final boolean mLearnOnlyPickedTypedLeft;
     public final boolean mUseContactsDictionary;
     public final boolean mUseAppsDictionary;
     public final boolean mCustomNavBarColor;
@@ -323,6 +324,8 @@ public class SettingsValues {
         // DwellBoard: off while the strip is hidden, since a word can then never be picked and nothing new would be learned
         mLearnOnlyPicked = mUsePersonalizedDicts && mSuggestionsEnabled
                 && prefs.getBoolean(Settings.PREF_LEARN_ONLY_PICKED, Defaults.PREF_LEARN_ONLY_PICKED);
+        mLearnOnlyPickedTypedLeft = mLearnOnlyPicked
+                && prefs.getBoolean(Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT, Defaults.PREF_LEARN_ONLY_PICKED_TYPED_LEFT);
         mUseContactsDictionary = SettingsValues.readUseContactsEnabled(prefs, context);
         mUseAppsDictionary = prefs.getBoolean(Settings.PREF_USE_APPS, Defaults.PREF_USE_APPS);
         mCustomNavBarColor = prefs.getBoolean(Settings.PREF_NAVBAR_COLOR, Defaults.PREF_NAVBAR_COLOR);

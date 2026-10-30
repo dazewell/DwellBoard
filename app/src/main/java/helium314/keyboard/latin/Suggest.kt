@@ -133,11 +133,17 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
         val typedWordWasCapitalized = capitalizedTypedWord != typedWordString
         val correctToCapitalizedWord = typedWordWasCapitalized && isCorrectionEnabled && Settings.getValues().mAutoCorrectCapitalizedSuggestion
             && !wordComposer.isCursorFrontOrMiddleOfComposingWord && typedWordString.drop(1).none { it.isUpperCase() }
-        val indexOfTypedWord = 1 + if (hasAutoCorrection) SuggestedWords.INDEX_OF_AUTO_CORRECTION else SuggestedWords.INDEX_OF_TYPED_WORD
+        val indexOfTypedWord = (1 + if (hasAutoCorrection) SuggestedWords.INDEX_OF_AUTO_CORRECTION else SuggestedWords.INDEX_OF_TYPED_WORD)
+            // DwellBoard: keep the correction or top suggestion in the center and the typed word in the left slot.
+            // Not for a capitalization-only correction, where the capitalized typed word at index 1 is what space commits.
+            .let { if (Settings.getValues().mLearnOnlyPickedTypedLeft && (hasAutoCorrection || !correctToCapitalizedWord))
+                helium314.keyboard.dwell.learning.PickedLearning.typedWordIndexLeft(suggestionsList.size, it) else it }
         if (
             (hasAutoCorrection
-                // DwellBoard: "learn new words only when tapped" needs the typed word on the strip to be tapped
-                || ((Settings.getValues().mCenterSuggestionTextToEnter || Settings.getValues().mLearnOnlyPicked) && !wordComposer.isResumed)
+                // DwellBoard: "learn new words only when tapped" needs the typed word on the strip to be tapped, also
+                // when the word was resumed, which a selection update after a backspace can do mid-word
+                || (Settings.getValues().mCenterSuggestionTextToEnter && !wordComposer.isResumed)
+                || Settings.getValues().mLearnOnlyPicked
                 || typedWordWasCapitalized
             ) && suggestionsList.size >= indexOfTypedWord && capitalizedTypedWord.isNotEmpty()) {
             if (typedWordFirstOccurrenceWordInfo != null) {
