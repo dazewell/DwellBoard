@@ -651,6 +651,22 @@ class SuggestTest {
         assertEquals(listOf("henlo", "hello", "henlo", "hell"), correction.mSuggestedWordInfoList.map { it.mWord })
     }
 
+    @Test fun `capitalization only correction stays in the center with learn only picked typed left`() = inTextField {
+        latinIME.prefs().edit {
+            putBoolean(Settings.PREF_LEARN_ONLY_PICKED, true)
+            putBoolean(Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT, true)
+        }
+        enableAutocorrect(confidenceAggressive)
+        tapTypingSuggestions = suggestionResults(listOf(
+            suggestion("but", 6500),
+            suggestion("bit", 6200),
+        ))
+        val result = getSuggestedWords(false, "bur", CapsMode.MANUAL)
+        assert(result.mWillAutoCorrect)
+        // space commits index 1 when mWillAutoCorrect is set, so it must stay the capitalized typed word
+        assertEquals(listOf("bur", "Bur", "But", "Bit"), result.mSuggestedWordInfoList.map { it.mWord })
+    }
+
     private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode, unshiftedByUser: Boolean = false): SuggestedWords {
         val wc = WordComposer()
         wc.setUnshiftedByUser(unshiftedByUser)

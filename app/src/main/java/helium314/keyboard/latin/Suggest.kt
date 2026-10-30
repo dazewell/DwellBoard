@@ -134,8 +134,10 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
         val correctToCapitalizedWord = typedWordWasCapitalized && isCorrectionEnabled && Settings.getValues().mAutoCorrectCapitalizedSuggestion
             && !wordComposer.isCursorFrontOrMiddleOfComposingWord && typedWordString.drop(1).none { it.isUpperCase() }
         val indexOfTypedWord = (1 + if (hasAutoCorrection) SuggestedWords.INDEX_OF_AUTO_CORRECTION else SuggestedWords.INDEX_OF_TYPED_WORD)
-            // DwellBoard: keep the correction or top suggestion in the center and the typed word in the left slot
-            .let { if (Settings.getValues().mLearnOnlyPickedTypedLeft && !wordComposer.isResumed)
+            // DwellBoard: keep the correction or top suggestion in the center and the typed word in the left slot.
+            // Not for a capitalization-only correction, where the capitalized typed word at index 1 is what space commits.
+            .let { if (Settings.getValues().mLearnOnlyPickedTypedLeft && !wordComposer.isResumed
+                    && (hasAutoCorrection || !correctToCapitalizedWord))
                 helium314.keyboard.dwell.learning.PickedLearning.typedWordIndexLeft(suggestionsList.size, it) else it }
         if (
             (hasAutoCorrection
