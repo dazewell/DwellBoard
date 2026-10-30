@@ -18,6 +18,7 @@ import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo.KIND_SHORTCUT
 import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo.KIND_WHITELIST
 import helium314.keyboard.latin.common.ComposedData
 import helium314.keyboard.latin.common.Constants
+import helium314.keyboard.latin.common.CoordinateUtils
 import helium314.keyboard.latin.common.InputPointers
 import helium314.keyboard.latin.common.StringUtils
 import helium314.keyboard.latin.dictionary.Dictionary
@@ -667,11 +668,30 @@ class SuggestTest {
         assertEquals(listOf("bur", "Bur", "But", "Bit"), result.mSuggestedWordInfoList.map { it.mWord })
     }
 
-    private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode, unshiftedByUser: Boolean = false): SuggestedWords {
+    // a selection update after a backspace can resume the word being typed; it must still be tappable
+    @Test fun `resumed word stays tappable with learn only picked`() = inTextField {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_LEARN_ONLY_PICKED, true) }
+        tapTypingSuggestions = suggestionResults(listOf(
+            suggestion("surge", 1000),
+            suggestion("sure", 935),
+        ))
+        val center = getSuggestedWords(false, "suge", CapsMode.OFF, resumed = true)
+        assertEquals(listOf("suge", "suge", "surge", "sure"), center.mSuggestedWordInfoList.map { it.mWord })
+
+        latinIME.prefs().edit { putBoolean(Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT, true) }
+        val left = getSuggestedWords(false, "suge", CapsMode.OFF, resumed = true)
+        assertEquals(listOf("suge", "surge", "suge", "sure"), left.mSuggestedWordInfoList.map { it.mWord })
+    }
+
+    private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode, unshiftedByUser: Boolean = false, resumed: Boolean = false): SuggestedWords {
         val wc = WordComposer()
         wc.setUnshiftedByUser(unshiftedByUser)
         if (gesture) wc.setBatchInputPointers(InputPointers(1))
-        if (typedWord.isNotEmpty()) {
+        if (resumed) {
+            val codePoints = StringUtils.toCodePointArray(typedWord)
+            wc.setComposingWord(codePoints, CoordinateUtils.newCoordinateArray(codePoints.size))
+            wc.setCursorPositionWithinWord(codePoints.size)
+        } else if (typedWord.isNotEmpty()) {
             StringUtils.toCodePointArray(typedWord).forEach {
                 val e = Event.createEventForCodePointFromAlreadyTypedText(it, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE)
                 wc.applyProcessedEvent(wc.processEvent(e))
