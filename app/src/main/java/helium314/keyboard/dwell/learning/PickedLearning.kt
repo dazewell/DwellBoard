@@ -27,4 +27,13 @@ object PickedLearning {
      */
     fun learnsTappedForm(picked: Boolean, tappedWord: String, wordToLearn: String): Boolean =
         picked && wordToLearn == tappedWord
+
+    /**
+     * Where the copy of the typed word goes in the suggestion list when "show typed word on the left" is on. While
+     * typing, the strip hides index 0, puts index 1 in the center and index 2 left of it. So the copy goes to index 2,
+     * leaving the correction or top suggestion in the center; with no suggestion at all it takes the center itself.
+     * [listSize] counts the typed word at index 0.
+     */
+    fun typedWordIndexLeft(listSize: Int, defaultIndex: Int): Int =
+        if (listSize >= 2) 2 else minOf(defaultIndex, 1)
 }

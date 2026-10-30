@@ -134,6 +134,9 @@ class Suggest(private val mDictionaryFacilitator: DictionaryFacilitator) {
         val correctToCapitalizedWord = typedWordWasCapitalized && isCorrectionEnabled && Settings.getValues().mAutoCorrectCapitalizedSuggestion
             && !wordComposer.isCursorFrontOrMiddleOfComposingWord && typedWordString.drop(1).none { it.isUpperCase() }
         val indexOfTypedWord = 1 + if (hasAutoCorrection) SuggestedWords.INDEX_OF_AUTO_CORRECTION else SuggestedWords.INDEX_OF_TYPED_WORD
+            // DwellBoard: keep the correction or top suggestion in the center and the typed word in the left slot
+            .let { if (Settings.getValues().mLearnOnlyPickedTypedLeft && !wordComposer.isResumed)
+                helium314.keyboard.dwell.learning.PickedLearning.typedWordIndexLeft(suggestionsList.size, it) else it }
         if (
             (hasAutoCorrection
                 // DwellBoard: "learn new words only when tapped" needs the typed word on the strip to be tapped

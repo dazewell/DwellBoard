@@ -24,7 +24,7 @@ Shows the words a learning context has learned that are not in the dictionary (t
 
 ### Learn new words only when tapped <!-- #learn-only-picked -->
 
-Words that are in no dictionary are learned only when you tap them in the suggestion strip, not when you type a space after them; the strip then shows the word you are typing. Known words still learn as you type. Setting: Text correction → "Learn new words only when tapped", off by default.
+Words that are in no dictionary are learned only when you tap them in the suggestion strip, not when you type a space after them; the strip then shows the typed word. Known words still learn as you type. Setting: Text correction → "Learn new words only when tapped", off by default. "Show typed word on the left", also off, keeps the correction centered with the typed word beside it.
 
 ### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 
