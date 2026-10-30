@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.latin
 
+import android.text.InputType
+import android.view.inputmethod.EditorInfo
 import androidx.core.content.edit
 import helium314.keyboard.ShadowBinaryDictionaryUtils
 import helium314.keyboard.ShadowInputMethodManager2
@@ -616,6 +618,39 @@ class SuggestTest {
         assertEquals(listOf("bur", "BUR", "BUT", "BIT", "BUY", "😢", "BUTTER"), result4.mSuggestedWordInfoList.map { it.mWord })
     }
 
+    // DwellBoard: "show typed word on the left" keeps index 1 (center) for the correction or top suggestion
+    @Test fun `typed word goes left of the center with learn only picked typed left`() = inTextField {
+        latinIME.prefs().edit {
+            putBoolean(Settings.PREF_LEARN_ONLY_PICKED, true)
+            putBoolean(Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT, true)
+        }
+        tapTypingSuggestions = suggestionResults(listOf(
+            suggestion("surge", 1000),
+            suggestion("sure", 935),
+            suggestion("siege", 925),
+        ))
+        val noCorrection = getSuggestedWords(false, "suge", CapsMode.OFF)
+        assert(!noCorrection.mWillAutoCorrect)
+        assertEquals(listOf("suge", "surge", "suge", "sure", "siege"), noCorrection.mSuggestedWordInfoList.map { it.mWord })
+
+        tapTypingSuggestions = suggestionResults(listOf(suggestion("surge", 1000)))
+        val oneSuggestion = getSuggestedWords(false, "suge", CapsMode.OFF)
+        assertEquals(listOf("suge", "surge", "suge"), oneSuggestion.mSuggestedWordInfoList.map { it.mWord })
+
+        tapTypingSuggestions = suggestionResults(emptyList())
+        val noSuggestion = getSuggestedWords(false, "suge", CapsMode.OFF)
+        assertEquals(listOf("suge", "suge"), noSuggestion.mSuggestedWordInfoList.map { it.mWord })
+
+        enableAutocorrect(confidenceVeryAggressive)
+        tapTypingSuggestions = suggestionResults(listOf(
+            suggestion("hello", 650000),
+            suggestion("hell", 620000),
+        ))
+        val correction = getSuggestedWords(false, "henlo", CapsMode.OFF)
+        assert(correction.mWillAutoCorrect)
+        assertEquals(listOf("henlo", "hello", "henlo", "hell"), correction.mSuggestedWordInfoList.map { it.mWord })
+    }
+
     private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode, unshiftedByUser: Boolean = false): SuggestedWords {
         val wc = WordComposer()
         wc.setUnshiftedByUser(unshiftedByUser)
@@ -647,6 +682,20 @@ class SuggestTest {
             wc, NgramContext.EMPTY_PREV_WORDS_INFO, Keyboard(params), Settings.getValues().mSettingsValuesForSuggestion,
             Settings.getValues().mAutoCorrectEnabled, 0, 0
         )
+    }
+
+    // learn only picked needs suggestions shown, which a default (null input type) EditorInfo disables;
+    // Settings is a singleton, so restore the default attributes for the following tests
+    private fun inTextField(block: () -> Unit) {
+        val ei = EditorInfo()
+        ei.inputType = InputType.TYPE_CLASS_TEXT
+        val settings = Settings.getInstance()
+        settings.loadSettings(latinIME, Locale.ENGLISH, InputAttributes(ei, false, latinIME.packageName))
+        try {
+            block()
+        } finally {
+            settings.loadSettings(latinIME, Locale.ENGLISH, InputAttributes(EditorInfo(), false, latinIME.packageName))
+        }
     }
 
     private fun enableAutocorrect(autoCorrectThreshold: Float) {
