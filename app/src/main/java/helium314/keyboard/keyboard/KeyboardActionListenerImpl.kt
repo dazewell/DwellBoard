@@ -274,7 +274,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
 
         // iterator could be customizable, but should be used consistently if reasonably possible
         // DwellBoard: #word-swipe-steps steps from word start to word start, never onto a run of spaces
-        val iterator = if (isSwipeWords) helium314.keyboard.dwell.wordsteps.WordStepIterator(WordBreakIterator.getForSpacingAndPunctuations(settings.current.mSpacingAndPunctuations))
+        val iterator = if (isSwipeWords) helium314.keyboard.dwell.wordsteps.WordStepIterator.forSwipe(settings.current.mSpacingAndPunctuations)
         else CompatBreakIterator.graphemeInstance
         return stepsToCharCount(text, steps, iterator)
     }

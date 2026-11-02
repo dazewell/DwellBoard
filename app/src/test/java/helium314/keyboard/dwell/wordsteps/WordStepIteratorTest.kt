@@ -4,7 +4,6 @@ package helium314.keyboard.dwell.wordsteps
 import androidx.test.core.app.ApplicationProvider
 import helium314.keyboard.compat.CompatBreakIterator
 import helium314.keyboard.latin.App
-import helium314.keyboard.latin.common.WordBreakIterator
 import helium314.keyboard.latin.common.stepsToCharCount
 import helium314.keyboard.latin.settings.SpacingAndPunctuations
 import org.junit.runner.RunWith
@@ -15,8 +14,8 @@ import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
 class WordStepIteratorTest {
-    private fun iterator() = WordStepIterator(WordBreakIterator.getForSpacingAndPunctuations(
-        SpacingAndPunctuations(ApplicationProvider.getApplicationContext<App>().resources, false, Locale.ROOT)))
+    private fun iterator(locale: Locale = Locale.ROOT) = WordStepIterator.forSwipe(
+        SpacingAndPunctuations(ApplicationProvider.getApplicationContext<App>().resources, false, locale))
 
     // negative steps grow a selection back from the cursor, as delete and enter swipe do
     @Test fun selectsWholeWordsBackwards() {
@@ -51,6 +50,20 @@ class WordStepIteratorTest {
         assertEquals(0, stepsToCharCount("", -2, it))
         assertEquals(0, stepsToCharCount("", 2, iterator()))
         assertEquals(0, stepsToCharCount("", -2, iterator()))
+    }
+
+    // the word iterator splits text outside the subtype's script into single letters
+    @Test fun wholeWordsInAnotherScript() {
+        val ru = iterator(Locale("ru"))
+        assertEquals(-5, stepsToCharCount("hello world", -1, ru))
+        assertEquals(-11, stepsToCharCount("hello world", -2, ru))
+        assertEquals(-3, stepsToCharCount("привет мир", -1, ru))
+        val en = iterator(Locale.ENGLISH)
+        assertEquals(-3, stepsToCharCount("привет мир", -1, en))
+        assertEquals(-10, stepsToCharCount("привет мир", -2, en))
+        assertEquals(6, stepsToCharCount("hello world", 1, ru))
+        assertEquals(-5, stepsToCharCount("don't", -1, ru))
+        assertEquals(-6, stepsToCharCount("e-mail", -1, ru))
     }
 
     // positive steps shrink the selection again, landing on the same word starts
