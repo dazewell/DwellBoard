@@ -30,7 +30,12 @@ class WordStepIterator(private val words: CompatBreakIterator) : CompatBreakIter
         return index
     }
 
+    // stepsToCharCount keeps stepping after -1, and the ICU word iterator turns -1 back into 0
     override fun following(offset: Int): Int {
+        if (offset < 0) {
+            index = -1
+            return index
+        }
         var i = words.following(offset)
         while (i != -1 && !isWordStart(i)) i = words.following(i)
         index = i
@@ -38,6 +43,10 @@ class WordStepIterator(private val words: CompatBreakIterator) : CompatBreakIter
     }
 
     override fun preceding(offset: Int): Int {
+        if (offset < 0) {
+            index = -1
+            return index
+        }
         var i = words.preceding(offset)
         while (i != -1 && !isWordStart(i)) i = words.preceding(i)
         index = i

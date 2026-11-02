@@ -2,6 +2,7 @@
 package helium314.keyboard.dwell.wordsteps
 
 import androidx.test.core.app.ApplicationProvider
+import helium314.keyboard.compat.CompatBreakIterator
 import helium314.keyboard.latin.App
 import helium314.keyboard.latin.common.WordBreakIterator
 import helium314.keyboard.latin.common.stepsToCharCount
@@ -37,6 +38,17 @@ class WordStepIteratorTest {
         assertEquals(-6, stepsToCharCount("hello.", -1, it))
         assertEquals(-1, stepsToCharCount("a (b", -1, it))
         assertEquals(-4, stepsToCharCount("a (b", -2, it))
+    }
+
+    // the ICU iterator for languages without spaces answers 0 when asked past the end
+    @Test fun staysAtTheEndPastTheLastStep() {
+        val it = WordStepIterator(CompatBreakIterator.getWordInstance(Locale.JAPANESE))
+        assertEquals(5, stepsToCharCount("今日は晴れ", 5, it))
+        assertEquals(5, stepsToCharCount("今日は晴れ", 8, it))
+        assertEquals(0, stepsToCharCount("", 2, it))
+        assertEquals(0, stepsToCharCount("", -2, it))
+        assertEquals(0, stepsToCharCount("", 2, iterator()))
+        assertEquals(0, stepsToCharCount("", -2, iterator()))
     }
 
     // positive steps shrink the selection again, landing on the same word starts
