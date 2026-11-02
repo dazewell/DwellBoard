@@ -29,11 +29,11 @@ class WordStepIteratorTest {
         assertEquals(-1, stepsToCharCount("a   b", -1, it))
         assertEquals(-5, stepsToCharCount("a   b", -2, it))
         assertEquals(-2, stepsToCharCount("  ", -1, it))
-        assertEquals(-4, stepsToCharCount("word word", -1, it))
-        assertEquals(-9, stepsToCharCount("word word", -2, it))
+        assertEquals(-4, stepsToCharCount("word\u00A0word", -1, it))
+        assertEquals(-9, stepsToCharCount("word\u00A0word", -2, it))
     }
 
-    @Test fun punctuationGoesWithTheNextWord() {
+    @Test fun punctuationGoesWithTheWordBefore() {
         val it = iterator()
         assertEquals(-5, stepsToCharCount("hello, world", -1, it))
         assertEquals(-12, stepsToCharCount("hello, world", -2, it))
