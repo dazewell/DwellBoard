@@ -72,4 +72,4 @@ Like delete swipe, but on the enter key and nothing is deleted: hold enter and s
 
 ### Whole-word swipe steps <!-- #word-swipe-steps -->
 
-In Words mode, delete swipe and enter swipe step from one word to the next: sliding left from "hello world" selects "world", then "hello world", never " world" alone. Spaces and punctuation go along with the word after them. Always on whenever either swipe is set to Words.
+In Words mode, delete swipe and enter swipe step from one word to the next: sliding left from "hello world" selects "world", then "hello world", never " world" alone. Spaces and punctuation go along with the word before them. Always on whenever either swipe is set to Words.

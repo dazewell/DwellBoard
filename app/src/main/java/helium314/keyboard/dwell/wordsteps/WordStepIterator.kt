@@ -7,7 +7,7 @@ import helium314.keyboard.latin.common.codePointAt
 /**
  * Word steps for delete and enter swipe. The word iterator also counts a run of spaces or
  * punctuation as a word, so one step could select " word" and the next "word". Here only the
- * boundaries where a word starts count, so spaces and punctuation go along with the word after them.
+ * boundaries where a word starts count, so spaces and punctuation go along with the word before them.
  */
 class WordStepIterator(private val words: CompatBreakIterator) : CompatBreakIterator {
     override var text: CharSequence
