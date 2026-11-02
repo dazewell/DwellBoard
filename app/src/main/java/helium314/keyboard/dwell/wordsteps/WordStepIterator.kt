@@ -59,7 +59,8 @@ class WordStepIterator(private val words: CompatBreakIterator) : CompatBreakIter
     private fun isWordStart(offset: Int): Boolean {
         if (offset <= 0 || offset >= text.length) return true
         val cp = text.codePointAt(offset)
-        return !Character.isWhitespace(cp) && !isPunctuation(cp)
+        // isSpaceChar adds no-break spaces, which web editors write for doubled and trailing spaces
+        return !Character.isWhitespace(cp) && !Character.isSpaceChar(cp) && !isPunctuation(cp)
     }
 
     private fun isPunctuation(cp: Int) = when (Character.getType(cp).toByte()) {
