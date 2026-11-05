@@ -77,3 +77,7 @@ In Words mode, delete swipe and enter swipe step from one word to the next: slid
 ### Keyboard Undo and Redo <!-- #keyboard-undo -->
 
 Undo and Redo keep recent keyboard text edits, including substitutions, typing, paste, cut and deletion. A substitution can be undone without removing the whole word. Setting: Toolbar → "Keyboard Undo and Redo", off by default; its description explains the added processing, memory use and history limits.
+
+### Trackball cursor swipes <!-- #space-trackball -->
+
+With both space swipe settings on Move cursor, the space bar swipes like a trackball: slide any direction and change direction mid-gesture without lifting, one character per step sideways and one line per step up or down. Swipe actions other than Move cursor still stop at one direction. Settings: Advanced → horizontal and vertical space swipe, both set to Move cursor.

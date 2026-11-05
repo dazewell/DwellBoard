@@ -953,12 +953,18 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
             int dX = x - mStartX;
             int dY = y - mStartY;
 
+            // DwellBoard: #space-trackball, with both space swipes set to Move cursor the gesture works like a
+            // trackball: both axes are live on every move event and the direction can change without lifting.
+            // Any other action on either axis keeps the upstream axis lock, so one-shot toggles still latch.
+            final boolean trackball = sv.mSpaceSwipeHorizontal == KeyboardActionListener.SwipeAction.MOVE_CURSOR
+                    && sv.mSpaceSwipeVertical == KeyboardActionListener.SwipeAction.MOVE_CURSOR;
+
             // Touchpad mode
             mTouchpadHandler.enableTouchpadMove(x, y, sListener);
 
             // Vertical movement
             int stepsY = dY / sPointerStep;
-            if (stepsY != 0 && abs(dX) < abs(dY) && !mInHorizontalSwipe) {
+            if (stepsY != 0 && (trackball || (abs(dX) < abs(dY) && !mInHorizontalSwipe))) {
                 if (!mInVerticalSwipe) {
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInVerticalSwipe = true;
@@ -966,12 +972,13 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 if (sListener.onVerticalSpaceSwipe(stepsY)) {
                     mStartY += stepsY * sPointerStep;
                 }
-                return;
+                // DwellBoard: #space-trackball, in trackball mode the horizontal axis runs in the same move event
+                if (!trackball) return;
             }
 
             // Horizontal movement
             int stepsX = dX / sPointerStep;
-            if (stepsX != 0 && !mInVerticalSwipe) {
+            if (stepsX != 0 && (trackball || !mInVerticalSwipe)) {
                 if (!mInHorizontalSwipe) {
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInHorizontalSwipe = true;
