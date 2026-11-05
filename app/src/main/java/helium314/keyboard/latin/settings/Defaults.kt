@@ -186,6 +186,8 @@ object Defaults {
     const val PREF_TOOLBAR_HIDING_GLOBAL = true
     const val PREF_TOOLBAR_SWIPE_DOWN_TO_HIDE = false
     const val PREF_QUICK_PIN_TOOLBAR_KEYS = false
+    // DwellBoard: collecting text history must be explicitly enabled.
+    const val PREF_KEYBOARD_UNDO = false
     val PREF_PINNED_TOOLBAR_KEYS = defaultPinnedToolbarPref
     val PREF_TOOLBAR_KEYS = defaultToolbarPref
     const val PREF_AUTO_SHOW_TOOLBAR = false

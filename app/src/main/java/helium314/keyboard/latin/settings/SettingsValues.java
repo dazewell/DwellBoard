@@ -164,6 +164,8 @@ public class SettingsValues {
     private final boolean mOverrideShowingSuggestions;
     public final boolean mSuggestClipboardContent;
     public final boolean mIncognitoModeEnabled;
+    // DwellBoard: never retain private input in the additional history.
+    public final boolean mKeyboardUndoEnabled;
     public final boolean mLongPressSymbolsForNumpad;
 
     // From the input box
@@ -280,6 +282,9 @@ public class SettingsValues {
             && (mInputAttributes.mShouldShowSuggestions || mOverrideShowingSuggestions) && !mSuggestionStripHiddenPerUserSettings;
         mIncognitoModeEnabled = prefs.getBoolean(Settings.PREF_ALWAYS_INCOGNITO_MODE, Defaults.PREF_ALWAYS_INCOGNITO_MODE) || mInputAttributes.mNoLearning
                 || mInputAttributes.mIsPasswordField;
+        // DwellBoard: the input path reads this snapshot, never preferences per key.
+        mKeyboardUndoEnabled = !mIncognitoModeEnabled
+                && prefs.getBoolean(Settings.PREF_KEYBOARD_UNDO, Defaults.PREF_KEYBOARD_UNDO);
         mBottomRowScale = Settings.readBottomRowScale(prefs, isLandscape, isFolded);
         mDwellSpaceRowGap = helium314.keyboard.dwell.rowgap.SpaceRowGap.read(prefs, isLandscape, isFolded); // DwellBoard
         mSpaceSwipeHorizontal = Settings.readHorizontalSpaceSwipe(prefs);

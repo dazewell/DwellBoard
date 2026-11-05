@@ -211,6 +211,8 @@ public final class InputLogic {
      * Clean up the input logic after input is finished.
      */
     public void finishInput() {
+        // DwellBoard: release retained text as soon as the editor stops accepting input.
+        mConnection.clearKeyboardUndo();
         if (mWordComposer.isComposingWord()) {
             mConnection.finishComposingText();
             StatsUtils.onWordCommitUserTyped(mWordComposer.getTypedWord(), mWordComposer.isBatchMode());
@@ -702,6 +704,23 @@ public final class InputLogic {
      * @param inputTransaction The transaction in progress.
      */
     private void handleFunctionalEvent(Event event, InputTransaction inputTransaction, LatinIME.UIHandler handler) {
+        // DwellBoard: mixing local replay with the app's native stack would undo our restorations.
+        if (inputTransaction.getSettingsValues().mKeyboardUndoEnabled
+                && (event.getKeyCode() == KeyCode.UNDO || event.getKeyCode() == KeyCode.REDO)) {
+            final int undoResult = mConnection.performKeyboardUndo(event.getKeyCode() == KeyCode.REDO);
+            if (undoResult != 0) {
+                resetComposingState(true);
+                mSpaceState = SpaceState.NONE;
+                mRecapitalizeStatus.disable();
+                cancelDoubleSpacePeriodCountdown();
+                mInputLogicHandler.reset();
+                inputTransaction.setDidAffectContents();
+                inputTransaction.setRequiresUpdateSuggestions();
+                inputTransaction.requireShiftUpdate(InputTransaction.SHIFT_UPDATE_NOW);
+                if (undoResult < 0) handler.postResetCaches(true, 5);
+            }
+            return;
+        }
         int keyCode = event.getKeyCode();
         SettingsValues sv = inputTransaction.getSettingsValues();
         if (sv.mIsLocked && KeyCode.isIsBlockedWhenLocked(keyCode)) {

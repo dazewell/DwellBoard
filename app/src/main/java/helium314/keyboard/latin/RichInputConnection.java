@@ -127,6 +127,29 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     private final InputMethodService mParent;
     private InputConnection mIC;
     private int mNestLevel;
+    // DwellBoard: bounded history shares the editor's existing batch boundaries and caches.
+    private final helium314.keyboard.dwell.undo.KeyboardUndo mKeyboardUndo = new helium314.keyboard.dwell.undo.KeyboardUndo();
+
+    public void clearKeyboardUndo() { mKeyboardUndo.reset(); }
+
+    public int performKeyboardUndo(final boolean redo) {
+        final var restored = mKeyboardUndo.replay(mIC, redo);
+        if (restored == null) {
+            if (!mKeyboardUndo.getReplayAttempted()) return 0;
+            // DwellBoard: a rejected request may still have ended composition or changed selection.
+            mComposingText.setLength(0);
+            mCommittedTextBeforeComposingText.setLength(0);
+            mExpectedSelStart = mExpectedSelEnd = INVALID_CURSOR_POSITION;
+            return -1;
+        }
+        // DwellBoard: replay is asynchronous; update the expected cache without reading it back.
+        mComposingText.setLength(0);
+        mCommittedTextBeforeComposingText.setLength(0);
+        mCommittedTextBeforeComposingText.append(restored.getPrefix());
+        mExpectedSelStart = restored.getStart();
+        mExpectedSelEnd = restored.getEnd();
+        return 1;
+    }
 
     /**
      * The timestamp of the last slow InputConnection operation
@@ -153,6 +176,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void onStartInput() {
+        // DwellBoard: text history belongs only to this editor session.
+        clearKeyboardUndo();
         mLastSlowInputConnectionTime = -SLOW_INPUTCONNECTION_PERSIST_MS;
     }
 
@@ -194,6 +219,9 @@ public final class RichInputConnection implements PrivateCommandPerformer {
             if (isConnected()) {
                 mIC.beginBatchEdit();
             }
+            // DwellBoard: ordinary-key history needs no additional editor round trip.
+            mKeyboardUndo.begin(mIC, mCommittedTextBeforeComposingText, mComposingText,
+                    mExpectedSelStart, mExpectedSelEnd, Settings.getValues().mKeyboardUndoEnabled);
         } else {
             if (DBG) {
                 throw new RuntimeException("Nest level too deep");
@@ -207,6 +235,9 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     public void endBatchEdit() {
         if (mNestLevel <= 0) Log.e(TAG, "Batch edit not in progress!"); // TODO: exception instead
         if (--mNestLevel == 0 && isConnected()) {
+            // DwellBoard: capture before endBatchEdit can deliver selection callbacks.
+            mKeyboardUndo.end(mIC, mCommittedTextBeforeComposingText, mComposingText,
+                    mExpectedSelStart, mExpectedSelEnd);
             mIC.endBatchEdit();
         }
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
@@ -246,6 +277,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
             }
         }
         if (isConnected() && shouldFinishComposition) {
+            // DwellBoard: this raw finish also releases a previously unsupported middle-word composition.
+            mKeyboardUndo.finishComposition();
             mIC.finishComposingText();
         }
         return true;
@@ -257,6 +290,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
      * @return true if successful
      */
     private boolean reloadTextCache() {
+        // DwellBoard: refreshed editor text cannot be assumed to belong to the old edit chain.
+        mKeyboardUndo.reload();
         mCommittedTextBeforeComposingText.setLength(0);
         // Clearing composing text was not in original AOSP and OpenBoard, but why? should actually
         // be necessary when reloading text. Only when called by setSelection, mComposingText isn't
@@ -299,6 +334,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void finishComposingText() {
+        // DwellBoard: a finished composition no longer extends past the known cursor window.
+        mKeyboardUndo.finishComposition();
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         // TODO: this is not correct! The cursor is not necessarily after the composing text.
@@ -322,6 +359,10 @@ public final class RichInputConnection implements PrivateCommandPerformer {
      * @param newCursorPosition The new cursor position around the text.
      */
     public void commitText(final CharSequence text, final int newCursorPosition) {
+        // DwellBoard: substitutions undo separately from the word that was typed.
+        mKeyboardUndo.beforeCommit(mIC, mCommittedTextBeforeComposingText, mComposingText,
+                text, mExpectedSelStart, mExpectedSelEnd);
+        mKeyboardUndo.replacing(mExpectedSelStart - mComposingText.length(), mExpectedSelEnd, newCursorPosition);
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         if (DebugFlags.DEBUG_ENABLED)
@@ -564,6 +605,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void deleteTextBeforeCursor(final int beforeLength) {
+        // DwellBoard: an inverse must not need deleted text outside the captured window.
+        mKeyboardUndo.replacing(Math.max(0, mExpectedSelStart - beforeLength), mExpectedSelEnd, 1);
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         // TODO: the following is incorrect if the cursor is not immediately after the composition.
         //  Right now we never come here in this case because we reset the composing state before we
@@ -596,6 +639,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void performEditorAction(final int actionId) {
+        // DwellBoard: editor actions can change or submit text outside our cached range.
+        mKeyboardUndo.invalidate();
         mIC = mParent.getCurrentInputConnection();
         if (isConnected()) {
             mIC.performEditorAction(actionId);
@@ -603,6 +648,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void sendKeyEvent(final KeyEvent keyEvent) {
+        // DwellBoard: legacy key events can have app-defined effects beyond the text cache.
+        mKeyboardUndo.invalidate();
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DebugFlags.DEBUG_ENABLED) // no details, might be too sensitive
             Log.d(TAG, "key event with action "+keyEvent.getAction()+", is control: "+Character.isISOControl(keyEvent.getUnicodeChar()));
@@ -660,6 +707,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void setComposingRegion(final int start, final int end) {
+        // DwellBoard: the cache omits the part of a composition after the cursor.
+        mKeyboardUndo.composingRegion(start, end, mExpectedSelStart);
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         final int moveBy = mExpectedSelStart - start; // determine now, as mExpectedSelStart may change in getTextBeforeCursor
@@ -688,6 +737,11 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     // return whether the text was (probably) set correctly
     // unfortunately this is necessary in some cases
     public boolean setComposingText(final CharSequence text, final int newCursorPosition) {
+        // DwellBoard: suggestion underline refreshes outside a batch change spans, not undoable text.
+        if (!TextUtils.equals(mComposingText, text) || newCursorPosition != 1) {
+            mKeyboardUndo.composing(mComposingText, text);
+            mKeyboardUndo.replacing(mExpectedSelStart - mComposingText.length(), mExpectedSelEnd, newCursorPosition);
+        }
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         mExpectedSelStart += text.length() - mComposingText.length();
@@ -728,6 +782,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
      * invalid arguments were passed.
      */
     public boolean setSelection(final int start, final int end) {
+        // DwellBoard: selected deletion's internal collapse keeps its captured text; navigation clears it.
+        mKeyboardUndo.selection(start, end, mExpectedSelStart, mExpectedSelEnd);
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         if (DebugFlags.DEBUG_ENABLED)
@@ -753,6 +809,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void selectAll() {
+        // DwellBoard: this command bypasses the cached selection setter.
+        mKeyboardUndo.invalidate();
         if (!isConnected()) return;
         if (mExpectedSelStart != mExpectedSelEnd && mExpectedSelStart == 0 && !hasTextAfterCursor()) { // all text already selected
             mIC.setSelection(mExpectedSelEnd, mExpectedSelEnd);
@@ -760,6 +818,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void selectWord(SpacingAndPunctuations spacingAndPunctuations) {
+        // DwellBoard: this command bypasses the cached selection setter.
+        mKeyboardUndo.invalidate();
         if (!isConnected()) return;
         if (mExpectedSelStart != mExpectedSelEnd) { // already something selected
             mIC.setSelection(mExpectedSelEnd, mExpectedSelEnd);
@@ -805,6 +865,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void commitCompletion(final CompletionInfo completionInfo) {
+        // DwellBoard: app completions may change more than their displayed text.
+        mKeyboardUndo.invalidate();
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         CharSequence text = completionInfo.getText();
@@ -1137,6 +1199,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
 
     @Override
     public boolean performPrivateCommand(final String action, final Bundle data) {
+        // DwellBoard: private commands have no reversible text contract.
+        mKeyboardUndo.invalidate();
         mIC = mParent.getCurrentInputConnection();
         if (!isConnected()) {
             return false;
@@ -1186,6 +1250,8 @@ public final class RichInputConnection implements PrivateCommandPerformer {
 
     // doesn't work in many apps that support normal clipboard pasting, possibly just because they don't have mime types in editorInfo
     public void commitContent(InputContentInfoCompat contentInfo, @NonNull EditorInfo editorInfo) {
+        // DwellBoard: rich content is outside plain-text history.
+        mKeyboardUndo.invalidate();
         mIC = mParent.getCurrentInputConnection();
         if (isConnected())
             InputConnectionCompat.commitContent(mIC, editorInfo, contentInfo, InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION, null);

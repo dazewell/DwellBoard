@@ -47,6 +47,8 @@ fun ToolbarScreen(
         || !prefs.getBoolean(Settings.PREF_TOOLBAR_HIDING_GLOBAL, Defaults.PREF_TOOLBAR_HIDING_GLOBAL)
     val items = listOf(
         Settings.PREF_TOOLBAR_MODE,
+        // DwellBoard: Undo is also available from custom keys when the toolbar is hidden.
+        Settings.PREF_KEYBOARD_UNDO,
         if (toolbarMode == ToolbarMode.HIDDEN) Settings.PREF_TOOLBAR_HIDING_GLOBAL else null,
         if (toolbarMode != ToolbarMode.HIDDEN) Settings.PREF_TOOLBAR_SWIPE_DOWN_TO_HIDE else null,
         when (toolbarMode) {
@@ -73,6 +75,10 @@ fun ToolbarScreen(
 }
 
 fun createToolbarSettings(context: Context) = listOf(
+    // DwellBoard: the description makes the cost and local-history limits visible before opt-in.
+    Setting(context, Settings.PREF_KEYBOARD_UNDO, R.string.dwell_keyboard_undo, R.string.dwell_keyboard_undo_summary) {
+        SwitchPreference(it, Defaults.PREF_KEYBOARD_UNDO)
+    },
     Setting(context, Settings.PREF_TOOLBAR_MODE, R.string.toolbar_mode) { setting ->
         val ctx = LocalContext.current
         val items =

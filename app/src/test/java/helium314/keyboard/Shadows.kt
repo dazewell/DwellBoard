@@ -133,6 +133,7 @@ class ShadowInputMethodService {
         var composingStart = -1
         var composingEnd = -1
         var currentInputType = InputType.TYPE_CLASS_TEXT
+        var rejectSelectionAfter = 0
 
         // convenience for access
         val textBeforeCursor get() = text.substring(0, selectionStart)
@@ -152,6 +153,7 @@ class ShadowInputMethodService {
             composingStart = -1
             composingEnd = -1
             currentInputType = InputType.TYPE_CLASS_TEXT
+            rejectSelectionAfter = 0
         }
     }
 
@@ -243,6 +245,7 @@ class ShadowInputMethodService {
             return false
         }
         override fun setSelection(p0: Int, p1: Int): Boolean {
+            if (rejectSelectionAfter > 0 && --rejectSelectionAfter == 0) return false
             selectionStart = p0
             selectionEnd = p1
             // todo: call InputMethodService.onUpdateSelection(int, int, int, int, int, int), but only after batch edit is done!
