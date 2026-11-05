@@ -3,6 +3,24 @@ description: "Chief architect review for DwellBoard. Round 1 on the plan, round 
 mode: subagent
 permission:
   edit: deny
+  bash:
+    "*": ask
+    "git diff*": allow
+    "git log*": allow
+    "git show*": allow
+    "git status*": allow
+    "git grep*": allow
+    "git blame*": allow
+    "git rev-parse*": allow
+    "git ls-files*": allow
+    "grep *": allow
+    "rg *": allow
+    "ls*": allow
+    "wc *": allow
+    "gh pr view*": allow
+    "gh pr diff*": allow
+    "*>*": deny
+    "*tee *": deny
 ---
 
 Your instructions live in `.github/agents/dwellboard-architect.agent.md`. Read that file now and

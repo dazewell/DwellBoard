@@ -3,6 +3,24 @@ description: "Read-only recon on DwellBoard before a change is scoped: does it a
 mode: subagent
 permission:
   edit: deny
+  bash:
+    "*": ask
+    "git diff*": allow
+    "git log*": allow
+    "git show*": allow
+    "git status*": allow
+    "git grep*": allow
+    "git blame*": allow
+    "git rev-parse*": allow
+    "git ls-files*": allow
+    "grep *": allow
+    "rg *": allow
+    "ls*": allow
+    "wc *": allow
+    "gh pr view*": allow
+    "gh pr diff*": allow
+    "*>*": deny
+    "*tee *": deny
 ---
 
 Your instructions live in `.github/agents/dwellboard-scout.agent.md`. Read that file now and
