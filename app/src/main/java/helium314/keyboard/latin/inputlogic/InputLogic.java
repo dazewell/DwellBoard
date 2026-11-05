@@ -707,7 +707,10 @@ public final class InputLogic {
         // DwellBoard: mixing local replay with the app's native stack would undo our restorations.
         if (inputTransaction.getSettingsValues().mKeyboardUndoEnabled
                 && (event.getKeyCode() == KeyCode.UNDO || event.getKeyCode() == KeyCode.REDO)) {
+            // DwellBoard: temporary probe records routing only, never text.
+            Log.i("KeyboardUndo", "DWELL_SMOKE_keyboard-undo PATH local");
             final int undoResult = mConnection.performKeyboardUndo(event.getKeyCode() == KeyCode.REDO);
+            Log.i("KeyboardUndo", "DWELL_SMOKE_keyboard-undo END result=" + undoResult);
             if (undoResult != 0) {
                 resetComposingState(true);
                 mSpaceState = SpaceState.NONE;
@@ -866,11 +869,15 @@ public final class InputLogic {
                 }
                 break;
             case KeyCode.UNDO:
+                // DwellBoard: temporary competing-path probe for disabled or private fields.
+                Log.i("KeyboardUndo", "DWELL_SMOKE_keyboard-undo PATH native END undo");
                 if (GestureDataGatheringKt.useBackgroundGathering)
                     BackgroundGatheringCache.INSTANCE.onUndo(mWordComposer.isComposingWord() ? mWordComposer.getTypedWord() : mLastComposedWord.mCommittedWord);
                 sendDownUpKeyEventWithMetaState(KeyEvent.KEYCODE_Z, KeyEvent.META_CTRL_ON);
                 break;
             case KeyCode.REDO:
+                // DwellBoard: temporary competing-path probe for disabled or private fields.
+                Log.i("KeyboardUndo", "DWELL_SMOKE_keyboard-undo PATH native END redo");
                 sendDownUpKeyEventWithMetaState(KeyEvent.KEYCODE_Z, KeyEvent.META_CTRL_ON | KeyEvent.META_SHIFT_ON);
                 break;
             case KeyCode.SPLIT_LAYOUT:

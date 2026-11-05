@@ -176,6 +176,9 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     }
 
     public void onStartInput() {
+        // DwellBoard: temporary reachability probe for the opt-in history path.
+        Log.i("KeyboardUndo", "DWELL_SMOKE_keyboard-undo BEGIN build=" + helium314.keyboard.latin.BuildConfig.VERSION_NAME
+                + " package=" + helium314.keyboard.latin.BuildConfig.APPLICATION_ID);
         // DwellBoard: text history belongs only to this editor session.
         clearKeyboardUndo();
         mLastSlowInputConnectionTime = -SLOW_INPUTCONNECTION_PERSIST_MS;
