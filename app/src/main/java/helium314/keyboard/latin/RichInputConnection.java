@@ -740,9 +740,11 @@ public final class RichInputConnection implements PrivateCommandPerformer {
     // return whether the text was (probably) set correctly
     // unfortunately this is necessary in some cases
     public boolean setComposingText(final CharSequence text, final int newCursorPosition) {
-        // DwellBoard: coalesce ordinary typing, keeping replacements as distinct edits.
-        mKeyboardUndo.composing(mComposingText, text);
-        mKeyboardUndo.replacing(mExpectedSelStart - mComposingText.length(), mExpectedSelEnd, newCursorPosition);
+        // DwellBoard: suggestion underline refreshes outside a batch change spans, not undoable text.
+        if (!TextUtils.equals(mComposingText, text) || newCursorPosition != 1) {
+            mKeyboardUndo.composing(mComposingText, text);
+            mKeyboardUndo.replacing(mExpectedSelStart - mComposingText.length(), mExpectedSelEnd, newCursorPosition);
+        }
         if (DEBUG_BATCH_NESTING) checkBatchEdit();
         if (DEBUG_PREVIOUS_TEXT) checkConsistencyForDebug();
         mExpectedSelStart += text.length() - mComposingText.length();
