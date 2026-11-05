@@ -48,7 +48,7 @@ class KeyboardUndoTest {
     private val start get() = Selection.getSelectionStart(ic.editable)
     private val end get() = Selection.getSelectionEnd(ic.editable)
     private val composing: String get() {
-        val from = BaseInputConnection.getComposingSpanStart(ic.editable)
+        val from = BaseInputConnection.getComposingSpanStart(ic.editable!!)
         return if (from < 0) "" else text.substring(from, start)
     }
     private val committed get() = text.substring(0, start - composing.length)
