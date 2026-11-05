@@ -73,3 +73,7 @@ Like delete swipe, but on the enter key and nothing is deleted: hold enter and s
 ### Whole-word swipe steps <!-- #word-swipe-steps -->
 
 In Words mode, delete swipe and enter swipe step from one word to the next: sliding left from "hello world" selects "world", then "hello world", never " world" alone. Spaces and punctuation go along with the word before them. Always on whenever either swipe is set to Words.
+
+### Keyboard Undo and Redo <!-- #keyboard-undo -->
+
+Undo and Redo keep recent keyboard text edits, including substitutions, typing, paste, cut and deletion. A substitution can be undone without removing the whole word. Setting: Toolbar → "Keyboard Undo and Redo", off by default; its description explains the added processing, memory use and history limits.

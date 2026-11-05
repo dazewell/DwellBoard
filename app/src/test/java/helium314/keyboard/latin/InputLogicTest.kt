@@ -940,6 +940,65 @@ class InputLogicTest {
         assertEquals("hello", text)
     }
 
+    @Test fun `keyboard undo separates correction and typing with working redo`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_KEYBOARD_UNDO, true) }
+        setInputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_AUTO_CORRECT)
+        chainInput("hullo")
+        getAutocorrectedWithSpaceAfter("hello", "hullo")
+        functionalKeyPress(KeyCode.UNDO)
+        assertEquals("hullo", text)
+        functionalKeyPress(KeyCode.REDO)
+        assertEquals("hello ", text)
+        functionalKeyPress(KeyCode.UNDO)
+        functionalKeyPress(KeyCode.UNDO)
+        assertEquals("", text)
+        functionalKeyPress(KeyCode.UNDO)
+        assertEquals("", text)
+    }
+
+    @Test fun `keyboard undo restores cut and selected deletion`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_KEYBOARD_UNDO, true) }
+        for (key in listOf(KeyCode.CLIPBOARD_CUT, KeyCode.DELETE)) {
+            setText("before original after")
+            setCursorPosition(7, 15)
+            functionalKeyPress(key)
+            assertEquals("before  after", text)
+            functionalKeyPress(KeyCode.UNDO)
+            assertEquals("before original after", text)
+            assertEquals(7, selectionStart)
+            assertEquals(15, selectionEnd)
+            functionalKeyPress(KeyCode.REDO)
+            assertEquals("before  after", text)
+        }
+    }
+
+    @Test fun `failed keyboard undo reconciles composition before more typing`() {
+        for (rejectedCall in 1..2) {
+            reset()
+            latinIME.prefs().edit { putBoolean(Settings.PREF_KEYBOARD_UNDO, true) }
+            setText("")
+            chainInput("word")
+            ShadowInputMethodService.rejectSelectionAfter = rejectedCall
+            functionalKeyPress(KeyCode.UNDO)
+            val remaining = if (rejectedCall == 1) "word" else ""
+            assertEquals(remaining, text)
+            input('a')
+            assertEquals(remaining + "a", text)
+        }
+    }
+
+    @Test fun `keyboard undo never records private input`() {
+        latinIME.prefs().edit {
+            putBoolean(Settings.PREF_KEYBOARD_UNDO, true)
+            putBoolean(Settings.PREF_ALWAYS_INCOGNITO_MODE, true)
+        }
+        setText("")
+        assertEquals(false, settingsValues.mKeyboardUndoEnabled)
+        latinIME.prefs().edit { putBoolean(Settings.PREF_ALWAYS_INCOGNITO_MODE, false) }
+        setInputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD)
+        assertEquals(false, settingsValues.mKeyboardUndoEnabled)
+    }
+
     @Test fun `remove glide typing word on delete`() {
         glideTypingInput("hello")
         assertEquals("hello", text)

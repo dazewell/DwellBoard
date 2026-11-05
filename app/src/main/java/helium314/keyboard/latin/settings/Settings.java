@@ -192,6 +192,8 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_URL_DETECTION = "url_detection";
     public static final String PREF_DONT_SHOW_MISSING_DICTIONARY_DIALOG = "dont_show_missing_dict_dialog";
     public static final String PREF_QUICK_PIN_TOOLBAR_KEYS = "quick_pin_toolbar_keys";
+    // DwellBoard: local history has an explicit performance and coverage opt-in.
+    public static final String PREF_KEYBOARD_UNDO = "keyboard_undo";
     public static final String PREF_PINNED_TOOLBAR_KEYS = "pinned_toolbar_keys";
     public static final String PREF_TOOLBAR_KEYS = "toolbar_keys";
     public static final String PREF_AUTO_SHOW_TOOLBAR = "auto_show_toolbar";
