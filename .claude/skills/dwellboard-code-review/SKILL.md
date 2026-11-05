@@ -1,6 +1,6 @@
 ---
 name: dwellboard-code-review
-description: "Chief Architect reviewer for DwellBoard (dazewell/DwellBoard; a personal fork of HeliBorg/HeliBoard, tracked on base; nothing is ever offered upstream). Trigger whenever a DwellBoard change needs review: round 1 plan/design before coding, round 2 real diff after compile or CI, final whole-feature/craftsmanship passes, dispatching the dwellboard-architect subagent, or dazewell saying review this / take it through the architect. Owns keyboard-and-fork checks: upstream-merge survivability, minimal-footprint hooks, reuse-first, hot-path and direct-boot correctness, InputConnection and IME lifecycle traps, Compose-vs-views boundaries, config surfaces, fork-owned resources, severity calibration, output format, and the no-AI-in-source line. Companion to dwellboard-workflow and dwellboard-branch-flow. Edit this file when dazewell corrects review."
+description: "Chief Architect reviewer for DwellBoard (dazewell/DwellBoard; a personal fork of HeliBorg/HeliBoard, tracked on base; nothing is ever offered upstream). Trigger whenever a DwellBoard change needs review: round 1 plan/design before coding, round 2 real diff and final state after compile or CI, dispatching the dwellboard-architect subagent, or dazewell saying review this / take it through the architect. Owns keyboard-and-fork checks: upstream-merge survivability, minimal-footprint hooks, reuse-first, hot-path and direct-boot correctness, InputConnection and IME lifecycle traps, Compose-vs-views boundaries, config surfaces, fork-owned resources, severity calibration, output format, and the no-AI-in-source line. Companion to dwellboard-workflow and dwellboard-branch-flow. Edit this file when dazewell corrects review."
 ---
 
 # DwellBoard code review: Chief Architect
@@ -15,11 +15,12 @@ follows is what each round checks when it runs.
 - **Round 1, plan/design:** before code. Poke holes in hook point, reuse,
   upstream survivability, state, lifecycle, and scope.
 - **Round 2, real diff:** after local compile, or after the PR is pushed when
-  `ci.yml` is the compile gate. Review code, not the plan. Run it on a
-  different model family from the one that wrote the code.
+  `ci.yml` is the compile gate. Review code, not the plan. A dispatched
+  round 2 runs on a stronger model than the one that wrote the code.
 
-Use inline reasoning only for tiny changes. A feature package or risky fix gets
-fresh eyes through the subagent.
+Round 2 runs inline only under ~30 changed lines touching no cache, async,
+lifecycle, threading or `InputConnection` call. A feature package or risky fix
+gets fresh eyes through the subagent.
 
 ## Persona
 
@@ -55,6 +56,8 @@ over reinvention.
 - Leave no files behind. Do not redirect, `tee`, save scratch copies, or write
   extracted files into the checkout. If disk is truly required, use an absolute
   path outside the repo in the session's artifact area.
+- **Large files are never read whole** (see `AGENTS.md`): read each hunk ±50
+  lines and find callers with grep.
 - Look at `git diff --stat` first. A healthy change touches a handful of files,
   puts most diff in new self-contained feature code, and edits upstream files by
   only a few hook lines. Large upstream-file movement is itself a finding.
@@ -212,55 +215,28 @@ or lifecycle the plan never covered. Say this explicitly, stop prescribing line
 fixes, and raise a design finding with evidence. The owner decides whether to
 refactor in place or send it through round 1.5.
 
-## Final-state passes
+## Final state
 
-After the branch is green and round-2 findings are resolved, review the final
-state, not commit-by-commit.
-
-### Whole-feature review
-
-Ask: **would a maintainer be happy to own this?** Judge moving parts, duplicate
+Round 2 reviews the final state, not commit-by-commit, and answers one extra
+question: **would a maintainer be happy to own this?** Moving parts, duplicate
 mechanisms, state shape, and whether the next maintainer can change it without
-fear. This catches aggregates line review cannot.
+fear. There is no separate craftsmanship pass and no second reviewer.
 
-### Craftsmanship pass
-
-Ask: **is this good code, or a batch of hacks held together?** It is not a bug
-hunt or architecture review.
-
-- Review the final state.
 - Explicitly allow "this is solid, ship it".
-- Report smells with evidence, but do not prescribe remedies in code whose
-  lifecycle/threading was not traced end to end. A remedy is an adjudication
-  question, not an instruction.
 - Separate "ugly" from "wrong". Ugliness is read from code; wrongness needs a
-  trace.
+  trace. Report a smell with its evidence, but do not prescribe a remedy in code
+  whose lifecycle/threading you have not traced end to end — offer it as a
+  question.
 - Ugly-but-correct beats elegant-but-unproven when the asset at risk is
   irreplaceable. Rank by `dwellboard-workflow`: loss of typed text, clipboard
   history, dictionary or settings first, user-visible correctness second,
   maintainability third.
 - Include **what I'd defend**: convoluted but load-bearing code such as race
   guards or ordering checks a future cleanup must not remove.
-- Apply fork constraints: minimal upstream footprint, match the surrounding
-  toolkit and language, no DI or generic scaffolding advice.
-- Run at least two craftsmanship reviewers from model families different from
-  the implementer, the architect, and each other. Convergence names where to
-  look; divergence is adjudicated, not averaged.
 
-### Adjudicating a split
-
-Adjudication is a first-class step over the contested points, not another full
-review.
-
-- Give each contested claim and proposed remedy.
-- State the priority ranking up front: risk to irreplaceable data first.
-- For each item, state cost of leaving it as-is and cost of changing it.
-- Land on one unhedged recommendation: **merge as-is**, **minimal fix list**, or
-  **real cleanup**. Permission to choose merge as-is is explicit.
-- If the adjudicator is ruling on its own earlier prescription, say so.
-- A dismissal's mitigation is in scope. If the argument is "X is harmless
-  because Y absorbs it", read Y: queue boundedness, allocation, blocking,
-  capacity, and changed-thread reachability.
+A dedicated final-state dispatch runs only when a "when line-fixing stops"
+trigger above fired. A dismissal's mitigation is always in scope: if the
+argument is "X is harmless because Y absorbs it", read Y.
 
 ## Calibration
 

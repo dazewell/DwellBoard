@@ -21,9 +21,7 @@ decisions made early are still available to the code written late.
 session cannot see this conversation, so every constraint has to be
 re-serialised into a brief, and what the brief drops is exactly what an
 implementer needs — the `file:line` citations and the reasoning behind a
-rejected alternative. Vendor guidance agrees for work shaped like ours:
-sequential tasks, same-file edits and dependency-heavy work are better in one
-session with subagents.
+rejected alternative.
 
 **Subagents are how you buy context back.** They report into your trace without
 flooding it, and none of them can commit:
@@ -38,6 +36,23 @@ Dispatch them with the `task` tool. Give each one an objective, the output
 format you want, and explicit boundaries — a vague delegation comes back as a
 summary you cannot act on. Run independent ones in parallel.
 
+**Every dispatch is a cold start** that re-reads its agent file and skill before
+touching code, and AI quota is limited. Spend them deliberately, on these
+models, passing `model`/`effort` on the dispatch where the tool takes them:
+
+| Dispatch | Model | Effort |
+|---|---|---|
+| you, the implementer | Sonnet | high |
+| a throwaway search (below) | Haiku | low |
+| scout, ux | Sonnet | medium |
+| architect round 1 / 1.5 | Sonnet | high |
+| architect round 2 | Opus (its default) | high |
+
+On another vendor's tool, read Sonnet as its mid-tier model and Opus as its
+strongest.
+
+Never a fresh dispatch for something you can settle with one grep.
+
 Use a general read-only subagent for any search whose *output* you won't reuse —
 "where is this string set", "which call sites touch this field". Keep the
 answer, discard the logs.
@@ -46,23 +61,20 @@ The vendored audit agents in `.github/agents/` (`quality-playbook`,
 `wg-code-sentinel`, `sast-sca-security-analyzer`, `tech-debt-remediation-plan`)
 are not part of this pipeline; use one only when dazewell asks for it.
 
-## Read these first, every time
+## What to read, and what to grep
 
-Do not work from memory. These beat anything summarised here. **The workflow
-skill is read first, before anything else — before recon, before answering,
-before the first tool call on the task.**
+Do not work from memory, and do not read wholesale either: everything you read
+is paid for again on every later turn.
 
-- `.claude/skills/dwellboard-workflow/SKILL.md` — what a change looks like: hook
-  points, config surfaces, the gate, the `FEATURES.md` entry, the PR step.
-- `AGENTS.md` — the repo's facts and hard rules.
-- `.claude/skills/dwellboard-branch-flow/SKILL.md` — branch naming, the `#<slug>`
-  tag, append-only, the CI and staging builds.
-- `.claude/skills/dwellboard-process-lifecycle/SKILL.md` — the contract for any
-  process you start.
-- `FEATURES.md` — what already ships in the fork. Check before treating anything
-  as new.
-- `CONTRIBUTING.md` — upstream's map of where input, suggestions and settings
-  live.
+- `AGENTS.md` is already loaded. Load `dwellboard-workflow` once per session —
+  it has the hook points, config surfaces, gate and PR step. Load the others
+  only when their step arrives: `dwellboard-branch-flow` before the first push,
+  `dwellboard-process-lifecycle` before you start a process. Never re-read a
+  skill already in context; after a compaction re-read only the section you
+  need.
+- `FEATURES.md` (what already ships) and `CONTRIBUTING.md` (upstream's map of
+  where input, suggestions and settings live): **grep** them for the slug, the
+  feature words and the files you will touch, then read the hits.
 
 ## Scripts, not improvisation
 
@@ -87,7 +99,7 @@ steps from memory or read raw logs. Each prints short JSON (`pwsh -File`).
 
 ### 1. Recon, before you ask anything
 
-Dispatch `dwellboard-scout` first, and check `FEATURES.md` yourself. Coming back
+Dispatch `dwellboard-scout` first, and grep `FEATURES.md` yourself. Coming back
 to dazewell with questions the codebase already answered is the main way this
 process wastes his time. Recon turns *"what exactly do you want?"* into *"this
 overlaps the existing clipboard-history setting, the hook is
@@ -96,8 +108,9 @@ B?"*
 
 **If it already ships, stop and say so.** That is a good outcome.
 
-For a user-visible change, run `dwellboard-ux` next, so your questions are about
-real design forks rather than mechanics.
+For a change that adds or alters a user-visible surface, run `dwellboard-ux`
+next, so your questions are about real design forks rather than mechanics. A bug
+fix restoring intended behaviour skips it: the intended behaviour is the spec.
 
 ### 2. Plan, and review the plan — proportionally
 
@@ -132,11 +145,9 @@ carries the whole conversation. In one message:
 - State the plan you will execute, already vetted by round 1.
 - Name the decisions you are making unilaterally, **each with its cost** —
   roughly how much implementation it adds, or what it makes more expensive
-  later. A bare choice is not something anyone can consent to: "preserve
-  existing data" versus "migrate it" put as a plain preference once turned out
-  to cost six times the code and three Criticals, and was deleted the moment
-  the number was known. State the number, or the shape of it, and he declines
-  the expensive ones before they are built.
+  later. A bare choice is not something anyone can consent to; state the
+  number, or the shape of it, and he declines the expensive ones before they
+  are built.
 
 For a change you could describe in one sentence, this gate is a single line
 saying what you are about to do — not a ceremony.
@@ -206,12 +217,9 @@ fallback are in `AGENTS.md`. Run it in the worktree your branch is checked out i
 show the evidence — the command and the tail of its output, not an assertion
 that it passed.
 
-Prefer `--no-daemon` for a one-off compile, or an isolated `GRADLE_USER_HOME` if
-you need warm-daemon speed — and then stop only that isolated daemon. Never run
-a bare `.\gradlew.bat --stop` against the default Gradle home; another session
-may have a live daemon registered there. Same ownership-aware treatment for
-anything else you start; record it, stop it by exact PID, verify it is gone, and
-list it in your process ledger.
+Never a bare `.\gradlew.bat --stop` against the default Gradle home; anything
+you start is recorded, stopped by exact PID and listed in your process ledger
+per `dwellboard-process-lifecycle`.
 
 ### 7. Commits
 
@@ -228,22 +236,9 @@ list it in your process ledger.
 
 ### 8. Documentation
 
-User-visible ⇒ the `FEATURES.md` entry ships in the same PR, under the right
-`## section`, with a `### Feature name` heading marked `<!-- #slug -->`.
-
-**70 words, hard ceiling — count them.** Prose under the heading; images and
-shortcut tables excluded. Most entries are ~35. Two beats: what it does and
-where you find it, then its setting and default. Nothing else. Cut edge cases,
-failure behaviour, interaction step-by-steps, storage detail, rationale, and how
-it used to work. A sentence opening with *unless*, *except* or *note that* comes
-out. One caveat survives only if a user would misuse the feature without it.
-
-Read three neighbouring entries before writing, and match their voice. If your
-feature extends one that already has an entry, add your `<!-- #slug -->` to that
-heading and fold the behaviour in — then re-count and cut old detail. **When you
-shorten an entry, re-check every surviving sentence against the code**, not just
-the ones you rewrote; dropping a qualifier is the cheapest way to lose words and
-the easiest way to make a sentence false.
+User-visible ⇒ the `FEATURES.md` entry ships in the same PR, written per
+`dwellboard-workflow` step 6: **70 words, hard ceiling**, checked with
+`features-wordcount.ps1`, in the voice of three neighbouring entries.
 
 ### 9. The pull request
 
@@ -261,6 +256,14 @@ instead of a duplicate. Write the body to a file outside the repo.
 
 The PR body states the exact gate command and its result.
 
+**Waiting on CI or an APK costs quota too**, because every wake-up re-sends the
+whole conversation. Wait in **one** background command that exits only when the
+run finishes — `gh run watch <run-id> --exit-status`, run in the background so
+its output stays out of context, or a Monitor whose until-loop prints nothing
+until the end. Run the `-Wait` scripts the same way. Give up at about twice the
+run's usual duration and report. Never poll every 30–60 s, and never stream a
+watcher's output.
+
 Opening the PR requests no review. The Copilot review is billed and you request
 it yourself, once the head deserves one — step 10.
 
@@ -277,10 +280,21 @@ loose PR comment. Verify none remain unresolved.
 ### 10. Round 2, the Copilot review, and the APK
 
 Once it compiles — or once CI has gated it — take the **real diff** back to
-`dwellboard-architect` for round 2. Run it on a **different model family** from
-the one you implemented with: a model tends to be blind to its own mistakes in
-the same places, and you are the one who wrote this code, so you are the worst
-available judge of it.
+`dwellboard-architect` for round 2. A dispatched round 2 runs on a **different,
+stronger model** than the one you implemented with: a model tends to be blind to
+its own mistakes in the same places, and you are the one who wrote this code, so
+you are the worst available judge of it.
+
+Round 2 reads the **final state**, not just the latest commit, and also answers
+"would a maintainer be happy to own this?" — there is no separate whole-feature
+or craftsmanship dispatch unless a `dwellboard-code-review` "when line-fixing
+stops" trigger fired.
+
+**A small diff gets round 2 inline.** Under ~30 changed lines of code that touch
+no cache, async work, lifecycle, threading or `InputConnection` call, review it
+yourself against the `dwellboard-code-review` checklist and say "round 2 inline"
+in the handback. The stronger-model rule binds only dispatched reviews; anything
+larger or riskier goes to the architect.
 
 Verify each finding before implementing it — a reviewer can be wrong for *this*
 codebase, and a suggestion may break an existing flow or ignore an editor/API
@@ -307,11 +321,8 @@ it wraps — same checks, same JSON:
 .\.github\scripts\request-copilot-review.ps1 -PullRequest <n> -Wait
 ```
 
-It refuses a draft, a head Copilot already reviewed, a request still in flight
-and a spent budget; confirms the request on the timeline, because
-`requested_reviewers` never lists a bot; and returns the review with its inline
-comments. Never hand-roll the request with `gh pr edit --add-reviewer` or a raw
-REST POST.
+It enforces the budget and returns the review with its inline comments. Never
+hand-roll the request with `gh pr edit --add-reviewer` or a raw REST POST.
 
 - **Severity floor.** Act only on **Important or above** — data loss, a crash, a
   race with a user-visible consequence, a wrong-behaviour regression. Nitpicks,
@@ -370,36 +381,14 @@ he can run the same command.
 
 ## Diagnostics, when reachability is in question
 
-If the change adds a decision point that determines whether something is shown,
-or which of several paths handles the same input, instrument it. So does one
-whose effect is gated on state you never watched happen — a popup still open, an
-input view not yet started. A feature can pass a compile gate, a Copilot review
-and two architect rounds and still ship unreachable, because every one of those
-reasons about the diff and none can see the device state that picks the branch.
-
-- **Log only what identifies the path** — booleans, enum and state names, key
-  codes of *function* keys, counts. **Never typed text, a suggestion, clipboard
-  content, or a character key's code** — that is keystroke content. If a value
-  cannot be logged safely, log that the branch was taken instead.
-- **Through `helium314.keyboard.latin.utils.Log`** so the line also reaches the
-  in-app log. Nothing is stripped from release, which is exactly why the content
-  rule above is absolute.
-- **Instrument where you are uncertain, not inside the path you expect.** A
-  probe in an assumed path yields silence when the assumption is wrong, and
-  silence is indistinguishable from broken tooling. When the question is "which
-  path ran", log a stack trace at the observed symptom —
-  `Log.e(TAG, "<label>", new Throwable())` — rather than a boolean where you
-  believe it came from. Never inside a per-keystroke hot path unless one-shot.
-- **Own commit, single tag literal embedded in the log message text itself**
-  (e.g. `DWELL_SMOKE_<slug>`), written verbatim in the PR body. A tag that lives
-  only in a commit message is a check against nothing, because verification
-  greps the tree for that string.
-- **It comes back out as a new commit**, never folded into a feature commit, and
-  before the branch lands. Confirm the literal is gone from the tree, not just
-  from the history.
-
-This is proportional: a change with no user-visible surface earns none of it.
-Full rules are in `.claude/skills/dwellboard-workflow/diagnostics.md`.
+If the change adds a decision point that decides whether something is shown or
+which path handles the same input, or its effect is gated on state you never
+watched happen, instrument it: review reasons about the diff and cannot see the
+device state that picks the branch. The rules (never keystroke content, log
+through `helium314.keyboard.latin.utils.Log`, the `DWELL_SMOKE_<slug>` literal,
+removal in its own commit) are in
+`.claude/skills/dwellboard-workflow/diagnostics.md`. Proportional: no
+user-visible surface, no probes.
 
 ## What you never do
 
@@ -443,11 +432,7 @@ impossible — comparing field by field three times, when comparing the whole
 value was available at the second, is the pattern to recognise.
 
 **When restarting the piece is not enough, hand the whole change to a fresh
-session** — follow `dwellboard-session-handoff`. Commit and push **everything
-belonging to the change**, unfinished or non-compiling parts included in a
-clearly-marked partial commit, make sure a PR exists, write the handoff into the
-**PR body** under its `<!-- handoff -->` marker with the dead ends recorded
-concretely, then stop: further commits invalidate the state you just stamped.
+session** — follow `dwellboard-session-handoff`, then stop.
 
 **If you are the fresh session**, `dwellboard-session-pickup` binds you instead —
 reconstruct from the branch, the PR body, CI and the review threads before
@@ -508,11 +493,8 @@ PR: <url> — not a draft; CI gate <green @ sha | path-ignored>; APK <not reques
 **Needs you**: <screenshots, on-device checks, the merge decision>
 ```
 
-**Never write "ready to merge".** Nothing in this pipeline establishes it:
-nobody typed on the build, and the local compile often did not happen. Say what
-you actually verified and let dazewell draw the conclusion — that line is the
-one he acts on, so it is the one that has to be honest. Never imply you have
-seen the keyboard running; you have no device and no emulator.
+**Never write "ready to merge"**: nobody typed on the build. Say what you
+actually verified, and never imply you have seen the keyboard running.
 
 **If the handback needs his hands, ask explicitly.** The `Needs you` line is a
 record, not a request — it does not interrupt. Follow the handback with an

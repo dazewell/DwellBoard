@@ -66,6 +66,11 @@ touch in an upstream file is a future merge conflict.
   changes, clamp or default it where it is read. The keyboard must never crash
   on an absent, stale or unparseable stored value — a crashing IME locks the
   user out of typing.
+- **Files over ~1,500 lines are grepped, never read whole** — by every role.
+  Read the hunk you need ±50 lines and find callers with grep. Known cases:
+  `InputLogic.java` (~2,850 lines) and `LatinIME.java` (~1,850), both on the
+  hot path every input change touches. Check with `(Get-Content <file>).Count`
+  when unsure.
 - **No drive-by work.** No refactors, reformatting or unrelated cleanups; they
   widen the diff and cost the next upstream merge. Report them instead.
 
@@ -174,6 +179,11 @@ earns a rule line plus its `#slug`, not a retelling.
 `FEATURES.md` is what already ships — check it before treating anything as new.
 `CONTRIBUTING.md` (upstream) has a map of where input, suggestions and settings
 live.
+
+**Driving a change, on any tool:** your role is
+`.github/agents/dwellboard-implementer.agent.md` — read it first if your tool
+did not load it as your agent. A subagent it names that your tool lacks: read
+that role's `.github/agents/` file and do the step yourself.
 
 **One change = one branch = one session.** Use subagents for recon, design and
 review; do not spawn a child session per change.
