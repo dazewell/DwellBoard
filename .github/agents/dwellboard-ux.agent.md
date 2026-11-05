@@ -35,9 +35,10 @@ means:
   "Show a pin button on clipboard entries", not "Supercharge your clipboard
   workflow". Never any assistant or AI reference in a string.
 
-Read `.claude/skills/dwellboard-workflow/SKILL.md` for the fork's conventions and
-`FEATURES.md` for how shipped features are described and where they live — the
-tone of those entries is the tone of your copy.
+For the fork's conventions read only step 3 of
+`.claude/skills/dwellboard-workflow/SKILL.md` (hook points, config surfaces).
+Grep `FEATURES.md` for the entries next to yours rather than reading it whole —
+the tone of those entries is the tone of your copy.
 
 ## What you decide, every time
 

@@ -11,22 +11,10 @@ like, in order, and the concrete addresses to build it at.
 
 ## One change, one branch, one session
 
-A change runs start to finish in **one session**. Recon, design, implementation,
-review and handback share one trace, because the decisions made early have to
-still be available to the code written late.
-
-**Do not spawn a child session per change.** A child cannot see the conversation
-that produced it, so every constraint has to be re-serialised into a brief — and
-what a brief drops is exactly what an implementer needs: the `file:line`
-citations and the reasoning behind the rejected alternative. Coordination across
-sessions was the single largest source of lost time on the sibling fork this
-process came from, ahead of any bug.
-
-**Subagents are how you buy context back.** `dwellboard-scout` for read-only
-recon, `dwellboard-ux` for behaviour and placement, `dwellboard-architect` for
-both review rounds. They report into your trace without flooding it, and none
-can commit. Give each an objective, an output format and explicit boundaries.
-The vendored audit agents in `.github/agents/` are not part of this pipeline.
+A change runs start to finish in **one session**, with subagents
+(`dwellboard-scout`, `dwellboard-ux`, `dwellboard-architect`) for recon, design
+and review — never a child session per change. Why, and which model each runs
+on, is in the implementer agent file.
 
 Two or more **genuinely independent** changes at once — disjoint files, disjoint
 hooks, no ordering between them — can run as parallel sessions dazewell starts
@@ -37,11 +25,12 @@ them one at a time in one session.
 
 ### 1. Recon, then design review (round 1 of 2)
 
-Dispatch `dwellboard-scout` and check `FEATURES.md` before asking dazewell
+Dispatch `dwellboard-scout` and grep `FEATURES.md` before asking dazewell
 anything — and remember HeliBoard itself ships a lot behind settings. **If it
-already ships, stop and say so** — that is a good outcome. For a user-visible
-change, run `dwellboard-ux` next so the questions you ask are about real design
-forks rather than mechanics.
+already ships, stop and say so** — that is a good outcome. For a change that
+adds or alters a user-visible surface, run `dwellboard-ux` next so the questions
+you ask are about real design forks rather than mechanics; a bug fix restoring
+intended behaviour skips it.
 
 Then put the plan to `dwellboard-architect` (round 1) **before writing a line**:
 does this fight the architecture, will it survive the next upstream merge, is
@@ -80,8 +69,7 @@ drop. Whether it is worth it is dazewell's product decision, not yours.
 
 Cut a short-lived branch off `dev`, named `<YYYY-MM-DD>_<short-slug>` — **the
 date prefix is mandatory**; `_` or `-` between date and slug, hyphens inside
-the slug. `.github/scripts/new-branch-name.ps1 <slug>` prints one. An undated
-`clip-pin` is wrong: fix it before the first push. One change per branch.
+the slug. `.github/scripts/new-branch-name.ps1 <slug>` prints one. One change per branch.
 
 Topology (`dev`, `base`, `main`), the `#tag` every commit carries, how upstream
 reaches `dev` (by hand, via `base`) and the no-force-push rule are normative in
@@ -172,9 +160,8 @@ few lines touching anything upstream.
 When the change adds a decision point that determines whether something is
 shown, or which of several paths handles the same input, **instrument it**. The
 same applies when the effect is gated on state you never watched happen — a
-popup still open, an input view not yet started. Reading the diff cannot answer
-"which path actually executed on the device"; a log line answers it in seconds.
-The rules — what may and may not be logged (never keystroke content), logging
+popup still open, an input view not yet started. The diff cannot show which
+path ran on the device; a log line can. The rules — what may and may not be logged (never keystroke content), logging
 through `helium314.keyboard.latin.utils.Log`, where to place a probe, the
 `DWELL_SMOKE_<slug>` tag literal, the four marker classes, and the obligation to
 remove them in their own commit — are in [`diagnostics.md`](diagnostics.md).
@@ -184,8 +171,7 @@ This is proportional: a change with no user-visible surface earns none of it.
 
 ### 4. Compile gate
 
-The command (`.\gradlew.bat :app:compileDebugNoMinifyJavaWithJavac`, plus
-`:app:testRunTestsUnitTest -PdwellTestBuildType=runTests` when tested logic moved), the machine budgets and
+The command (plus unit tests when tested logic moved), the machine budgets and
 the CI fallback are in `AGENTS.md`. Run it in the worktree the change lives in,
 so it compiles the actual branch. Don't move on until it is clean, and never
 claim you compiled something you did not — show the command and the tail of its
@@ -197,16 +183,12 @@ Gradle daemon and cleanup obligations are normative in
 ### 5. Code review (round 2 of 2)
 
 Once it compiles — or once it is pushed and `ci.yml` is the gate — take the
-**real diff** back to `dwellboard-architect`. Run round 2 on a **different model
-family** from the one that wrote the code: a model tends to be blind to its own
-mistakes in the same places.
-
-Then review **the whole, on the final state of the code** — not the lines, and
-not the diff. A change that arrived as a dozen small fixes reads fine
-hunk-by-hunk and can still leave a muddled state machine. What triggers this is
-what *happened*, not just up-front size: repeated fixes in one region, a design
-that shifted mid-flight, or several review rounds. The repeated-fix trigger is
-defined in `dwellboard-code-review`.
+**real diff** back to `dwellboard-architect`, on a **stronger model** than the
+one that wrote the code: a model tends to be blind to its own mistakes in the
+same places. Round 2 reads **the final state of the code**, not just the latest
+hunk — a change that arrived as a dozen small fixes reads fine hunk-by-hunk and
+can still leave a muddled state machine. Models, effort and the inline exception
+for small diffs are in the implementer agent file.
 
 Verify each finding before implementing it — a reviewer can be wrong for *this*
 codebase. Push back with `file:line` evidence rather than performative
@@ -256,17 +238,14 @@ always has a route to a test build. Opening it and every later push triggers
 The APK comes from **`staging.yml`**. Request it with
 `.\.github\scripts\request-apk-build.ps1 -PullRequest <n> -Wait` (it applies the
 **`build-apk`** label to the PR, reuses an existing build for the head, and
-returns the artifact link) — never label by hand
-(it also runs on every push to `dev` and on manual dispatch). It uploads the
+returns the artifact link) — never label by hand. It uploads the
 `.apk` unzipped as a **GitHub Actions artifact**; a push to `dev` also replaces
 `DwellBoard.apk` on the rolling **`staging`** pre-release (the README link).
 Nothing is sent anywhere else. `gh run download` unpacks the APK (it is a zip),
 so fetch it with the artifact-API `curl -o` recipe in `dwellboard-branch-flow`
-(to a dir outside the repo) and install with `adb install -r <apk>`. You don't
-do that by hand: **`install-apk.ps1 -PullRequest <n>`** builds or reuses the
-head's APK and installs it on the phone. On `no-device`, ask dazewell to connect
-it (USB debugging on, accept the prompt) and re-run; on `signature-mismatch`, ask
-before uninstalling. Every
+(to a dir outside the repo) and install with `adb install -r <apk>` — in practice
+**`install-apk.ps1 -PullRequest <n>`** does both (statuses in the implementer
+file, step 10). Every
 staging build (PR label, dev push, dispatch) is the release variant signed with
 the committed `app/release.keystore` (passwords in the `LOCAL_PROPERTIES`
 secret / gitignored `local.properties`): it installs as `helium314.keyboard.dazewell` and
@@ -281,7 +260,7 @@ floor, and thread resolution — are normative in
 `.github/agents/dwellboard-implementer.agent.md` and are not restated here.
 
 **Request the verification build only once review has settled** — round 2 clean,
-any final-state pass clean, nothing Important or above outstanding. An APK
+nothing Important or above outstanding. An APK
 requested earlier is stale the moment a later round finds a Critical, and
 dazewell's time on a stale build is the most expensive waste in the pipeline.
 
@@ -289,9 +268,9 @@ dazewell's time on a stale build is the most expensive waste in the pipeline.
 Review reads the diff; it cannot see whether a control's precondition is ever
 true on a device. So for anything a user can see or tap, once it compiles,
 request a build and ask **one** question: does the control appear, and can you
-reach it? Not correctness, not edge cases — reachability only. Round 2 and any
-final-state pass run **after** that comes back positive; there is no point
-reviewing the craftsmanship of code nobody can reach.
+reach it? Not correctness, not edge cases — reachability only. Round 2 runs
+**after** that comes back positive; there is no point reviewing code nobody can
+reach.
 
 The smoke build is disposable by design and is never described as a build to
 verify behaviour against. A UI-facing change costs at most two builds, one per
@@ -362,8 +341,5 @@ reasoning.
 ## Keeping this current
 
 This file is meant to be edited. When dazewell corrects how the workflow should
-run, change it here in the same session, and fix anything it contradicts rather
-than leaving both. The bias is **subtraction**: this file is read in full every
-time it is loaded, and a rule lost inside a long file is worse than no rule. If
-an agent keeps breaking a rule that is written down, treat the length as the
-cause.
+run, change it here in the same session and fix anything it contradicts. The
+bias is **subtraction**.

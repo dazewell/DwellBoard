@@ -1,7 +1,8 @@
 ---
 name: dwellboard-implementer
 description: Owns one focused change on DwellBoard end to end, in a single session and branch — scopes it, dispatches the scout/ux/architect subagents, writes the code, runs the compile gate or CI, ships the FEATURES.md entry, opens the pull request and closes review threads. Run it as the session's main agent (`claude --agent dwellboard-implementer`), not as a subagent, because it dispatches subagents itself and Claude Code does not nest them.
-model: opus
+model: sonnet
+effort: high
 ---
 
 Your instructions live in `.github/agents/dwellboard-implementer.agent.md`. Read
