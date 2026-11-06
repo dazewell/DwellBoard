@@ -1,15 +1,19 @@
 #requires -Version 7
 
-# After a PR is merged: waits for the merge, then for the staging.yml build that
+# With no PR number, installs the latest successful staging.yml build from dev.
+# With -PullRequest, waits for the merge, then for the staging.yml build that
 # the push to dev produced for the merge commit, downloads that APK and installs
 # it on the connected phone via install-apk.ps1 (which polls for a device, never
 # uninstalls, and never touches other adb clients).
+#
+# Changes the working directory to this script's repo root, even when launched
+# from elsewhere. Example: & C:\Projects\DwellBoard\.github\scripts\install-dev-build.ps1
 #
 # Prints one JSON object. status is one of:
 #   installed | no-device | multiple-devices | signature-mismatch | install-failed
 #                    (install-apk.ps1's results, passed through)
 #   not-merged       the PR is closed unmerged, or -MergeWaitMinutes ran out
-#   no-staging-run   the merge touched only paths staging.yml ignores; nothing to install
+#   no-staging-run   no successful dev build, or the merge touched only ignored paths
 #   build-failed     the dev build failed or never finished (run set)
 #
 # staging.yml cancels a superseded dev run when another push lands. If the merge
@@ -18,7 +22,6 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)]
     [ValidateRange(1, [int]::MaxValue)]
     [int]$PullRequest,
     [ValidatePattern('^[^/]+/[^/]+$')]
@@ -36,6 +39,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+Set-Location -LiteralPath (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 
 function Invoke-Gh {
     param([string[]]$Arguments)
@@ -56,16 +60,18 @@ if (-not $Repository) {
     $Repository = (Invoke-Gh @('repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner')).Trim()
 }
 
-# 1. Wait for the merge.
-$MergeDeadline = (Get-Date).AddMinutes($MergeWaitMinutes)
-while ($true) {
-    $Pr = Invoke-Gh @('api', "repos/$Repository/pulls/$PullRequest") | ConvertFrom-Json
-    if ($Pr.merged) { break }
-    if ($Pr.state -ne 'open') { Out-Result 'not-merged' "PR is $($Pr.state), not merged." $null $null; return }
-    if ((Get-Date) -ge $MergeDeadline) { Out-Result 'not-merged' 'Still open when the wait ran out.' $null $null; return }
-    Start-Sleep -Seconds 60
+if ($PullRequest) {
+    # 1. Wait for the merge.
+    $MergeDeadline = (Get-Date).AddMinutes($MergeWaitMinutes)
+    while ($true) {
+        $Pr = Invoke-Gh @('api', "repos/$Repository/pulls/$PullRequest") | ConvertFrom-Json
+        if ($Pr.merged) { break }
+        if ($Pr.state -ne 'open') { Out-Result 'not-merged' "PR is $($Pr.state), not merged." $null $null; return }
+        if ((Get-Date) -ge $MergeDeadline) { Out-Result 'not-merged' 'Still open when the wait ran out.' $null $null; return }
+        Start-Sleep -Seconds 60
+    }
+    $Sha = $Pr.merge_commit_sha
 }
-$Sha = $Pr.merge_commit_sha
 
 function Get-DevRuns {
     $Result = Invoke-Gh @('api', "repos/$Repository/actions/workflows/staging.yml/runs?event=push&branch=dev&per_page=20") | ConvertFrom-Json
@@ -77,13 +83,20 @@ function Get-DevRuns {
 # at once. Otherwise the run is coming, so poll for it until the build deadline
 # rather than guessing from a short wait (Actions queues can be slow).
 $BuildDeadline = (Get-Date).AddMinutes($BuildWaitMinutes)
-$Files = @(Invoke-Gh @('api', '--paginate', "repos/$Repository/pulls/$PullRequest/files", '--jq', '.[].filename'))
-$Ignored = '\.md$|^\.github/|^docs/|^\.githooks/|^\.claude/'
-if (-not @($Files | Where-Object { $_ -notmatch $Ignored })) {
-    Out-Result 'no-staging-run' 'The merge touched only paths staging.yml ignores (docs, .github, hooks, agent files).' $null $Sha
-    return
+if ($PullRequest) {
+    $Files = @(Invoke-Gh @('api', '--paginate', "repos/$Repository/pulls/$PullRequest/files", '--jq', '.[].filename'))
+    $Ignored = '\.md$|^\.github/|^docs/|^\.githooks/|^\.claude/'
+    if (-not @($Files | Where-Object { $_ -notmatch $Ignored })) {
+        Out-Result 'no-staging-run' 'The merge touched only paths staging.yml ignores (docs, .github, hooks, agent files).' $null $Sha
+        return
+    }
+    $Run = $null
+} else {
+    $Result = Invoke-Gh @('api', "repos/$Repository/actions/workflows/staging.yml/runs?event=push&branch=dev&status=success&per_page=1") | ConvertFrom-Json
+    $Run = $Result.workflow_runs | Select-Object -First 1
+    if (-not $Run) { Out-Result 'no-staging-run' 'No successful dev build is available.' $null $null; return }
+    $Sha = $Run.head_sha
 }
-$Run = $null
 while (-not $Run) {
     $Run = Get-DevRuns | Where-Object { $_.head_sha -eq $Sha } | Select-Object -First 1
     if ($Run) { break }
