@@ -326,8 +326,7 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
             gestureMoveForwardHaptics()
             KeyCode.ARROW_DOWN
         }
-        // one press per step, so a motion event that crossed two or more steps on the way does not lose lines
-        repeat(abs(steps)) { onCodeInput(code, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false) }
+        onCodeInput(code, Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false)
         return true
     }
 
