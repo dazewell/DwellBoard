@@ -70,6 +70,10 @@ Four color themes matching Gboard's current Dynamic Color look: "Gboard style" l
 
 Like delete swipe, but on the enter key and nothing is deleted: hold enter and slide left to select letters or words before the cursor, then release to keep the selection for cutting, copying or typing over. Sliding up, down or right off the key still cancels enter. Setting: Advanced → "Enter swipe" (Off, Letters, Words), off by default.
 
+### Swipe sensitivity <!-- #swipe-sensitivity -->
+
+Sets how far you slide per step of delete swipe and enter swipe, separately for each, in both Letters and Words. Higher means less finger travel per letter or word. Setting: Advanced → "Delete swipe sensitivity" and "Enter swipe sensitivity" (25–300%), shown while that swipe is on, 100% by default.
+
 ### Whole-word swipe steps <!-- #word-swipe-steps -->
 
 In Words mode, delete swipe and enter swipe step from one word to the next: sliding left from "hello world" selects "world", then "hello world", never " world" alone. Spaces and punctuation go along with the word before them. Always on whenever either swipe is set to Words.
