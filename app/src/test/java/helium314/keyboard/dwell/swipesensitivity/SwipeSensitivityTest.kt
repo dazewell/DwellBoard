@@ -6,15 +6,24 @@ import kotlin.test.assertEquals
 
 class SwipeSensitivityTest {
     @Test fun defaultKeepsUpstreamStep() {
-        assertEquals(26, SwipeSensitivity.step(26, 100))
+        assertEquals(26, SwipeSensitivity.step(26, 100, started = false))
+        assertEquals(26, SwipeSensitivity.step(26, 100, started = true))
     }
 
-    @Test fun higherSensitivityShortensStep() {
-        assertEquals(13, SwipeSensitivity.step(26, 200))
-        assertEquals(104, SwipeSensitivity.step(26, 25))
+    @Test fun higherSensitivityShortensStepOnceStarted() {
+        assertEquals(13, SwipeSensitivity.step(26, 200, started = true))
+    }
+
+    @Test fun higherSensitivityKeepsUpstreamStartThreshold() {
+        assertEquals(26, SwipeSensitivity.step(26, 200, started = false))
+    }
+
+    @Test fun lowerSensitivityLengthensEveryStep() {
+        assertEquals(104, SwipeSensitivity.step(26, 25, started = false))
+        assertEquals(104, SwipeSensitivity.step(26, 25, started = true))
     }
 
     @Test fun stepNeverZero() {
-        assertEquals(1, SwipeSensitivity.step(1, SwipeSensitivity.MAX))
+        assertEquals(1, SwipeSensitivity.step(1, SwipeSensitivity.MAX, started = true))
     }
 }

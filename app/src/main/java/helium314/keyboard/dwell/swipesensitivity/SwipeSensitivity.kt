@@ -14,7 +14,14 @@ object SwipeSensitivity {
         return stored.coerceIn(MIN, MAX)
     }
 
-    /** Finger travel per step: higher sensitivity, shorter step. 100 % keeps [basePx] exactly. */
+    /**
+     * Finger travel per step: higher sensitivity, shorter step. 100 % keeps [basePx] exactly.
+     * Before the swipe has [started], the step is also the only thing telling a tap from a swipe on
+     * delete and enter, so it never drops below [basePx] there; a drifting tap would lose its key.
+     */
     @JvmStatic
-    fun step(basePx: Int, percent: Int): Int = (basePx * 100 / percent).coerceAtLeast(1)
+    fun step(basePx: Int, percent: Int, started: Boolean): Int {
+        val step = (basePx * 100 / percent).coerceAtLeast(1)
+        return if (started) step else maxOf(step, basePx)
+    }
 }
