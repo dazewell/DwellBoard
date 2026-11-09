@@ -82,6 +82,8 @@
     <string name="style_name_Pill" tools:keep="@string/style_name_Pill">Pill</string>
     <string name="dwell_enter_swipe">Enter swipe</string>
     <string name="dwell_enter_swipe_summary">Swipe left from the enter key to select text before the cursor</string>
+    <string name="dwell_delete_swipe_sensitivity">Delete swipe sensitivity</string>
+    <string name="dwell_enter_swipe_sensitivity">Enter swipe sensitivity</string>
     <string name="dwell_keyboard_undo">Keyboard Undo and Redo</string>
     <string name="dwell_keyboard_undo_summary">Experimental. Use recent keyboard edits instead of the app’s undo history, including substitutions, typing, paste, cut and deletion. Adds processing while typing and holds up to 64 KiB of text history in memory. History clears on cursor or editor changes; large or unsupported edits may clear it too. Turning this off returns to the app’s history, which may include edits made by keyboard Undo/Redo. Password and incognito fields use the app’s undo. Off by default.</string>
 </resources>

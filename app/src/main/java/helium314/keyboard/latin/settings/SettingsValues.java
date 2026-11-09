@@ -90,6 +90,8 @@ public class SettingsValues {
     public final boolean mTouchpadEdgeScroll;
     public final int mDeleteSwipe;
     public final int mEnterSwipe; // DwellBoard: #enter-swipe
+    public final int mDeleteSwipeSensitivity; // DwellBoard: #swipe-sensitivity
+    public final int mEnterSwipeSensitivity; // DwellBoard: #swipe-sensitivity
     public final boolean mAutospaceAfterPunctuation;
     public final boolean mAutospaceAfterSuggestion;
     public final boolean mAutospaceAfterGestureTyping;
@@ -295,6 +297,11 @@ public class SettingsValues {
         mTouchpadEdgeScroll = prefs.getBoolean(Settings.PREF_TOUCHPAD_EDGE_SCROLL, Defaults.PREF_TOUCHPAD_EDGE_SCROLL);
         mDeleteSwipe = prefs.getInt(Settings.PREF_DELETE_SWIPE, Defaults.PREF_DELETE_SWIPE);
         mEnterSwipe = helium314.keyboard.dwell.enterswipe.EnterSwipe.read(prefs); // DwellBoard: #enter-swipe, falls back on a bad stored value
+        // DwellBoard: #swipe-sensitivity, clamped so PointerTracker can divide by it
+        mDeleteSwipeSensitivity = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.read(prefs,
+                Settings.PREF_DELETE_SWIPE_SENSITIVITY, Defaults.PREF_DELETE_SWIPE_SENSITIVITY);
+        mEnterSwipeSensitivity = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.read(prefs,
+                Settings.PREF_ENTER_SWIPE_SENSITIVITY, Defaults.PREF_ENTER_SWIPE_SENSITIVITY);
         mAutospaceAfterPunctuation = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, Defaults.PREF_AUTOSPACE_AFTER_PUNCTUATION);
         mAutospaceAfterSuggestion = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_SUGGESTION, Defaults.PREF_AUTOSPACE_AFTER_SUGGESTION);
         mAutospaceAfterGestureTyping = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_GESTURE_TYPING, Defaults.PREF_AUTOSPACE_AFTER_GESTURE_TYPING);

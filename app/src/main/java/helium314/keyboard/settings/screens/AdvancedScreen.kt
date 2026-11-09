@@ -71,7 +71,10 @@ fun AdvancedSettingsScreen(
         if (Settings.readVerticalSpaceSwipe(prefs) == KeyboardActionListener.SwipeAction.TOUCHPAD_MODE)
             Settings.PREF_TOUCHPAD_EDGE_SCROLL else null,
         Settings.PREF_DELETE_SWIPE,
+        // DwellBoard: #swipe-sensitivity, only while that swipe is on
+        if (prefs.getInt(Settings.PREF_DELETE_SWIPE, Defaults.PREF_DELETE_SWIPE) > 0) Settings.PREF_DELETE_SWIPE_SENSITIVITY else null,
         Settings.PREF_ENTER_SWIPE, // DwellBoard: #enter-swipe
+        if (helium314.keyboard.dwell.enterswipe.EnterSwipe.read(prefs) > 0) Settings.PREF_ENTER_SWIPE_SENSITIVITY else null,
         Settings.PREF_SPACE_TO_CHANGE_LANG,
         Settings.PREFS_LONG_PRESS_SYMBOLS_FOR_NUMPAD,
         Settings.PREF_ENABLE_EMOJI_ALT_PHYSICAL_KEY,
@@ -178,6 +181,13 @@ fun createAdvancedSettings(context: Context) = listOf(
             stringResource(R.string.delete_swipe_words) to 2
         )
         ListPreference(it, items, Defaults.PREF_ENTER_SWIPE, description = stringResource(R.string.dwell_enter_swipe_summary))
+    },
+    // DwellBoard: #swipe-sensitivity
+    Setting(context, Settings.PREF_DELETE_SWIPE_SENSITIVITY, R.string.dwell_delete_swipe_sensitivity) {
+        helium314.keyboard.dwell.swipesensitivity.SwipeSensitivitySlider(it, Defaults.PREF_DELETE_SWIPE_SENSITIVITY)
+    },
+    Setting(context, Settings.PREF_ENTER_SWIPE_SENSITIVITY, R.string.dwell_enter_swipe_sensitivity) {
+        helium314.keyboard.dwell.swipesensitivity.SwipeSensitivitySlider(it, Defaults.PREF_ENTER_SWIPE_SENSITIVITY)
     },
     Setting(context, Settings.PREF_SPACE_TO_CHANGE_LANG,
         R.string.prefs_long_press_keyboard_to_change_lang,
