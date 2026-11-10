@@ -182,12 +182,18 @@ fun createAdvancedSettings(context: Context) = listOf(
         )
         ListPreference(it, items, Defaults.PREF_ENTER_SWIPE, description = stringResource(R.string.dwell_enter_swipe_summary))
     },
-    // DwellBoard: #swipe-sensitivity
+    // DwellBoard: #swipe-sensitivity, a slider per swipe direction: left selects, right takes back
     Setting(context, Settings.PREF_DELETE_SWIPE_SENSITIVITY, R.string.dwell_delete_swipe_sensitivity) {
-        helium314.keyboard.dwell.swipesensitivity.SwipeSensitivitySlider(it, Defaults.PREF_DELETE_SWIPE_SENSITIVITY)
+        helium314.keyboard.dwell.swipesensitivity.SwipeSensitivityPreference(
+            it, Settings.PREF_DELETE_SWIPE_SENSITIVITY_RIGHT,
+            Defaults.PREF_DELETE_SWIPE_SENSITIVITY, Defaults.PREF_DELETE_SWIPE_SENSITIVITY_RIGHT
+        )
     },
     Setting(context, Settings.PREF_ENTER_SWIPE_SENSITIVITY, R.string.dwell_enter_swipe_sensitivity) {
-        helium314.keyboard.dwell.swipesensitivity.SwipeSensitivitySlider(it, Defaults.PREF_ENTER_SWIPE_SENSITIVITY)
+        helium314.keyboard.dwell.swipesensitivity.SwipeSensitivityPreference(
+            it, Settings.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT,
+            Defaults.PREF_ENTER_SWIPE_SENSITIVITY, Defaults.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT
+        )
     },
     Setting(context, Settings.PREF_SPACE_TO_CHANGE_LANG,
         R.string.prefs_long_press_keyboard_to_change_lang,
