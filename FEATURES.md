@@ -72,7 +72,7 @@ Like delete swipe, but on the enter key and nothing is deleted: hold enter and s
 
 ### Swipe sensitivity <!-- #swipe-sensitivity -->
 
-Sets how far you slide per step of delete swipe and enter swipe, separately for each, in both Letters and Words. Higher means less finger travel per letter or word. Setting: Advanced → "Delete swipe sensitivity" and "Enter swipe sensitivity" (25–300%), shown while that swipe is on, 100% by default.
+Sets how far you slide per step of delete swipe and enter swipe, separately for each gesture and for sliding left and right, in both Letters and Words. Sliding left selects; sliding right takes selection back. Higher means less finger travel per step. Setting: Advanced → "Delete swipe sensitivity" and "Enter swipe sensitivity" (25–300%), each with Left and Right sliders, shown while that swipe is on, 100% by default.
 
 ### Whole-word swipe steps <!-- #word-swipe-steps -->
 

@@ -115,8 +115,10 @@ object Defaults {
     val PREF_SPACE_VERTICAL_SWIPE = KeyboardActionListener.SwipeAction.NONE.name
     const val PREF_DELETE_SWIPE = 1
     const val PREF_ENTER_SWIPE = 0 // DwellBoard: #enter-swipe
-    const val PREF_DELETE_SWIPE_SENSITIVITY = 100 // DwellBoard: #swipe-sensitivity, percent
-    const val PREF_ENTER_SWIPE_SENSITIVITY = 100 // DwellBoard: #swipe-sensitivity, percent
+    const val PREF_DELETE_SWIPE_SENSITIVITY = 100 // DwellBoard: #swipe-sensitivity, percent, slide left
+    const val PREF_DELETE_SWIPE_SENSITIVITY_RIGHT = 100 // DwellBoard: #swipe-sensitivity, percent, slide right
+    const val PREF_ENTER_SWIPE_SENSITIVITY = 100 // DwellBoard: #swipe-sensitivity, percent, slide left
+    const val PREF_ENTER_SWIPE_SENSITIVITY_RIGHT = 100 // DwellBoard: #swipe-sensitivity, percent, slide right
     const val PREF_AUTOSPACE_AFTER_PUNCTUATION = false
     const val PREF_AUTOSPACE_AFTER_SUGGESTION = true
     const val PREF_AUTOSPACE_AFTER_GESTURE_TYPING = true

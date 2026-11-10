@@ -126,8 +126,12 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_SPACE_VERTICAL_SWIPE = "vertical_space_swipe";
     public static final String PREF_DELETE_SWIPE = "delete_swipe_type";
     public static final String PREF_ENTER_SWIPE = "dwell_enter_swipe_type"; // DwellBoard: #enter-swipe
+    // DwellBoard: #swipe-sensitivity, one sensitivity per swipe direction: these keys are the left (select)
+    // direction, the _right keys the cancel direction, which is cramped against the keyboard's right edge
     public static final String PREF_DELETE_SWIPE_SENSITIVITY = "dwell_delete_swipe_sensitivity"; // DwellBoard: #swipe-sensitivity
+    public static final String PREF_DELETE_SWIPE_SENSITIVITY_RIGHT = "dwell_delete_swipe_sensitivity_right"; // DwellBoard: #swipe-sensitivity
     public static final String PREF_ENTER_SWIPE_SENSITIVITY = "dwell_enter_swipe_sensitivity"; // DwellBoard: #swipe-sensitivity
+    public static final String PREF_ENTER_SWIPE_SENSITIVITY_RIGHT = "dwell_enter_swipe_sensitivity_right"; // DwellBoard: #swipe-sensitivity
     public static final String PREF_AUTOSPACE_AFTER_PUNCTUATION = "autospace_after_punctuation";
     public static final String PREF_AUTOSPACE_AFTER_SUGGESTION = "autospace_after_suggestion";
     public static final String PREF_AUTOSPACE_AFTER_GESTURE_TYPING = "autospace_after_gesture_typing";
