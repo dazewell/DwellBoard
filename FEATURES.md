@@ -14,6 +14,10 @@ Extra bits I've added on top of [HeliBoard](https://github.com/HeliBorg/HeliBoar
 
 Learns capitalized ("Hello") and ALL CAPS ("HELLO") words in lowercase; mixed case like "HELlo" is learned as typed. A capitalized word at the start of a sentence is unaffected. Setting: Text correction → "Learn capitalized words in lowercase", off by default.
 
+### Capitalize after emojis <!-- #emoji-autocap -->
+
+Emojis don't count as words for auto-capitalization: in "Done. 🚀 and" the "and" gets a capital like after any full stop, while "done 🚀 and" stays lowercase. Follows Text correction → "Auto-capitalization", on by default.
+
 ### Learning contexts <!-- #learning-contexts -->
 
 Keeps learned words, predictions and recent emojis separate for chosen sets of apps. Create contexts under Learning contexts in settings, optionally copying another's learned data, and pick their apps, enabled ones listed first; other apps use the default context. Clear learned data from a menu (Default's is in its learned words), or delete a context. A toolbar arrow dot shows when the app uses a context; long-press for its name.
