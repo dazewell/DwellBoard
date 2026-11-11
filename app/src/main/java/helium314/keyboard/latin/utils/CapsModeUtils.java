@@ -153,6 +153,13 @@ public final class CapsModeUtils {
         // No other language has such a rule as far as I know, instead putting inside the quotation
         // mark as the exact thing quoted and handling the surrounding punctuation independently,
         // e.g. <<Did he say, "let's go home"?>>
+        // DwellBoard: an emoji is not a word, so judge the sentence by what precedes it.
+        // Without an emoji j is unchanged, and step 3 already left non-whitespace before it.
+        j = helium314.keyboard.dwell.capitalization.EmojiCaps.skipTrailingEmojis(cs, j);
+        if (j <= 0 || Character.isWhitespace(cs.charAt(j - 1))) {
+            return (TextUtils.CAP_MODE_CHARACTERS | TextUtils.CAP_MODE_WORDS
+                    | TextUtils.CAP_MODE_SENTENCES) & reqModes;
+        }
         if (spacingAndPunctuations.mUsesAmericanTypography) {
             for (; j > 0; j--) {
                 // Here we look to go over any closing punctuation. This is because in dominant
