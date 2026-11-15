@@ -58,4 +58,14 @@ class SwipeSensitivityTest {
         assertEquals(-26, SwipeSensitivity.consumed(-1, 26, 1, evenWords = true))
         assertEquals(-26, SwipeSensitivity.consumed(-1, 26, 1, evenWords = false))
     }
+
+    @Test fun evenWordsKeepsTapFloorPerWord() {
+        // 200%: 13 px steps, 26 px per word; the first word must not cost more
+        assertEquals(26, SwipeSensitivity.step(26, dxLeft, 200, 100, started = false, mode = 2, evenWords = false))
+        assertEquals(13, SwipeSensitivity.step(26, dxLeft, 200, 100, started = false, mode = 2, evenWords = true))
+        // 300%: 8 px steps would start before 26 px, so the word floor (13 px per step) wins
+        assertEquals(13, SwipeSensitivity.step(26, dxLeft, 300, 100, started = false, mode = 2, evenWords = true))
+        // letters mode keeps the full floor
+        assertEquals(26, SwipeSensitivity.step(26, dxLeft, 200, 100, started = false, mode = 1, evenWords = true))
+    }
 }
