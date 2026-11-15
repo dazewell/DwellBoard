@@ -983,14 +983,14 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
         } else if (code == KeyCode.DELETE) {
             // Delete slider
             // DwellBoard: #swipe-sensitivity, the user's step length in place of sPointerStep, per swipe direction
-            final int step = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.step(sPointerStep, x - mStartX, sv.mDeleteSwipeSensitivity, sv.mDeleteSwipeSensitivityRight, mInHorizontalSwipe);
+            final int step = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.step(sPointerStep, x - mStartX, sv.mDeleteSwipeSensitivity, sv.mDeleteSwipeSensitivityRight, mInHorizontalSwipe, sv.mDeleteSwipe, sv.mDeleteSwipeEvenWords);
             int steps = (x - mStartX) / (step * sv.mDeleteSwipe); // half speed for word delete
             if (steps != 0) {
                 if (!mInHorizontalSwipe) {
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInHorizontalSwipe = true;
                 }
-                mStartX += steps * step;
+                mStartX += helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.consumed(steps, step, sv.mDeleteSwipe, sv.mDeleteSwipeEvenWords); // DwellBoard: #even-word-steps
                 sListener.onMoveDeletePointer(steps);
             }
         } else if (code == Constants.CODE_ENTER || code == KeyCode.SHIFT_ENTER) {
@@ -1011,7 +1011,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                 sTimerProxy.cancelKeyTimersOf(this);
                 mInHorizontalSwipe = true;
             }
-            final int step = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.step(sPointerStep, x - mStartX, sv.mEnterSwipeSensitivity, sv.mEnterSwipeSensitivityRight, mInHorizontalSwipe);
+            final int step = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.step(sPointerStep, x - mStartX, sv.mEnterSwipeSensitivity, sv.mEnterSwipeSensitivityRight, mInHorizontalSwipe, sv.mEnterSwipe, sv.mEnterSwipeEvenWords);
             int steps = (x - mStartX) / (step * sv.mEnterSwipe);
             if (steps > 0 && !mInHorizontalSwipe) return;
             if (steps != 0) {
@@ -1019,7 +1019,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInHorizontalSwipe = true;
                 }
-                mStartX += steps * step;
+                mStartX += helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.consumed(steps, step, sv.mEnterSwipe, sv.mEnterSwipeEvenWords); // DwellBoard: #even-word-steps
                 sListener.onMoveEnterPointer(steps);
             }
         }

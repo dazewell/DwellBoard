@@ -82,6 +82,10 @@ Sets how far you slide per step of delete swipe and enter swipe, separately for 
 
 In Words mode, delete swipe and enter swipe step from one word to the next: sliding left from "hello world" selects "world", then "hello world", never " world" alone. Spaces and punctuation go along with the word before them. Always on whenever either swipe is set to Words.
 
+### Same distance for every word <!-- #even-word-steps -->
+
+In Words mode, makes every word of delete swipe and enter swipe take the same finger travel. Without it the first word needs twice the slide of each word after it. Setting: the "Same distance for every word" switch in each swipe's sensitivity dialog (Advanced), off by default.
+
 ### Keyboard Undo and Redo <!-- #keyboard-undo -->
 
 Undo and Redo keep recent keyboard text edits, including substitutions, typing, paste, cut and deletion. A substitution can be undone without removing the whole word. Setting: Toolbar → "Keyboard Undo and Redo", off by default; its description explains the added processing, memory use and history limits.

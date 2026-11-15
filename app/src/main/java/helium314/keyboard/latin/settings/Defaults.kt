@@ -119,6 +119,8 @@ object Defaults {
     const val PREF_DELETE_SWIPE_SENSITIVITY_RIGHT = 100 // DwellBoard: #swipe-sensitivity, percent, slide right
     const val PREF_ENTER_SWIPE_SENSITIVITY = 100 // DwellBoard: #swipe-sensitivity, percent, slide left
     const val PREF_ENTER_SWIPE_SENSITIVITY_RIGHT = 100 // DwellBoard: #swipe-sensitivity, percent, slide right
+    const val PREF_DELETE_SWIPE_EVEN_WORDS = false // DwellBoard: #even-word-steps
+    const val PREF_ENTER_SWIPE_EVEN_WORDS = false // DwellBoard: #even-word-steps
     const val PREF_AUTOSPACE_AFTER_PUNCTUATION = false
     const val PREF_AUTOSPACE_AFTER_SUGGESTION = true
     const val PREF_AUTOSPACE_AFTER_GESTURE_TYPING = true
