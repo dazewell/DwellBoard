@@ -153,7 +153,7 @@ private fun EvenWordsSwitch(
     prefs: SharedPreferences,
     done: MutableMap<String, () -> Unit>,
 ) {
-    var checked by remember { mutableStateOf(runCatching { prefs.getBoolean(key, default) }.getOrDefault(default)) }
+    var checked by remember { mutableStateOf(SwipeSensitivity.readEvenWords(prefs, key, default)) }
     done[key] = {
         if (checked == default) prefs.edit { remove(key) }
         else prefs.edit { putBoolean(key, checked) }

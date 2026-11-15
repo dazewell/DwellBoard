@@ -14,6 +14,10 @@ object SwipeSensitivity {
         return stored.coerceIn(MIN, MAX)
     }
 
+    @JvmStatic
+    fun readEvenWords(prefs: SharedPreferences, key: String, default: Boolean): Boolean =
+        runCatching { prefs.getBoolean(key, default) }.getOrDefault(default)
+
     /**
      * Finger travel per step: higher sensitivity, shorter step. 100 % keeps [basePx] exactly.
      * A move batch going left ([dx] < 0, extending the selection) uses [percentLeft], one going
