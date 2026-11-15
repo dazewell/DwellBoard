@@ -186,13 +186,15 @@ fun createAdvancedSettings(context: Context) = listOf(
     Setting(context, Settings.PREF_DELETE_SWIPE_SENSITIVITY, R.string.dwell_delete_swipe_sensitivity) {
         helium314.keyboard.dwell.swipesensitivity.SwipeSensitivityPreference(
             it, Settings.PREF_DELETE_SWIPE_SENSITIVITY_RIGHT,
-            Defaults.PREF_DELETE_SWIPE_SENSITIVITY, Defaults.PREF_DELETE_SWIPE_SENSITIVITY_RIGHT
+            Defaults.PREF_DELETE_SWIPE_SENSITIVITY, Defaults.PREF_DELETE_SWIPE_SENSITIVITY_RIGHT,
+            Settings.PREF_DELETE_SWIPE_EVEN_WORDS, Defaults.PREF_DELETE_SWIPE_EVEN_WORDS // DwellBoard: #even-word-steps
         )
     },
     Setting(context, Settings.PREF_ENTER_SWIPE_SENSITIVITY, R.string.dwell_enter_swipe_sensitivity) {
         helium314.keyboard.dwell.swipesensitivity.SwipeSensitivityPreference(
             it, Settings.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT,
-            Defaults.PREF_ENTER_SWIPE_SENSITIVITY, Defaults.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT
+            Defaults.PREF_ENTER_SWIPE_SENSITIVITY, Defaults.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT,
+            Settings.PREF_ENTER_SWIPE_EVEN_WORDS, Defaults.PREF_ENTER_SWIPE_EVEN_WORDS // DwellBoard: #even-word-steps
         )
     },
     Setting(context, Settings.PREF_SPACE_TO_CHANGE_LANG,

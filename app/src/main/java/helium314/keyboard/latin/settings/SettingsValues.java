@@ -94,6 +94,8 @@ public class SettingsValues {
     public final int mDeleteSwipeSensitivityRight; // DwellBoard: #swipe-sensitivity, slide right
     public final int mEnterSwipeSensitivity; // DwellBoard: #swipe-sensitivity, slide left
     public final int mEnterSwipeSensitivityRight; // DwellBoard: #swipe-sensitivity, slide right
+    public final boolean mDeleteSwipeEvenWords; // DwellBoard: #even-word-steps
+    public final boolean mEnterSwipeEvenWords; // DwellBoard: #even-word-steps
     public final boolean mAutospaceAfterPunctuation;
     public final boolean mAutospaceAfterSuggestion;
     public final boolean mAutospaceAfterGestureTyping;
@@ -308,6 +310,8 @@ public class SettingsValues {
                 Settings.PREF_ENTER_SWIPE_SENSITIVITY, Defaults.PREF_ENTER_SWIPE_SENSITIVITY);
         mEnterSwipeSensitivityRight = helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.read(prefs,
                 Settings.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT, Defaults.PREF_ENTER_SWIPE_SENSITIVITY_RIGHT);
+        mDeleteSwipeEvenWords = prefs.getBoolean(Settings.PREF_DELETE_SWIPE_EVEN_WORDS, Defaults.PREF_DELETE_SWIPE_EVEN_WORDS); // DwellBoard: #even-word-steps
+        mEnterSwipeEvenWords = prefs.getBoolean(Settings.PREF_ENTER_SWIPE_EVEN_WORDS, Defaults.PREF_ENTER_SWIPE_EVEN_WORDS); // DwellBoard: #even-word-steps
         mAutospaceAfterPunctuation = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION, Defaults.PREF_AUTOSPACE_AFTER_PUNCTUATION);
         mAutospaceAfterSuggestion = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_SUGGESTION, Defaults.PREF_AUTOSPACE_AFTER_SUGGESTION);
         mAutospaceAfterGestureTyping = prefs.getBoolean(Settings.PREF_AUTOSPACE_AFTER_GESTURE_TYPING, Defaults.PREF_AUTOSPACE_AFTER_GESTURE_TYPING);

@@ -990,7 +990,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInHorizontalSwipe = true;
                 }
-                mStartX += steps * step;
+                mStartX += helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.consumed(steps, step, sv.mDeleteSwipe, sv.mDeleteSwipeEvenWords); // DwellBoard: #even-word-steps
                 sListener.onMoveDeletePointer(steps);
             }
         } else if (code == Constants.CODE_ENTER || code == KeyCode.SHIFT_ENTER) {
@@ -1019,7 +1019,7 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInHorizontalSwipe = true;
                 }
-                mStartX += steps * step;
+                mStartX += helium314.keyboard.dwell.swipesensitivity.SwipeSensitivity.consumed(steps, step, sv.mEnterSwipe, sv.mEnterSwipeEvenWords); // DwellBoard: #even-word-steps
                 sListener.onMoveEnterPointer(steps);
             }
         }

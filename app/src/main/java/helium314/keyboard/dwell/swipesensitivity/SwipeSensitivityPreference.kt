@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,7 +44,14 @@ import helium314.keyboard.settings.preferences.Preference
 
 /** Swipe sensitivity with a slider per swipe direction: left selects, right takes the selection back. */
 @Composable
-fun SwipeSensitivityPreference(setting: Setting, rightKey: String, leftDefault: Int, rightDefault: Int) {
+fun SwipeSensitivityPreference(
+    setting: Setting,
+    rightKey: String,
+    leftDefault: Int,
+    rightDefault: Int,
+    evenWordsKey: String,
+    evenWordsDefault: Boolean,
+) {
     val ctx = LocalContext.current
     val prefs = ctx.prefs()
     val b = (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()
@@ -64,6 +73,8 @@ fun SwipeSensitivityPreference(setting: Setting, rightKey: String, leftDefault: 
             rightKey = rightKey,
             leftDefault = leftDefault,
             rightDefault = rightDefault,
+            evenWordsKey = evenWordsKey,
+            evenWordsDefault = evenWordsDefault,
             prefs = prefs,
         )
 }
@@ -78,6 +89,8 @@ private fun SwipeSensitivityDialog(
     rightKey: String,
     leftDefault: Int,
     rightDefault: Int,
+    evenWordsKey: String,
+    evenWordsDefault: Boolean,
     prefs: SharedPreferences,
 ) {
     val done = remember { mutableMapOf<String, () -> Unit>() }
@@ -93,6 +106,7 @@ private fun SwipeSensitivityDialog(
                 Column(Modifier.verticalScroll(state)) {
                     DirectionSlider(stringResource(R.string.left), leftKey, leftDefault, prefs, done)
                     DirectionSlider(stringResource(R.string.right), rightKey, rightDefault, prefs, done)
+                    EvenWordsSwitch(evenWordsKey, evenWordsDefault, prefs, done)
                 }
             }
         },
@@ -128,6 +142,36 @@ private fun DirectionSlider(
             TextButton({ position = default.toFloat() }) { Text(stringResource(R.string.button_default)) }
         }
         Spacer(Modifier.height(6.dp))
+    }
+}
+
+// #even-word-steps: same finger travel for every word in Words mode
+@Composable
+private fun EvenWordsSwitch(
+    key: String,
+    default: Boolean,
+    prefs: SharedPreferences,
+    done: MutableMap<String, () -> Unit>,
+) {
+    var checked by remember { mutableStateOf(runCatching { prefs.getBoolean(key, default) }.getOrDefault(default)) }
+    done[key] = {
+        if (checked == default) prefs.edit { remove(key) }
+        else prefs.edit { putBoolean(key, checked) }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f).padding(end = 12.dp)) {
+            Text(stringResource(R.string.dwell_swipe_even_words))
+            Text(
+                stringResource(R.string.dwell_swipe_even_words_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = checked, onCheckedChange = { checked = it })
     }
 }
 

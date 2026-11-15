@@ -46,4 +46,16 @@ class SwipeSensitivityTest {
     @Test fun stepNeverZero() {
         assertEquals(1, SwipeSensitivity.step(1, dxLeft, SwipeSensitivity.MAX, SwipeSensitivity.MAX, started = true))
     }
+
+    @Test fun wordsModeConsumesOneStepUnlessEven() {
+        // upstream: two steps of travel per word, one step taken back
+        assertEquals(26, SwipeSensitivity.consumed(1, 26, 2, evenWords = false))
+        assertEquals(52, SwipeSensitivity.consumed(1, 26, 2, evenWords = true))
+        assertEquals(-104, SwipeSensitivity.consumed(-2, 26, 2, evenWords = true))
+    }
+
+    @Test fun lettersModeIsUnchangedByEvenWords() {
+        assertEquals(-26, SwipeSensitivity.consumed(-1, 26, 1, evenWords = true))
+        assertEquals(-26, SwipeSensitivity.consumed(-1, 26, 1, evenWords = false))
+    }
 }

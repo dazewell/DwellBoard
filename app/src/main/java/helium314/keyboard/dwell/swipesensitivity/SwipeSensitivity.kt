@@ -27,4 +27,14 @@ object SwipeSensitivity {
         val step = (basePx * 100 / percent).coerceAtLeast(1)
         return if (started) step else maxOf(step, basePx)
     }
+
+    /**
+     * Finger travel used up by [steps] steps of [step] px. Words mode ([mode] 2) needs twice the
+     * travel per word, but upstream only takes back one [step]: the first word costs twice what each
+     * later one does, and the first after turning back costs more again. With [evenWords] each word
+     * takes back all the travel it needed, so every word costs the same.
+     */
+    @JvmStatic
+    fun consumed(steps: Int, step: Int, mode: Int, evenWords: Boolean): Int =
+        steps * step * (if (evenWords) mode.coerceAtLeast(1) else 1)
 }
