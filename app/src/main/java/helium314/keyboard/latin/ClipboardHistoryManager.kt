@@ -65,6 +65,12 @@ class ClipboardHistoryManager(
             fetchPrimaryClip()
             dontShowCurrentSuggestion = false
         }
+        // DwellBoard: the suggestion was only built when the keyboard opened, so a clip copied while it was
+        // up never showed. A new clip is never the dismissed one, history on or off. Skipped mid-word so
+        // the word's own suggestions stay.
+        dontShowCurrentSuggestion = false
+        if (latinIME.isInputViewShown && latinIME.mInputLogic.composingLength == 0)
+            latinIME.tryShowClipboardSuggestion()
     }
 
     // todo for later
