@@ -10,6 +10,8 @@ import helium314.keyboard.latin.settings.Settings
 /** User control over the emoji grid: how many recents are kept and how many columns a page has. */
 object RecentEmojiCount {
     const val MAX_FACTOR = 3
+    /** Fewest recents the setting allows; roughly one row, below which the recents tab stops being useful. */
+    const val MIN_COUNT = 10
     const val MIN_COLUMNS = 4
     const val MAX_COLUMNS = 12
 
@@ -26,7 +28,10 @@ object RecentEmojiCount {
     }
 
     // 0, absent or out-of-range stored values fall back to the nearest valid count
-    fun count(base: Int, stored: Int) = if (stored <= 0) base else stored.coerceIn(base, base * MAX_FACTOR)
+    fun count(base: Int, stored: Int) = if (stored <= 0) base else stored.coerceIn(minCount(base), base * MAX_FACTOR)
+
+    // the floor never exceeds the device default, so the default stays selectable
+    fun minCount(base: Int) = MIN_COUNT.coerceAtMost(base)
 
     /** 0 means automatic, otherwise MIN_COLUMNS..MAX_COLUMNS */
     fun columns(stored: Int) = if (stored <= 0) 0 else stored.coerceIn(MIN_COLUMNS, MAX_COLUMNS)

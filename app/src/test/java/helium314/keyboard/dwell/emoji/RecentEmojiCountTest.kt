@@ -7,8 +7,13 @@ import kotlin.test.assertEquals
 class RecentEmojiCountTest {
     @Test fun unsetKeepsDeviceDefault() = assertEquals(32, RecentEmojiCount.count(32, 0))
     @Test fun growsUpToTriple() = assertEquals(96, RecentEmojiCount.count(32, 96))
+    @Test fun shrinksDownToMinimum() {
+        assertEquals(10, RecentEmojiCount.count(80, 10))
+        assertEquals(25, RecentEmojiCount.count(80, 25))
+        assertEquals(6, RecentEmojiCount.count(6, 3)) // floor never above the device default
+    }
     @Test fun clampsOutOfRangeCount() {
-        assertEquals(32, RecentEmojiCount.count(32, 5))
+        assertEquals(10, RecentEmojiCount.count(32, 5))
         assertEquals(117, RecentEmojiCount.count(39, 500))
         assertEquals(32, RecentEmojiCount.count(32, -3))
     }

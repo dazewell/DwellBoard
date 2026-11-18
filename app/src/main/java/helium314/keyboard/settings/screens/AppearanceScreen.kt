@@ -362,7 +362,7 @@ fun createAppearanceSettings(context: Context) = listOf(
             name = setting.title,
             key = setting.key,
             default = base, // a stored 0 means the same, see RecentEmojiCount.get
-            range = base.toFloat()..(base * RecentEmojiCount.MAX_FACTOR).toFloat(),
+            range = RecentEmojiCount.minCount(base).toFloat()..(base * RecentEmojiCount.MAX_FACTOR).toFloat(),
             description = { RecentEmojiCount.count(base, it).toString() }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },
