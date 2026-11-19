@@ -68,6 +68,7 @@ fun RecentEmojiGridPreference(name: String, onConfirmed: () -> Unit) {
             onConfirmed()
         },
         title = { Text(name) },
+        scrollContent = true, // two slider sections don't fit a short landscape or split-screen window
         content = {
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodyLarge) {
                 Column {
