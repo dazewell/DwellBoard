@@ -94,6 +94,7 @@ final class DynamicGridKeyboard extends Keyboard {
             setSpacerColumns(spacerWidth);
         mMaxKeyCount = fixedRowCount? maxCount * getOccupiedColumnCount()
                 // DwellBoard: recents keep whole rows of the columns this layout really has; maxCount is the device default
+                // (0 from the page-size probe, which only reads the column count)
                 : isRecents ? helium314.keyboard.dwell.emoji.RecentEmojiCount.maxKeys(prefs, maxCount, getOccupiedColumnCount())
                 : maxCount;
         mFixedRowCount = fixedRowCount;
