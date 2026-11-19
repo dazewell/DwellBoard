@@ -51,9 +51,8 @@ fun <T: Number> SliderPreference(
             onDismissRequest = { showDialog = false },
             onDone = {
                 if (default is Int) {
-                    // DwellBoard: round, a stepped position like 20.9999f must store 21 rather than truncate to 20
-                    prefs.edit { putInt(key, kotlin.math.round(it).toInt()) }
-                    onConfirmed(kotlin.math.round(it).toInt() as T)
+                    prefs.edit { putInt(key, it.toInt()) }
+                    onConfirmed(it.toInt() as T)
                 } else {
                     prefs.edit { putFloat(key, it) }
                     onConfirmed(it as T)
@@ -63,7 +62,7 @@ fun <T: Number> SliderPreference(
             range = range,
             positionString = {
                 @Suppress("UNCHECKED_CAST")
-                description((if (default is Int) kotlin.math.round(it).toInt() else it) as T) // DwellBoard: round, as above
+                description((if (default is Int) it.toInt() else it) as T)
             },
             onValueChanged = onValueChanged,
             showDefault = true,

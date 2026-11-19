@@ -118,7 +118,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_EMOJI_KEY_FIT = "emoji_key_fit";
     public static final String PREF_EMOJI_SKIN_TONE = "emoji_skin_tone";
     // DwellBoard: #recent-emoji-count
-    public static final String PREF_RECENT_EMOJIS_COUNT = "recent_emojis_count";
+    public static final String PREF_RECENT_EMOJI_ROWS = "recent_emoji_rows";
     public static final String PREF_EMOJI_COLUMNS = "emoji_columns";
     // DwellBoard: #emoji-search-clear
     public static final String PREF_CLEAR_EMOJI_SEARCH = "clear_emoji_search";

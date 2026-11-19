@@ -106,7 +106,7 @@ object Defaults {
     const val PREF_EMOJI_FONT_SCALE = DEFAULT_SIZE_SCALE
     const val PREF_EMOJI_KEY_FIT = true
     const val PREF_EMOJI_SKIN_TONE = ""
-    const val PREF_RECENT_EMOJIS_COUNT = 0 // 0: device-size default
+    const val PREF_RECENT_EMOJI_ROWS = 0 // 0: device-size default count, in whole rows
     const val PREF_EMOJI_COLUMNS = 0 // 0: automatic
     const val PREF_CLEAR_EMOJI_SEARCH = true // DwellBoard: #emoji-search-clear
     @JvmField
