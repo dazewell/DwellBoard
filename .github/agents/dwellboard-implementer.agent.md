@@ -357,8 +357,10 @@ and `downloadUrl` as JSON. **Install it on his phone yourself; don't hand him a 
 Run `install-apk.ps1 -PullRequest <n>`, which builds (or reuses) the head's APK
 and installs it with `adb install -r`. Act on its `status`:
 
-- `no-device` (APK already downloaded): ask him to plug in the phone, enable USB
-  debugging and accept the prompt, then re-run. Never skip the install silently.
+- `no-device` (APK already downloaded): **attach that APK to the reply as a
+  file right away** (`SendUserFile`, or your tool's equivalent), so he can
+  install it on the phone himself; the artifact link can expire. Then offer the
+  re-run once the phone is plugged in with USB debugging. Never skip silently.
 - `multiple-devices`: ask which serial, re-run with `-Serial`.
 - `signature-mismatch`: a differently-signed build is installed. Ask before
   uninstalling it; it loses that build's data.
