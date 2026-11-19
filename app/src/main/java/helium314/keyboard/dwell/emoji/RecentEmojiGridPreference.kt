@@ -18,7 +18,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,8 +56,8 @@ fun RecentEmojiGridPreference(name: String, onConfirmed: () -> Unit) {
     )
     if (!showDialog) return
 
-    var rows by remember { mutableIntStateOf(storedRows) }
-    var columns by remember { mutableIntStateOf(storedColumns) }
+    var rows by rememberSaveable { mutableIntStateOf(storedRows) }
+    var columns by rememberSaveable { mutableIntStateOf(storedColumns) }
     ThreeButtonAlertDialog(
         onDismissRequest = { showDialog = false },
         onConfirmed = {
