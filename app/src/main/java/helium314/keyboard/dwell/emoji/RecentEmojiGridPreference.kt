@@ -44,7 +44,6 @@ fun RecentEmojiGridPreference(name: String, onConfirmed: () -> Unit) {
     // recompose the summary when either value changes
     (ctx.getActivity() as? SettingsActivity)?.prefChanged?.collectAsState()?.value
     RecentEmojiCount.normalizeStored(prefs)
-    val base = RecentEmojiCount.baseCount(ctx)
     val storedRows = RecentEmojiCount.storedRows(prefs)
     val storedColumns = RecentEmojiCount.chosenColumns(prefs)
 
@@ -52,7 +51,7 @@ fun RecentEmojiGridPreference(name: String, onConfirmed: () -> Unit) {
     Preference(
         name = name,
         onClick = { showDialog = true },
-        description = stringResource(R.string.dwell_recent_emojis_grid, rowsText(storedRows, storedColumns, base), columnsText(storedColumns))
+        description = stringResource(R.string.dwell_recent_emojis_grid, rowsText(storedRows), columnsText(storedColumns))
     )
     if (!showDialog) return
 
@@ -74,7 +73,7 @@ fun RecentEmojiGridPreference(name: String, onConfirmed: () -> Unit) {
                 Column {
                     // position 0 is the device default
                     IntSlider(stringResource(R.string.dwell_recent_emoji_rows), rows, 0, RecentEmojiCount.MAX_ROWS,
-                        rowsText(rows, columns, base)) { rows = it }
+                        rowsText(rows)) { rows = it }
                     // the position below MIN_COLUMNS is automatic, stored as 0
                     val autoPosition = RecentEmojiCount.MIN_COLUMNS - 1
                     IntSlider(stringResource(R.string.dwell_emoji_columns), if (columns == 0) autoPosition else columns,
@@ -106,14 +105,9 @@ private fun IntSlider(title: String, value: Int, min: Int, max: Int, valueText: 
     }
 }
 
-// the default shows the rows it gives with the known column count; a split keyboard has fewer columns, so more rows
+// no row count for the default: split spacers change the real column count, which settings can't know
 @Composable
-private fun rowsText(rows: Int, columns: Int, base: Int): String {
-    if (rows > 0) return rows.toString()
-    val known = if (columns > 0) columns else RecentEmojiCount.lastAutoColumns
-    return if (known > 0) stringResource(R.string.dwell_recent_emoji_rows_default_count, RecentEmojiCount.defaultRows(base, known))
-    else stringResource(R.string.button_default)
-}
+private fun rowsText(rows: Int) = if (rows > 0) rows.toString() else stringResource(R.string.button_default)
 
 @Composable
 private fun columnsText(columns: Int) = when {

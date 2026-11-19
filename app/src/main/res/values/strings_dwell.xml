@@ -68,7 +68,6 @@
     <string name="dwell_recent_emojis_count">Recent emojis count</string>
     <string name="dwell_recent_emojis_grid">Rows: %1$s, columns: %2$s</string>
     <string name="dwell_recent_emoji_rows">Rows</string>
-    <string name="dwell_recent_emoji_rows_default_count">Default (%1$d)</string>
     <string name="dwell_emoji_columns">Columns</string>
     <string name="dwell_emoji_columns_auto">Auto</string>
     <string name="dwell_emoji_columns_auto_count">Auto (%1$d)</string>
