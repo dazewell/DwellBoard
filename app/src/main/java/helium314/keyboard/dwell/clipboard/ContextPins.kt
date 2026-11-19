@@ -80,7 +80,8 @@ object ContextPins {
     fun onInserted(entry: ClipboardHistoryEntry, pinContext: String?): Boolean {
         val stored = pinContext?.takeIf { entry.isPinned && it.isNotEmpty() }
         if (stored == null) contexts.remove(entry.id) else contexts[entry.id] = stored // row ids can be reused
-        if (!entry.isPinned || contextOf(stored, validIds()) == LearningContexts.current) return false
+        val valid = validIds()
+        if (!entry.isPinned || contextOf(stored, valid) == contextOf(LearningContexts.current, valid)) return false
         hidden.add(entry)
         return true
     }
@@ -175,7 +176,9 @@ object ContextPins {
         prefs?.let { p -> LearningContexts.getAll(p).mapTo(HashSet()) { it.id } } ?: emptySet()
 
     private fun show(d: ClipboardDao) {
-        val (toHide, toShow) = partition(d.cache, hidden, contexts, validIds(), LearningContexts.current)
+        val valid = validIds()
+        // current can name a context a restored backup no longer has; its apps then use the default
+        val (toHide, toShow) = partition(d.cache, hidden, contexts, valid, contextOf(LearningContexts.current, valid))
         if (toHide.isEmpty() && toShow.isEmpty()) return
         val hideIds = toHide.mapTo(HashSet()) { it.id }
         hidden.removeAll(toShow)
