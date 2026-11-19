@@ -33,6 +33,20 @@ object RecentEmojiCount {
     // the floor never exceeds the device default, so the default stays selectable
     fun minCount(base: Int) = MIN_COUNT.coerceAtMost(base)
 
+    /** Columns a row of recents has: the chosen count, else what automatic mode last produced, else 0 (unknown). */
+    fun rowColumns(prefs: SharedPreferences) = chosenColumns(prefs).takeIf { it > 0 } ?: lastAutoColumns
+
+    /**
+     * The count slider's range trimmed to whole rows of [columns], so its steps land on full rows;
+     * null when the column count is unknown or no two whole-row counts fit.
+     */
+    fun rowRange(base: Int, columns: Int): IntRange? {
+        if (columns <= 0) return null
+        val first = (minCount(base) + columns - 1) / columns * columns
+        val last = base * MAX_FACTOR / columns * columns
+        return if (last > first) first..last else null
+    }
+
     /** 0 means automatic, otherwise MIN_COLUMNS..MAX_COLUMNS */
     fun columns(stored: Int) = if (stored <= 0) 0 else stored.coerceIn(MIN_COLUMNS, MAX_COLUMNS)
 

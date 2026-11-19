@@ -358,11 +358,15 @@ fun createAppearanceSettings(context: Context) = listOf(
     Setting(context, Settings.PREF_RECENT_EMOJIS_COUNT, R.string.dwell_recent_emojis_count, R.string.dwell_recent_emojis_count_summary) { setting ->
         val base = RecentEmojiCount.baseCount(LocalContext.current)
         RecentEmojiCount.normalizeStored(LocalContext.current.prefs(), base)
+        val columns = RecentEmojiCount.rowColumns(LocalContext.current.prefs())
+        val rows = RecentEmojiCount.rowRange(base, columns) // steps of one full row
         SliderPreference(
             name = setting.title,
             key = setting.key,
             default = base, // a stored 0 means the same, see RecentEmojiCount.get
-            range = RecentEmojiCount.minCount(base).toFloat()..(base * RecentEmojiCount.MAX_FACTOR).toFloat(),
+            range = rows?.let { it.first.toFloat()..it.last.toFloat() }
+                ?: RecentEmojiCount.minCount(base).toFloat()..(base * RecentEmojiCount.MAX_FACTOR).toFloat(),
+            stepSize = rows?.let { columns },
             description = { RecentEmojiCount.count(base, it).toString() }
         ) { KeyboardSwitcher.getInstance().setThemeNeedsReload() }
     },

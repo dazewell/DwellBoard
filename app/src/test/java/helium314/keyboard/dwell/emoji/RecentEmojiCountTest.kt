@@ -18,6 +18,15 @@ class RecentEmojiCountTest {
         assertEquals(32, RecentEmojiCount.count(32, -3))
     }
     @Test fun storageCoversLargestDefault() = assertEquals(RecentEmojiCount.MAX_STORED, RecentEmojiCount.count(80, 1000))
+    @Test fun rowRangeSnapsToWholeRows() {
+        assertEquals(14..238, RecentEmojiCount.rowRange(80, 7)) // floor 10 rounds up, 240 rounds down
+        assertEquals(12..240, RecentEmojiCount.rowRange(80, 12))
+        assertEquals(6..18, RecentEmojiCount.rowRange(6, 6)) // small device default: floor is the default
+    }
+    @Test fun rowRangeNeedsKnownColumnsAndTwoRows() {
+        assertEquals(null, RecentEmojiCount.rowRange(80, 0))
+        assertEquals(null, RecentEmojiCount.rowRange(4, 12)) // not even one whole row fits
+    }
     @Test fun columnsAutoOrClamped() {
         assertEquals(0, RecentEmojiCount.columns(0))
         assertEquals(4, RecentEmojiCount.columns(2))
