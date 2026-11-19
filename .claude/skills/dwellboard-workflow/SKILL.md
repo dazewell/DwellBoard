@@ -284,8 +284,8 @@ Issue an explicit `ask_user` prompt: it interrupts deliberately, stays visibly
 unanswered until he acts, and his reply comes back attached to the question.
 
 **Install first, then ask.** The build is already on his phone when you ask (see
-step 9); never hand him a link to install himself unless the phone is not
-reachable. The ask says which PR or commit is installed, the exact thing to
+step 9). If the phone is not reachable, attach the downloaded APK as a file
+rather than a link. The ask says which PR or commit is installed, the exact thing to
 try, and what a pass versus a fail looks like. "Please test the build" wastes the interruption;
 "PR #12 is installed on your phone: copy three things, open clipboard
 history and long-press the second — a pin option should appear and survive a
