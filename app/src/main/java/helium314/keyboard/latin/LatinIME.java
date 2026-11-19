@@ -877,6 +877,7 @@ public class LatinIME extends InputMethodService implements
                 mKeyboardSwitcher::onLearningContextChanging);
         boolean isDifferentTextField = !restarting || inputTypeChanged || learningContextChanged;
         if (learningContextChanged) LearningContexts.INSTANCE.removeDataOfDeletedContexts(this);
+        if (learningContextChanged) helium314.keyboard.dwell.clipboard.ContextPins.onContextChanged(); // DwellBoard: pinned clips are per context
 
         // we want to reload the settings before calling updateKeyboardTheme, because updateKeyboardTheme reads SettingsValues.mToolbarMode
         if (isDifferentTextField || !currentSettingsValues.hasSameOrientation(getResources().getConfiguration())) {

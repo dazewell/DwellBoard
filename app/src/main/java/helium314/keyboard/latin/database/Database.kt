@@ -46,11 +46,13 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
             val db = getInstance(context)
 
             try {
-                db.writableDatabase.transaction {
+                // DwellBoard: DAO lock before the transaction, the order every clipboard write uses, else a clip change during restore deadlocks
+                synchronized(clipDao ?: db) { db.writableDatabase.transaction {
                     if (clipDao == null) {
                         Log.e(TAG, "can't transfer clipboard data because ClipboardDao is null")
                     } else {
-                        otherDb.readableDatabase.rawQuery("SELECT TIMESTAMP, PINNED, TEXT, FILE, MIME_TYPE FROM CLIPBOARD", null)
+                        otherDb.readableDatabase.rawQuery("SELECT TIMESTAMP, PINNED, TEXT, FILE, MIME_TYPE, " + // DwellBoard: and the learning context of pins
+                                helium314.keyboard.dwell.clipboard.ContextPins.restoreColumn(otherDb.writableDatabase) + " FROM CLIPBOARD", null)
                             .use {
                                 clipDao.clear()
                                 while (it.moveToNext()) {
@@ -60,7 +62,8 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
                                         it.getStringOrNull(2),
                                         it.getStringOrNull(3),
                                         it.getStringOrNull(4)?.split("§"),
-                                        null
+                                        null,
+                                        it.getStringOrNull(5) // DwellBoard
                                     )
                                 }
                             }
@@ -73,7 +76,7 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
                                     "VALUES (${c.getLong(0)},?,${c.getInt(2)},${c.getInt(3)},?)", arrayOf(c.getString(1), c.getString(4)))
                             }
                         }
-                }
+                } }
             } finally {
                 otherDb.close()
                 file.delete()

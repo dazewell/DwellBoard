@@ -4,6 +4,7 @@ package helium314.keyboard.latin.settings
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import helium314.keyboard.dwell.clipboard.ContextPins
 import helium314.keyboard.keyboard.emoji.RecentEmojis
 import helium314.keyboard.latin.personalization.PersonalizationHelper
 import helium314.keyboard.latin.utils.ExecutorUtils
@@ -14,7 +15,7 @@ import kotlinx.serialization.json.Json
 import java.util.UUID
 
 /**
- * A learning context isolates learned data (user history words and next-word predictions, recent emojis)
+ * A learning context isolates learned data (user history words and next-word predictions, recent emojis, pinned clips)
  * for a set of apps. Apps that are not part of any context use the default context, whose id is [DEFAULT].
  */
 @Serializable
@@ -69,6 +70,7 @@ object LearningContexts {
         if (sourceId == DEFAULT || get(prefs, sourceId) != null) {
             PersonalizationHelper.copyUserHistoryDictionaries(context, sourceId, new.id)
             RecentEmojis.copyContext(sourceId, new.id)
+            ContextPins.copyContext(context, sourceId, new.id)
         }
         return new
     }
@@ -96,6 +98,7 @@ object LearningContexts {
         PersonalizationHelper.removeUserHistoryDictionaries(context, id)
         RecentEmojis.clearContext(id)
         if (current == id) current = DEFAULT // the facilitator will reload on the next input start
+        ContextPins.deleteContext(context, id) // after the reset, so a shown pin of this context is replaced by the default's
     }
 
     /**
