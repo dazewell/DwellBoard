@@ -46,6 +46,7 @@ class ClipboardHistoryManager(
     private var clipboardSuggestionView: View? = null
     private var clipboardDao: ClipboardDao? = null
     private var tempPrimaryClip = false
+    private val clipSwapGuard = helium314.keyboard.dwell.clipboard.ClipSwapGuard() // DwellBoard: see onPrimaryClipChanged
 
     fun onCreate() {
         clipboardManager = latinIME.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -65,6 +66,15 @@ class ClipboardHistoryManager(
             fetchPrimaryClip()
             dontShowCurrentSuggestion = false
         }
+        // DwellBoard: the suggestion was only built when the keyboard opened, so a clip copied while it was
+        // up never showed. A new clip is never the dismissed one, history on or off. Skipped mid-word so
+        // the word's own suggestions stay.
+        // The listener runs posted, after tempPrimaryClip is cleared, so the paste fallback's swap and its
+        // delayed restore are recognised by their content instead.
+        if (clipSwapGuard.isSwap(android.os.SystemClock.uptimeMillis(), clipboardManager.primaryClip)) return
+        dontShowCurrentSuggestion = false
+        if (latinIME.isInputViewShown && latinIME.mInputLogic.composingLength == 0)
+            latinIME.tryShowClipboardSuggestion()
     }
 
     // todo for later
@@ -105,6 +115,7 @@ class ClipboardHistoryManager(
         val primaryClip = clipboardManager.primaryClip
         val tempClip = ClipData(content.description, ClipData.Item(content.contentUri))
         tempPrimaryClip = true
+        clipSwapGuard.begin(android.os.SystemClock.uptimeMillis(), tempClip, primaryClip) // DwellBoard
         clipboardManager.setPrimaryClip(tempClip)
         latinIME.onEvent(Event.createSoftwareKeypressEvent(KeyCode.CLIPBOARD_PASTE, 0,
             Constants.NOT_A_COORDINATE, Constants.NOT_A_COORDINATE, false))
