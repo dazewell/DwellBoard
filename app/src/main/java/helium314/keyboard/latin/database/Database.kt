@@ -46,7 +46,8 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
             val db = getInstance(context)
 
             try {
-                db.writableDatabase.transaction {
+                // DwellBoard: DAO lock before the transaction, the order every clipboard write uses, else a clip change during restore deadlocks
+                synchronized(clipDao ?: db) { db.writableDatabase.transaction {
                     if (clipDao == null) {
                         Log.e(TAG, "can't transfer clipboard data because ClipboardDao is null")
                     } else {
@@ -75,7 +76,7 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
                                     "VALUES (${c.getLong(0)},?,${c.getInt(2)},${c.getInt(3)},?)", arrayOf(c.getString(1), c.getString(4)))
                             }
                         }
-                }
+                } }
             } finally {
                 otherDb.close()
                 file.delete()
