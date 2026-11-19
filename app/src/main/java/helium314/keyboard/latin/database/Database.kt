@@ -50,7 +50,8 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
                     if (clipDao == null) {
                         Log.e(TAG, "can't transfer clipboard data because ClipboardDao is null")
                     } else {
-                        otherDb.readableDatabase.rawQuery("SELECT TIMESTAMP, PINNED, TEXT, FILE, MIME_TYPE FROM CLIPBOARD", null)
+                        otherDb.readableDatabase.rawQuery("SELECT TIMESTAMP, PINNED, TEXT, FILE, MIME_TYPE, " + // DwellBoard: and the learning context of pins
+                                helium314.keyboard.dwell.clipboard.ContextPins.restoreColumn(otherDb.writableDatabase) + " FROM CLIPBOARD", null)
                             .use {
                                 clipDao.clear()
                                 while (it.moveToNext()) {
@@ -60,7 +61,8 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
                                         it.getStringOrNull(2),
                                         it.getStringOrNull(3),
                                         it.getStringOrNull(4)?.split("§"),
-                                        null
+                                        null,
+                                        it.getStringOrNull(5) // DwellBoard
                                     )
                                 }
                             }

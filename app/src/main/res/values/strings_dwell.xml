@@ -16,14 +16,14 @@
     <string name="dwell_ime_settings">DwellBoard Settings</string>
     <string name="dwell_android_spell_checker_settings">DwellBoard Spell Checker Settings</string>
     <string name="dwell_learning_contexts_title">Learning contexts</string>
-    <string name="dwell_learning_contexts_description">Apps in a context only share learned words, predictions and recent emojis with each other. All other apps use the default context.</string>
+    <string name="dwell_learning_contexts_description">Apps in a context only share learned words, predictions, recent emojis and pinned clips with each other. All other apps use the default context.</string>
     <string name="dwell_learning_context_default">Default</string>
     <string name="dwell_learning_context_default_summary">Used by all apps that are not in a context</string>
     <string name="dwell_learning_context_add">Add context</string>
     <string name="dwell_learning_context_name">Context name</string>
     <string name="dwell_learning_context_rename">Rename context</string>
     <string name="dwell_learning_context_delete">Delete context</string>
-    <string name="dwell_learning_context_delete_message">Delete \"%s\" and everything learned in it? Its apps will use the default context.</string>
+    <string name="dwell_learning_context_delete_message">Delete \"%s\", everything learned in it and its pinned clips? Its apps will use the default context.</string>
     <string name="dwell_learning_context_clear">Clear learned data</string>
     <string name="dwell_learning_context_clear_message">Choose what to erase from \"%s\". The context and its apps are kept.</string>
     <string name="dwell_learning_context_clear_words">Learned words and predictions</string>

@@ -35,7 +35,8 @@ class ClipboardDao private constructor(private val db: Database) {
     private var lastClearOldClips = 0L
 
     // cache is loaded at start and never dropped
-    private val cache = mutableListOf<ClipboardHistoryEntry>().apply {
+    // DwellBoard: internal so pins of other learning contexts can be moved out of it, see ContextPins
+    internal val cache = mutableListOf<ClipboardHistoryEntry>().apply {
         db.readableDatabase.query(
             TABLE,
             arrayOf(COLUMN_ID, COLUMN_TIMESTAMP, COLUMN_PINNED, COLUMN_TEXT, COLUMN_FILE, COLUMN_MIME_TYPE),
@@ -117,7 +118,8 @@ class ClipboardDao private constructor(private val db: Database) {
     }
 
     /** only public for restoring backups */
-    fun insertNewEntry(timestamp: Long, pinned: Boolean, text: String?, filename: String?, mimeTypes: List<String>?, context: Context?) {
+    // DwellBoard: pinContext is the learning context of a restored pin, and the lock keeps a restore off ContextPins' moves
+    fun insertNewEntry(timestamp: Long, pinned: Boolean, text: String?, filename: String?, mimeTypes: List<String>?, context: Context?, pinContext: String? = null) = synchronized(this) {
         val cv = ContentValues(5)
         cv.put(COLUMN_TIMESTAMP, timestamp)
         cv.put(COLUMN_PINNED, pinned)
@@ -125,9 +127,11 @@ class ClipboardDao private constructor(private val db: Database) {
         cv.put(COLUMN_FILE, filename)
         // § should be a safe separator, not allowed in mime types: https://datatracker.ietf.org/doc/html/rfc6838#section-4.2
         cv.put(COLUMN_MIME_TYPE, mimeTypes?.joinToString("§"))
+        helium314.keyboard.dwell.clipboard.ContextPins.put(cv, pinned, pinContext) // DwellBoard
         val rowId = db.writableDatabase.insert(TABLE, null, cv)
 
         val entry = ClipboardHistoryEntry(rowId, timestamp, pinned, text, filename, mimeTypes)
+        if (helium314.keyboard.dwell.clipboard.ContextPins.onInserted(entry, pinContext)) return@synchronized // DwellBoard: a pin of another learning context
         if (filename != null && context != null)
             deleteIfSizeExceeded(context.prefs())
         cache.add(entry)
@@ -172,6 +176,7 @@ class ClipboardDao private constructor(private val db: Database) {
         val cv = ContentValues(2)
         cv.put(COLUMN_PINNED, entry.isPinned)
         cv.put(COLUMN_TIMESTAMP, entry.timeStamp)
+        helium314.keyboard.dwell.clipboard.ContextPins.onToggled(entry, cv) // DwellBoard: a pin belongs to the current learning context
         db.writableDatabase.update(TABLE, cv, "$COLUMN_ID = ${entry.id}", null)
     }
 
@@ -183,8 +188,10 @@ class ClipboardDao private constructor(private val db: Database) {
     private fun delete(entries: List<ClipboardHistoryEntry>) = synchronized(this) {
         if (entries.isEmpty()) return@synchronized
         cache.removeAll(entries)
+        helium314.keyboard.dwell.clipboard.ContextPins.onDeleted(entries) // DwellBoard
         db.writableDatabase.delete(TABLE, "$COLUMN_ID IN (${entries.joinToString(",") { it.id.toString() }})", null)
-        entries.forEach { if (it.filename != null) File(clipFilesDir, it.filename).delete() }
+        // DwellBoard: a pin of another learning context can share the file
+        entries.forEach { if (it.filename != null && !helium314.keyboard.dwell.clipboard.ContextPins.fileInUse(cache, it.filename)) File(clipFilesDir, it.filename).delete() }
     }
 
     fun clearOldClips(now: Boolean = false) {
@@ -213,8 +220,9 @@ class ClipboardDao private constructor(private val db: Database) {
         listener?.onClipsRemoved(indicesToRemove[0], indicesToRemove.size)
     }
 
-    fun clear() {
-        if (count() == 0) return
+    fun clear() = synchronized(this) {
+        val hadHiddenPins = helium314.keyboard.dwell.clipboard.ContextPins.onCleared() // DwellBoard: pins of other learning contexts are in the table too
+        if (count() == 0 && !hadHiddenPins) return@synchronized
         cache.clear()
         listener?.onClipsRemoved(0, count())
         db.writableDatabase.delete(TABLE, null, null)
@@ -228,7 +236,7 @@ class ClipboardDao private constructor(private val db: Database) {
 
         val files = clipFilesDir.listFiles()?.toMutableList() ?: return
         val fnames = files.mapTo(HashSet()) { it.name }
-        val entries = cache.filter { it.filename != null }
+        val entries = (cache + helium314.keyboard.dwell.clipboard.ContextPins.hiddenEntries()).filter { it.filename != null } // DwellBoard
         val enames = entries.mapTo(HashSet()) { it.filename }
 
         val filesToRemove = files.filter { it.name !in enames }
@@ -281,6 +289,8 @@ class ClipboardDao private constructor(private val db: Database) {
                     clipFilesDir = File(context.filesDir, "clipboard")
                     clipFilesDir.mkdirs()
                     instance?.cleanupFiles(context.prefs())
+                    // DwellBoard: after the cleanup, which must see the files of every pin
+                    instance?.let { helium314.keyboard.dwell.clipboard.ContextPins.attach(it, Database.getInstance(context), context.prefs()) }
                 } catch (e: Throwable) {
                     Log.e(TAG, "can't create ClipboardDao", e)
                 }
