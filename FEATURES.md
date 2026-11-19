@@ -40,7 +40,7 @@ The app, its spell checker and its settings screen are labelled "DwellBoard", an
 
 ### Recent emoji count <!-- #recent-emoji-count -->
 
-Sets how many rows of recent emojis the emoji keyboard keeps, 1 to 20, and how many columns each page has, 4 to 12, so recents always end on a full row; more columns shrink emojis and row spacing to fit. Setting: Appearance → "Recent emojis count", a dialog with both sliders; by default the usual 80 emojis rounded to whole rows, with Auto columns.
+Sets how many rows of recent emojis the emoji keyboard keeps, 1 to 20, and how many columns each page has, 4 to 12, so a full recents tab ends on a whole row; more columns shrink emojis and row spacing to fit. Setting: Appearance → "Recent emojis count", a dialog with both sliders; by default the usual 80 emojis rounded to whole rows, with Auto columns.
 
 ### Gap above space bar row <!-- #space-row-gap -->
 
