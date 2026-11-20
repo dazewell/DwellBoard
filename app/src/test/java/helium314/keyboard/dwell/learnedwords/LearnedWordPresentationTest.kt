@@ -28,6 +28,37 @@ class LearnedWordPresentationTest {
     }
 
     @Test
+    fun groupsDenseRussianVerbClustersAndKeepsExactMembers() {
+        val forms = listOf("вжикал", "вжикала", "вжикалась", "вжикали", "вжикало",
+            "вжикалось", "вжикался", "вжикись", "вжиков", "вжику").map { word(it) }
+        val unrelated = listOf(word("вжикание"), word("вжикало", english), word("Вжикала"))
+        val grouped = relatedWordFamilies((forms + unrelated).reversed())
+
+        val family = grouped.single { it.members.size > 1 }
+        assertEquals(forms.first(), family.anchor)
+        assertEquals(forms.toSet(), family.members.toSet())
+        assertEquals(unrelated.toSet(), grouped.filter { it.members.size == 1 }.map { it.anchor }.toSet())
+    }
+
+    @Test
+    fun leavesSparseVerbLookalikesAndRepeatedLettersSeparate() {
+        val entries = listOf("канал", "канала", "каналов", "каналу", "ааабал", "ааабала", "ааабали").map { word(it) }
+        assertTrue(relatedWordFamilies(entries).all { it.members.size == 1 })
+    }
+
+    @Test
+    fun overlappingVerbFamiliesHaveStableMembership() {
+        val entries = listOf("вжикал", "вжикала", "вжикало", "вжикали",
+            "вжикалал", "вжикалала", "вжикалали").map { word(it) }
+        fun families(words: List<LearnedWord>) =
+            relatedWordFamilies(words).associate { it.anchor.word to it.members.map { member -> member.word }.toSet() }
+
+        val grouped = families(entries)
+        assertTrue("вжикали" in grouped.getValue("вжикал"))
+        assertEquals(grouped, families(entries.reversed()))
+    }
+
+    @Test
     fun identityIgnoresMutableStatisticsWhilePreservingLocaleAndSpelling() {
         val word = word("душик")
         assertEquals(word.key, word.copy(probability = 4, count = 1, inDictionary = true).key)
