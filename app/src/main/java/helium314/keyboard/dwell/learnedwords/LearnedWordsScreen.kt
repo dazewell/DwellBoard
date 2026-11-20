@@ -94,10 +94,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
     val contextName = if (isDefault) stringResource(R.string.dwell_learning_context_default)
         else contexts.firstOrNull { it.id == id }?.name
     if (contextName == null) {
-        LaunchedEffect(id) {
-            Log.i("LearningContexts", "DWELL_SMOKE_learning-contexts-redesign FORBIDDEN context_missing")
-            onClickBack()
-        }
+        LaunchedEffect(id) { onClickBack() }
         return
     }
 
@@ -153,7 +150,6 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
             attempted = emptySet()
             words = loaded
         }
-        Log.i("LearningContexts", "DWELL_SMOKE_learning-contexts-redesign END words_read=${loaded != null}")
         readFailed = loaded == null
         reading = false
         if (batch != null) pendingDelete = null
