@@ -5,11 +5,12 @@ import androidx.activity.compose.BackHandler
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -187,8 +188,8 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                 style = MaterialTheme.typography.titleLarge,
             )
             ContextSearch(query, { query = it }, stringResource(R.string.dwell_learned_words_search))
-            FlowRow(
-                Modifier.padding(horizontal = 16.dp),
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 WordViewChoice(
@@ -326,7 +327,7 @@ private fun WordViewChoice(description: Int, first: Int, second: Int, secondSele
     Box {
         AssistChip(
             onClick = { open = true },
-            label = { Text(stringResource(if (secondSelected) second else first)) },
+            label = { Text(stringResource(if (secondSelected) second else first), maxLines = 1) },
             trailingIcon = { Icon(painterResource(R.drawable.ic_arrow_left), null, Modifier.rotate(-90f)) },
             modifier = Modifier.semantics {
                 stateDescription = label
