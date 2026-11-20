@@ -2,6 +2,7 @@
 package helium314.keyboard.dwell.learnedwords
 
 import androidx.activity.compose.BackHandler
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,7 +41,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -66,10 +66,8 @@ import helium314.keyboard.latin.R
 import helium314.keyboard.latin.common.LocaleUtils.localizedDisplayName
 import helium314.keyboard.latin.settings.LearningContexts
 import helium314.keyboard.latin.utils.CloseIcon
-import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.utils.prefs
 import helium314.keyboard.settings.dialogs.ThreeButtonAlertDialog
-import kotlinx.coroutines.CancellationException
 import java.util.Locale
 
 private val alphabetically = compareBy<LearnedWord, String>(String.CASE_INSENSITIVE_ORDER) { it.word }
@@ -103,59 +101,16 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
     var allWords by rememberSaveable(id) { mutableStateOf(false) }
     var related by rememberSaveable(id) { mutableStateOf(true) }
     var expanded by remember(id, query) { mutableStateOf(emptyMap<String, Boolean>()) }
-    var selected by remember(id) { mutableStateOf(emptySet<WordKey>()) }
-
-    var retry by remember(id) { mutableIntStateOf(0) }
-    var words by remember(id) { mutableStateOf<List<LearnedWord>?>(null) }
-    var readFailed by remember(id) { mutableStateOf(false) }
-    var reading by remember(id) { mutableStateOf(true) }
+    val state: LearnedWordsState = viewModel(key = "learned-words-$id")
     var deletePrompt by remember(id) { mutableStateOf<Set<WordKey>?>(null) }
-    var pendingDelete by remember(id) { mutableStateOf<List<LearnedWord>?>(null) }
-    var attempted by remember(id) { mutableStateOf(emptySet<WordKey>()) }
-    var deleteFailed by remember(id) { mutableStateOf(false) }
-    var saveFailed by remember(id) { mutableStateOf(false) }
-    val deleting = pendingDelete != null
-    val busy = reading || deleting
-    LaunchedEffect(id, retry) {
-        val batch = pendingDelete
-        if (batch != null) {
-            // A removed context must not get its dictionaries created by a stale confirmation.
-            if (!isDefault && LearningContexts.get(prefs, id) == null) {
-                onClickBack()
-                return@LaunchedEffect
-            }
-            attempted = batch.mapTo(HashSet()) { it.key }
-            saveFailed = try {
-                !LearnedWords.delete(ctx, id, batch)
-            } catch (exception: CancellationException) {
-                throw exception
-            } catch (exception: Exception) {
-                Log.e("LearnedWords", "cannot delete learned words", exception)
-                true
-            }
-        }
-        val loaded = try {
-            LearnedWords.load(ctx, id)
-        } catch (exception: CancellationException) {
-            throw exception
-        } catch (exception: Exception) {
-            Log.e("LearnedWords", "cannot load learned words", exception)
-            null
-        }
-        if (loaded != null) {
-            val keys = loaded.mapTo(HashSet()) { it.key }
-            val remaining = attempted intersect keys
-            selected = (selected intersect keys) + remaining
-            deleteFailed = remaining.isNotEmpty()
-            attempted = emptySet()
-            words = loaded
-        }
-        readFailed = loaded == null
-        reading = false
-        if (batch != null) pendingDelete = null
-    }
+    LaunchedEffect(id) { state.loadOnce(ctx, id) }
 
-    val knownWords = words
+    val selected = state.selected
+    val deleting = state.deleting
+    val reading = state.reading
+    val readFailed = state.readFailed
+    val busy = reading || deleting
+    val knownWords = state.words
     val wordsByKey = remember(knownWords) { knownWords.orEmpty().associateBy { it.key } }
     val families = remember(knownWords, allWords, related) {
         knownWords.orEmpty().filter { allWords || !it.inDictionary }.groupBy { it.locale }.mapValues { (_, entries) ->
@@ -193,7 +148,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
 
     fun goBack() {
         if (deleting) return
-        if (selected.isNotEmpty()) selected = emptySet()
+        if (selected.isNotEmpty()) state.selected = emptySet()
         else onClickBack()
     }
     BackHandler(enabled = selected.isNotEmpty() || deleting) { goBack() }
@@ -206,10 +161,10 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                 menuLabel,
                 listOf(
                     WordAction(stringResource(R.string.dwell_learned_words_select_all), resultKeys.isNotEmpty() && !busy && !readFailed) {
-                        selected = selected + resultKeys
+                        state.selected = state.selected + resultKeys
                     },
                     WordAction(stringResource(R.string.dwell_learned_words_select_none), selected.isNotEmpty() && !deleting) {
-                        selected = emptySet()
+                        state.selected = emptySet()
                     },
                     WordAction(stringResource(R.string.dwell_learned_words_delete_selected), canDelete) { deletePrompt = selected },
                 ),
@@ -221,7 +176,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                 hidden = selected.count { it !in resultKeys },
                 canDelete = canDelete,
                 canClear = !deleting,
-                onClear = { selected = emptySet() },
+                onClear = { state.selected = emptySet() },
                 onDelete = { deletePrompt = selected },
             )
         },
@@ -253,14 +208,12 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
             }
             val rangeModifier = if (busy || readFailed || dragRows.isEmpty()) Modifier
-                else wordRangeDrag(list, dragRows, selected) { selected = it }
+                else wordRangeDrag(list, dragRows, selected) { state.selected = it }
             LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().then(rangeModifier), state = list) {
                 when {
                     readFailed -> item {
                         WordStatus(stringResource(R.string.dwell_learned_words_failed), R.string.dwell_context_retry) {
-                            readFailed = false
-                            reading = true
-                            retry++
+                            state.refresh(ctx, id)
                         }
                     }
                     reading || knownWords == null -> item { WordStatus(stringResource(R.string.dwell_learned_words_loading)) }
@@ -273,10 +226,10 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                         WordStatus(stringResource(R.string.dwell_learned_words_no_matches), R.string.dwell_context_clear_search) { query = "" }
                     }
                 }
-                if (saveFailed && !readFailed && !reading) item(key = "save-failed") {
+                if (state.saveFailed && !readFailed && !reading) item(key = "save-failed") {
                     WordStatus(stringResource(R.string.dwell_learned_words_save_failed))
                 }
-                if (deleteFailed && !readFailed && !reading) item(key = "delete-failed") {
+                if (state.deleteFailed && !readFailed && !reading) item(key = "delete-failed") {
                     WordStatus(stringResource(R.string.dwell_learned_words_delete_failed))
                 }
                 if (!readFailed && !reading) results.forEach { section ->
@@ -288,7 +241,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                                 onToggle = { expanded = expanded + (family.key to !isExpanded(family)) },
                                 onSelect = {
                                     expanded = expanded + (family.key to true)
-                                    selected = selected + family.matches.map { it.key }
+                                    state.selected = state.selected + family.matches.map { it.key }
                                 },
                             )
                         }
@@ -296,7 +249,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                             item(key = word.key.listKey) {
                                 val checked = word.key in selected
                                 WordRow(word, checked, family.isGroup, deleting, {
-                                    selected = if (checked) selected - word.key else selected + word.key
+                                    state.selected = if (word.key in state.selected) state.selected - word.key else state.selected + word.key
                                 }) { deletePrompt = setOf(word.key) }
                             }
                         }
@@ -313,7 +266,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
         DeleteWordsDialog(
             contextName, exactWords,
             onDismiss = { deletePrompt = null },
-            onDelete = { pendingDelete = exactWords; retry++ },
+            onDelete = { state.delete(ctx, id, exactWords) },
         )
     }
 }
