@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Helps handle and manage personalized dictionaries such as {@link UserHistoryDictionary}.
@@ -110,21 +111,37 @@ public class PersonalizationHelper {
      * Copies the user history dictionaries of all languages from one learning context to another, in the background.
      * Dictionaries that are loaded are flushed first, so that what was learned recently is copied too.
      */
+    // DwellBoard: the settings screen can open the target as soon as every dictionary job has finished.
     public static void copyUserHistoryDictionaries(final Context context, @NonNull final String fromContext,
-            @NonNull final String toContext) {
+            @NonNull final String toContext, final Runnable onComplete) {
         final String fromName = UserHistoryDictionary.getContextName(fromContext);
         final String toName = UserHistoryDictionary.getContextName(toContext);
         // listing the files directory is disk access, so all of it happens in the background
         ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(() -> {
-            for (final String dictName : getUserHistoryDictNames(context, fromContext)) {
-                final String targetName = toName + dictName.substring(fromName.length());
-                final File source = ExpandableBinaryDictionary.getDictFile(context, dictName, null);
-                final File target = ExpandableBinaryDictionary.getDictFile(context, targetName, null);
-                final Runnable copy = () -> copyDictionary(source, target);
-                final SoftReference<UserHistoryDictionary> ref = sLangUserHistoryDictCache.get(dictName);
-                final UserHistoryDictionary dict = ref == null ? null : ref.get();
-                if (dict != null) dict.flushThen(copy);
-                else ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(copy);
+            final AtomicInteger remaining = new AtomicInteger(1);
+            final Runnable finish = () -> {
+                if (remaining.decrementAndGet() == 0) onComplete.run();
+            };
+            try {
+                for (final String dictName : getUserHistoryDictNames(context, fromContext)) {
+                    final String targetName = toName + dictName.substring(fromName.length());
+                    final File source = ExpandableBinaryDictionary.getDictFile(context, dictName, null);
+                    final File target = ExpandableBinaryDictionary.getDictFile(context, targetName, null);
+                    final Runnable copy = () -> copyDictionary(source, target);
+                    final SoftReference<UserHistoryDictionary> ref = sLangUserHistoryDictCache.get(dictName);
+                    final UserHistoryDictionary dict = ref == null ? null : ref.get();
+                    remaining.incrementAndGet();
+                    if (dict != null) dict.flushThen(copy, finish);
+                    else ExecutorUtils.getBackgroundExecutor(ExecutorUtils.KEYBOARD).execute(() -> {
+                        try {
+                            copy.run();
+                        } finally {
+                            finish.run();
+                        }
+                    });
+                }
+            } finally {
+                finish.run();
             }
         });
     }
