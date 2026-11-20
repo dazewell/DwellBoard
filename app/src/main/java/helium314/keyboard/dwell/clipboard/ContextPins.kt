@@ -10,6 +10,8 @@ import helium314.keyboard.latin.database.ClipboardDao
 import helium314.keyboard.latin.database.Database
 import helium314.keyboard.latin.settings.LearningContexts
 import helium314.keyboard.latin.utils.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -124,30 +126,35 @@ object ContextPins {
     // ---- learning context lifecycle, from settings ----
 
     /** Gives [toId] a copy of the pins of [fromId]. */
-    fun copyContext(context: Context, fromId: String, toId: String) {
-        val d = ClipboardDao.getInstance(context) ?: return
-        synchronized(d) {
-            val sqlite = db ?: return
-            if (!columnOk || toId == LearningContexts.DEFAULT) return
-            val valid = validIds()
-            val sources = (d.cache + hidden).filter { it.isPinned && contextOf(contexts[it.id], valid) == fromId }
-            runCatching {
-                sources.forEach {
-                    val cv = ContentValues(6)
-                    cv.put("TIMESTAMP", it.timeStamp)
-                    cv.put("PINNED", true)
-                    cv.put("TEXT", it.text)
-                    cv.put("FILE", it.filename)
-                    cv.put("MIME_TYPE", it.mimeTypes?.joinToString("§"))
-                    cv.put(COLUMN, toId)
-                    val rowId = sqlite.insert(TABLE, null, cv)
-                    if (rowId == -1L) return@forEach
-                    contexts[rowId] = toId
-                    hidden.add(ClipboardHistoryEntry(rowId, it.timeStamp, true, it.text, it.filename, it.mimeTypes))
-                }
-            }.onFailure { Log.w(TAG, "can't copy pins", it) }
-            show(d)
-        }
+    suspend fun copyContext(context: Context, fromId: String, toId: String) {
+        if (toId == LearningContexts.DEFAULT) return
+        val copiedDao = withContext(Dispatchers.IO) {
+            val d = ClipboardDao.getInstance(context) ?: return@withContext null
+            synchronized(d) {
+                val sqlite = db ?: return@withContext null
+                if (!columnOk) return@withContext null
+                val valid = validIds()
+                val sources = (d.cache + hidden).filter { it.isPinned && contextOf(contexts[it.id], valid) == fromId }
+                runCatching {
+                    sources.forEach {
+                        val cv = ContentValues(6)
+                        cv.put("TIMESTAMP", it.timeStamp)
+                        cv.put("PINNED", true)
+                        cv.put("TEXT", it.text)
+                        cv.put("FILE", it.filename)
+                        cv.put("MIME_TYPE", it.mimeTypes?.joinToString("§"))
+                        cv.put(COLUMN, toId)
+                        val rowId = sqlite.insert(TABLE, null, cv)
+                        if (rowId == -1L) return@forEach
+                        contexts[rowId] = toId
+                        hidden.add(ClipboardHistoryEntry(rowId, it.timeStamp, true, it.text, it.filename, it.mimeTypes))
+                    }
+                }.onFailure { Log.w(TAG, "can't copy pins", it) }
+            }
+            d
+        } ?: return
+        // Publishing the visible list calls the clipboard view's listener.
+        withContext(Dispatchers.Main.immediate) { synchronized(copiedDao) { show(copiedDao) } }
     }
 
     /** Deletes the pins of a deleted context. Matches the stored id: the context is already gone, so it would resolve to the default. */

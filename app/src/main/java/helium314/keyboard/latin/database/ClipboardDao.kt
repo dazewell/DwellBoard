@@ -282,15 +282,17 @@ class ClipboardDao private constructor(private val db: Database) {
             private set
 
         /** Returns the instance or creates a new one. Returns null if instance can't be created (e.g. no access to db due to device being locked) */
+        @Synchronized // DwellBoard: context copying can open the clipboard DAO from a worker thread
         fun getInstance(context: Context): ClipboardDao? {
             if (instance == null)
                 try {
-                    instance = ClipboardDao(Database.getInstance(context))
+                    val clipboardDao = ClipboardDao(Database.getInstance(context))
                     clipFilesDir = File(context.filesDir, "clipboard")
                     clipFilesDir.mkdirs()
-                    instance?.cleanupFiles(context.prefs())
+                    clipboardDao.cleanupFiles(context.prefs())
                     // DwellBoard: after the cleanup, which must see the files of every pin
-                    instance?.let { helium314.keyboard.dwell.clipboard.ContextPins.attach(it, Database.getInstance(context), context.prefs()) }
+                    helium314.keyboard.dwell.clipboard.ContextPins.attach(clipboardDao, Database.getInstance(context), context.prefs())
+                    instance = clipboardDao
                 } catch (e: Throwable) {
                     Log.e(TAG, "can't create ClipboardDao", e)
                 }

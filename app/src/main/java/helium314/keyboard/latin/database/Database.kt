@@ -31,6 +31,7 @@ class Database private constructor(context: Context, name: String = NAME) : SQLi
         private const val VERSION = 3
         const val NAME = "heliboard.db"
         private var instance: Database? = null
+        @Synchronized // DwellBoard: clipboard and gesture data can open the shared helper concurrently
         fun getInstance(context: Context): Database {
             if (instance == null)
                 instance = Database(context)
