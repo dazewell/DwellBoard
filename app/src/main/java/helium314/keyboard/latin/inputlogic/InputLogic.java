@@ -1384,7 +1384,8 @@ public final class InputLogic {
             restartSuggestionsAfterDelete(inputTransaction);
             return;
         }
-        if (SpaceState.DOUBLE == inputTransaction.getSpaceState()) {
+        // DwellBoard: the period is an autocorrection too, so the same setting governs undoing it
+        if (SpaceState.DOUBLE == inputTransaction.getSpaceState() && sv.mBackspaceRevertsAutocorrect) {
             cancelDoubleSpacePeriodCountdown();
             if (mConnection.revertDoubleSpacePeriod(sv.mSpacingAndPunctuations)) {
                 // No need to reset mSpaceState, it has already be done (that's why we
