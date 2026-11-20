@@ -55,6 +55,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import helium314.keyboard.latin.AppsManager
+import helium314.keyboard.latin.BuildConfig
+import helium314.keyboard.latin.utils.Log
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.settings.LearningContext
 import helium314.keyboard.latin.settings.LearningContexts
@@ -205,6 +207,9 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
         LaunchedEffect(id) { onClickBack() }
         return
     }
+    LaunchedEffect(id) {
+        Log.i("LearningContexts", "DWELL_SMOKE_learning-contexts-redesign BEGIN home_to_words ${BuildConfig.VERSION_NAME} ${BuildConfig.APPLICATION_ID} default=$isDefault")
+    }
     var picker by rememberSaveable(id) { mutableStateOf(false) }
     var action by rememberSaveable(id) { mutableStateOf<String?>(null) }
     if (picker) {
@@ -270,7 +275,10 @@ fun LearningContextScreen(id: String, onClickBack: () -> Unit) {
                 ContextAction(
                     stringResource(R.string.dwell_learned_words_title),
                     stringResource(R.string.dwell_learned_words_summary),
-                ) { SettingsDestination.navigateTo(SettingsDestination.LearnedWords + contextRouteId(id)) }
+                ) {
+                    Log.i("LearningContexts", "DWELL_SMOKE_learning-contexts-redesign PATH open_words preview_loading=${preview?.loading == true}")
+                    SettingsDestination.navigateTo(SettingsDestination.LearnedWords + contextRouteId(id))
+                }
                 ContextAction(
                     stringResource(R.string.dwell_learning_context_clear),
                     stringResource(R.string.dwell_learning_context_clear_summary, current.name),
