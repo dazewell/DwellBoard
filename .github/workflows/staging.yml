@@ -216,6 +216,24 @@ jobs:
           gh release create "$VERSION" "out/DwellBoard-$VERSION.apk" -R "$REPO" \
             --target "$GITHUB_SHA" --latest --title "DwellBoard $VERSION" \
             --notes "Build of \`dev\` at ${GITHUB_SHA::8}."
+      - name: Prune old dev releases
+        # Keep the 10 newest versioned dev releases (and their tags). Only tags
+        # containing -dev. are touched, so `staging` and any real release stay.
+        # A failed prune never fails the build; the next push retries it.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          gh api "repos/$REPO/releases" --paginate \
+            --jq '.[] | select(.tag_name | contains("-dev.")) | "\(.created_at) \(.tag_name)"' \
+            | sort -r | tail -n +11 | cut -d' ' -f2 \
+            | while read -r TAG; do
+                echo "Deleting release $TAG"
+                gh release delete "$TAG" -R "$REPO" --yes --cleanup-tag
+              done
       - name: Archive reports for failed job
         if: failure()
         uses: actions/upload-artifact@v7
