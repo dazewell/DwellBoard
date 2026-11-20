@@ -6,42 +6,53 @@ import android.content.SharedPreferences
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.settings.Defaults
 import helium314.keyboard.latin.settings.Settings
+import kotlin.math.roundToInt
 
-/** User control over the emoji grid: how many recents are kept and how many columns a page has. */
+/** User control over the emoji grid: how many rows of recents are kept and how many columns a page has. */
 object RecentEmojiCount {
-    const val MAX_FACTOR = 3
-    /** Fewest recents the setting allows; roughly one row, below which the recents tab stops being useful. */
-    const val MIN_COUNT = 10
+    const val MAX_ROWS = 20
     const val MIN_COLUMNS = 4
     const val MAX_COLUMNS = 12
 
     /** Upper bound for the stored list, so lowering the setting and raising it again loses nothing. */
-    const val MAX_STORED = 80 * MAX_FACTOR // largest device default (config_emoji_keyboard_max_recents_key_count, 80) times MAX_FACTOR
+    const val MAX_STORED = MAX_ROWS * MAX_COLUMNS
 
     /** The device-size default number of recents. */
     fun baseCount(context: Context) = context.resources.getInteger(R.integer.config_emoji_keyboard_max_recents_key_count)
 
-    fun get(context: Context, prefs: SharedPreferences): Int {
-        val stored = runCatching { prefs.getInt(Settings.PREF_RECENT_EMOJIS_COUNT, Defaults.PREF_RECENT_EMOJIS_COUNT) }
-            .getOrDefault(Defaults.PREF_RECENT_EMOJIS_COUNT)
-        return count(baseCount(context), stored)
-    }
-
-    // 0, absent or out-of-range stored values fall back to the nearest valid count
-    fun count(base: Int, stored: Int) = if (stored <= 0) base else stored.coerceIn(minCount(base), base * MAX_FACTOR)
-
-    // the floor never exceeds the device default, so the default stays selectable
-    fun minCount(base: Int) = MIN_COUNT.coerceAtMost(base)
+    /** 0 means the device default, otherwise 1..MAX_ROWS */
+    fun rows(stored: Int) = if (stored <= 0) 0 else stored.coerceAtMost(MAX_ROWS)
 
     /** 0 means automatic, otherwise MIN_COLUMNS..MAX_COLUMNS */
     fun columns(stored: Int) = if (stored <= 0) 0 else stored.coerceIn(MIN_COLUMNS, MAX_COLUMNS)
+
+    /** The device default count as whole rows of [columns]: never less than one row. */
+    fun defaultRows(base: Int, columns: Int) = if (columns <= 0) 0 else (base / columns.toFloat()).roundToInt().coerceAtLeast(1)
+
+    /**
+     * How many recents the grid keeps: the chosen rows (or the default count rounded to whole rows) times the
+     * columns the layout really has, which already excludes split-keyboard spacers. Capped by what is stored.
+     */
+    fun maxKeys(rows: Int, base: Int, columns: Int): Int {
+        if (columns <= 0) return base
+        val wanted = if (rows > 0) rows else defaultRows(base, columns)
+        return wanted.coerceAtMost(MAX_STORED / columns).coerceAtLeast(1) * columns
+    }
+
+    @JvmStatic
+    fun maxKeys(prefs: SharedPreferences, base: Int, columns: Int) = maxKeys(storedRows(prefs), base, columns)
+
+    fun storedRows(prefs: SharedPreferences) = rows(
+        runCatching { prefs.getInt(Settings.PREF_RECENT_EMOJI_ROWS, Defaults.PREF_RECENT_EMOJI_ROWS) }
+            .getOrDefault(Defaults.PREF_RECENT_EMOJI_ROWS)
+    )
 
     /**
      * Rewrites stored values the settings UI would otherwise show unchanged although the keyboard applies something
      * else: a wrong type is dropped, an out-of-range value is clamped to what the keyboard uses.
      */
-    fun normalizeStored(prefs: SharedPreferences, base: Int) {
-        normalizeKey(prefs, Settings.PREF_RECENT_EMOJIS_COUNT) { if (it <= 0) null else count(base, it) }
+    fun normalizeStored(prefs: SharedPreferences) {
+        normalizeKey(prefs, Settings.PREF_RECENT_EMOJI_ROWS) { rows(it).takeIf { r -> r > 0 } }
         normalizeKey(prefs, Settings.PREF_EMOJI_COLUMNS) { columns(it) }
     }
 
