@@ -83,23 +83,28 @@ object LearnedWords {
         }
     }
 
-    /** Removes the words from the context's dictionaries and writes them to file. */
-    suspend fun delete(context: Context, contextId: String, words: Collection<LearnedWord>) {
+    /** Removes the words and reports whether every affected dictionary could be written. */
+    suspend fun delete(context: Context, contextId: String, words: Collection<LearnedWord>): Boolean {
+        var saved = true
         for ((locale, localeWords) in words.groupBy { it.locale }) {
-            suspendCancellableCoroutine { cont ->
+            val localeSaved = suspendCancellableCoroutine { cont ->
                 val dict = PersonalizationHelper.getUserHistoryDictionary(context, locale, contextId)
                 dict.runWithDictionary(true) { binaryDict ->
-                    try {
-                        if (binaryDict != null) {
+                    val success = try {
+                        if (binaryDict == null) false
+                        else {
                             localeWords.forEach { binaryDict.removeUnigramEntry(it.word) }
                             binaryDict.flushWithGCIfHasUpdated()
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "cannot remove learned words", e)
+                        false
                     }
-                    cont.resume(Unit)
+                    cont.resume(success)
                 }
             }
+            saved = saved && localeSaved
         }
+        return saved
     }
 }

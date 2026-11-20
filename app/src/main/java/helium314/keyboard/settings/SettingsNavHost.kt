@@ -13,6 +13,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import helium314.keyboard.dwell.learnedwords.LearnedWordsScreen
+import helium314.keyboard.dwell.learnedwords.LearningContextScreen
+import helium314.keyboard.dwell.learnedwords.LearningContextsScreen
+import helium314.keyboard.dwell.learnedwords.contextIdFromRoute
 import helium314.keyboard.latin.common.LocaleUtils.constructLocale
 import helium314.keyboard.latin.settings.SettingsSubtype.Companion.toSettingsSubtype
 import helium314.keyboard.latin.settings.getTransitionAnimationScale
@@ -24,10 +28,6 @@ import helium314.keyboard.settings.screens.DebugScreen
 import helium314.keyboard.settings.screens.DictionaryScreen
 import helium314.keyboard.settings.screens.GestureTypingScreen
 import helium314.keyboard.settings.screens.LanguageScreen
-import helium314.keyboard.settings.screens.LearnedWordsScreen
-import helium314.keyboard.settings.screens.LearningContextScreen
-import helium314.keyboard.settings.screens.learnedWordsContextId
-import helium314.keyboard.settings.screens.LearningContextsScreen
 import helium314.keyboard.settings.screens.MainSettingsScreen
 import helium314.keyboard.settings.screens.PersonalDictionariesScreen
 import helium314.keyboard.settings.screens.PersonalDictionaryScreen
@@ -136,10 +136,10 @@ fun SettingsNavHost(
             LearningContextsScreen(onClickBack = ::goBack)
         }
         composable(SettingsDestination.LearningContext + "{id}") {
-            LearningContextScreen(id = it.arguments?.getString("id") ?: "", onClickBack = ::goBack)
+            LearningContextScreen(id = contextIdFromRoute(it.arguments?.getString("id")), onClickBack = ::goBack) // DwellBoard: Default has a home too
         }
         composable(SettingsDestination.LearnedWords + "{id}") {
-            LearnedWordsScreen(id = learnedWordsContextId(it.arguments?.getString("id")), onClickBack = ::goBack)
+            LearnedWordsScreen(id = contextIdFromRoute(it.arguments?.getString("id")), onClickBack = ::goBack)
         }
         composable(SettingsDestination.Layouts) {
             SecondaryLayoutScreen(onClickBack = ::goBack)
@@ -180,7 +180,7 @@ object SettingsDestination {
     const val Dictionaries = "dictionaries"
     const val LearningContexts = "learning_contexts"
     const val LearningContext = "learning_context/"
-    const val LearnedWords = "learned_words/" // followed by learnedWordsRouteId
+    const val LearnedWords = "learned_words/" // followed by contextRouteId
     val navTarget = MutableStateFlow(Settings)
 
     private val navScope = CoroutineScope(Dispatchers.Default)

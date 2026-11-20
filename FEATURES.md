@@ -18,13 +18,13 @@ Learns capitalized ("Hello") and ALL CAPS ("HELLO") words in lowercase; mixed ca
 
 Emojis don't count as words for auto-capitalization: in "Done. 🚀 and" the "and" gets a capital like after any full stop, while "done 🚀 and" stays lowercase. Follows Text correction → "Auto-capitalization", on by default.
 
-### Learning contexts <!-- #learning-contexts -->
+### Learning contexts <!-- #learning-contexts --> <!-- #learning-contexts-redesign -->
 
-Keeps learned words, predictions, recent emojis and pinned clips separate for chosen apps; unpinned clips stay shared. Create contexts under Learning contexts in settings, optionally copying another's data, and pick their apps; other apps use the default context. Clear learned data from a menu (Default's is in its learned words) or delete a context. A toolbar arrow dot shows when the app uses a context; long-press for its name.
+Keeps learned words, predictions, recent emojis and pinned clips separate for chosen apps. Open a context in Learning contexts to see its apps, edit assignments or clear learned data. Create a context empty or copy data from another one. Unassigned apps use Default. A toolbar arrow dot shows when the app uses a context. Long-press it for the name.
 
 ### Learned words <!-- #learned-words -->
 
-Shows the words a learning context has learned that are not in the dictionary (the menu adds the rest), grouped by language, alphabetically or most frequent first. Search, tick the unwanted ones and delete them along with their predictions. Open it from a context's menu, or tap Default under Learning contexts.
+Open Learned words from any context to search across its languages and delete unwanted words and their predictions. Tap individual words or hold and drag to select a range, then delete from the bar at the bottom. The starting view shows new words and groups some related Russian forms. The view controls also offer dictionary words, individual forms and frequency order.
 
 ### Learn new words only when tapped <!-- #learn-only-picked -->
 

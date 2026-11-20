@@ -9,6 +9,8 @@ import helium314.keyboard.keyboard.emoji.RecentEmojis
 import helium314.keyboard.latin.personalization.PersonalizationHelper
 import helium314.keyboard.latin.utils.ExecutorUtils
 import helium314.keyboard.latin.utils.prefs
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -64,13 +66,17 @@ object LearningContexts {
     }
 
     /** Creates a context that starts with a copy of what was learned in [sourceId] (apps are not copied). */
-    fun createFrom(context: Context, name: String, sourceId: String): LearningContext {
+    suspend fun createFrom(context: Context, name: String, sourceId: String): LearningContext {
         val prefs = context.prefs()
         val new = create(prefs, name)
         if (sourceId == DEFAULT || get(prefs, sourceId) != null) {
-            PersonalizationHelper.copyUserHistoryDictionaries(context, sourceId, new.id)
             RecentEmojis.copyContext(sourceId, new.id)
             ContextPins.copyContext(context, sourceId, new.id)
+            suspendCancellableCoroutine { continuation ->
+                PersonalizationHelper.copyUserHistoryDictionaries(context, sourceId, new.id) {
+                    continuation.resume(Unit)
+                }
+            }
         }
         return new
     }
