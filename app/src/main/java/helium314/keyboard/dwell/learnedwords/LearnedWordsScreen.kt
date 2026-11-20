@@ -327,7 +327,7 @@ private fun WordViewChoice(description: Int, first: Int, second: Int, secondSele
         AssistChip(
             onClick = { open = true },
             label = { Text(stringResource(if (secondSelected) second else first)) },
-            trailingIcon = { Icon(painterResource(R.drawable.ic_dpad_down), null) },
+            trailingIcon = { Icon(painterResource(R.drawable.ic_arrow_left), null, Modifier.rotate(-90f)) },
             modifier = Modifier.semantics {
                 stateDescription = label
             },
@@ -383,7 +383,7 @@ private fun WordFamilyRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(painterResource(R.drawable.ic_dpad_down), null, Modifier.rotate(if (expanded) 180f else 0f))
+            Icon(painterResource(R.drawable.ic_arrow_left), null, Modifier.rotate(if (expanded) 90f else -90f))
             Column(Modifier.weight(1f).padding(vertical = 4.dp)) {
                 Text(word, style = MaterialTheme.typography.bodyLarge)
                 val forms = if (count == family.family.members.size)
