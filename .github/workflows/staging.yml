@@ -7,6 +7,8 @@ name: Staging build
 #   - a manual workflow_dispatch.
 # The APK is published as an unzipped workflow artifact (archive: false), so
 # the download is the .apk itself, named DwellBoard-<variant>-<sha8>.apk.
+# A dev push also refreshes the rolling `staging` pre-release and publishes a
+# versioned release (tag = the APK's versionName) for update checkers.
 # Doc-, .github- and hook-only pushes to dev are skipped; dispatch manually to
 # verify a pipeline change.
 #
@@ -101,8 +103,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Set build version suffix
         # Read by app/build.gradle.kts: versionName becomes e.g. 4.2-beta1+1a2b3c4d,
-        # so an installed build shows which commit it is.
-        run: echo "DWELL_BUILD_SHA=${BUILT_SHA::8}" >> "$GITHUB_ENV"
+        # so an installed build shows which commit it is. A dev push also gets the
+        # run number (4.2-beta1-dev.57+1a2b3c4d), so each dev release below has a
+        # distinct, increasing version for update checkers such as Obtainium.
+        run: |
+          echo "DWELL_BUILD_SHA=${BUILT_SHA::8}" >> "$GITHUB_ENV"
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/dev" ]; then
+            echo "DWELL_BUILD_NUMBER=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          fi
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -189,6 +197,25 @@ jobs:
           fi
           cp "$APK" out/DwellBoard.apk
           gh release upload staging out/DwellBoard.apk -R "$REPO" --clobber
+      - name: Publish versioned dev release
+        # Push to dev only: one release per build, tagged with the APK's own
+        # versionName (e.g. 4.3-beta1-dev.57+1a2b3c4d) and marked latest, so an
+        # update checker sees a new version on every push and the installed
+        # versionName matches the tag exactly. `staging` stays a pre-release, so
+        # it is never picked as latest.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          AAPT2=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)aapt2
+          VERSION=$("$AAPT2" dump badging "$APK" | grep -o "versionName='[^']*'" | head -n 1 | cut -d"'" -f2)
+          case "$VERSION" in *-dev.*) ;; *) echo "::error::unexpected versionName '$VERSION'"; exit 1 ;; esac
+          cp "$APK" "out/DwellBoard-$VERSION.apk"
+          gh release create "$VERSION" "out/DwellBoard-$VERSION.apk" -R "$REPO" \
+            --target "$GITHUB_SHA" --latest --title "DwellBoard $VERSION" \
+            --notes "Build of \`dev\` at ${GITHUB_SHA::8}."
       - name: Archive reports for failed job
         if: failure()
         uses: actions/upload-artifact@v7

@@ -1,5 +1,5 @@
 # HeliBoard
-> **DwellBoard** is a personal fork of HeliBoard. Latest `dev` build: **[DwellBoard.apk](https://github.com/dazewell/DwellBoard/releases/download/staging/DwellBoard.apk)** (pre-release, replaced on every push to `dev`).
+> **DwellBoard** is a personal fork of HeliBoard. Latest `dev` build: **[DwellBoard.apk](https://github.com/dazewell/DwellBoard/releases/download/staging/DwellBoard.apk)** (pre-release, replaced on every push to `dev`). Each `dev` build is also published as its own versioned [release](https://github.com/dazewell/DwellBoard/releases/latest), so Obtainium can track `dazewell/DwellBoard` for updates.
 
 HeliBoard is a privacy-conscious and customizable open-source keyboard, based on AOSP / OpenBoard.
 Does not use internet permission, and thus is 100% offline.
