@@ -65,6 +65,14 @@ class LearningContextsTest {
         assertEquals("ab12cd34", LearningContexts.idForPackage(prefs, "app.two"))
     }
 
+    @Test fun duplicateRestoredIdsKeepTheFirstContext() {
+        prefs.edit().putString(LearningContexts.PREF_LEARNING_CONTEXTS,
+            """[{"id":"ab12cd34","name":"first","packages":["app.one"]},{"id":"ab12cd34","name":"duplicate","packages":["app.two"]}]""").commit()
+        assertEquals(listOf("first"), LearningContexts.getAll(prefs).map { it.name })
+        assertEquals("ab12cd34", LearningContexts.idForPackage(prefs, "app.one"))
+        assertEquals(LearningContexts.DEFAULT, LearningContexts.idForPackage(prefs, "app.two"))
+    }
+
     @Test fun currentContextFollowsPackage() {
         val a = LearningContexts.create(prefs, "a")
         LearningContexts.setPackages(prefs, a.id, setOf("app.one"))

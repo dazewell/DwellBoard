@@ -45,6 +45,7 @@ object LearningContexts {
             // ids end up in file names and pref keys, and prefs can come from a restored backup
             else runCatching { Json.decodeFromString<List<LearningContext>>(raw) }.getOrDefault(emptyList())
                 .filter { it.id.matches(ID_REGEX) }
+                .distinctBy { it.id }
         cachedRaw = raw
         return cachedContexts
     }
