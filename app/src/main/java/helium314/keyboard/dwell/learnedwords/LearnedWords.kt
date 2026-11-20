@@ -83,9 +83,9 @@ object LearnedWords {
         }
     }
 
-    /** Removes the words and reports whether every affected dictionary could be written. */
-    suspend fun delete(context: Context, contextId: String, words: Collection<LearnedWord>): Boolean {
-        var saved = true
+    /** Removes the words and returns the batch for each dictionary that could not be written. */
+    suspend fun delete(context: Context, contextId: String, words: Collection<LearnedWord>): List<LearnedWord> {
+        val unsaved = mutableListOf<LearnedWord>()
         for ((locale, localeWords) in words.groupBy { it.locale }) {
             val localeSaved = suspendCancellableCoroutine { cont ->
                 val dict = PersonalizationHelper.getUserHistoryDictionary(context, locale, contextId)
@@ -103,8 +103,8 @@ object LearnedWords {
                     cont.resume(success)
                 }
             }
-            saved = saved && localeSaved
+            if (!localeSaved) unsaved += localeWords
         }
-        return saved
+        return unsaved
     }
 }

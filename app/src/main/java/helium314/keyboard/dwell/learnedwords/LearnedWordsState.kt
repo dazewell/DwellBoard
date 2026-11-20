@@ -26,8 +26,8 @@ internal class LearnedWordsState : ViewModel() {
         private set
     var deleteFailed by mutableStateOf(false)
         private set
-    var saveFailed by mutableStateOf(false)
-        private set
+    private var unsaved by mutableStateOf(emptyList<LearnedWord>())
+    val saveFailed get() = unsaved.isNotEmpty()
     private var attempted = emptySet<WordKey>()
     private var started = false
 
@@ -58,21 +58,25 @@ internal class LearnedWordsState : ViewModel() {
         deleting = true
         viewModelScope.launch {
             try {
-                attempted = attempted + batch.map { it.key }
-                saveFailed = try {
-                    !LearnedWords.delete(app, id, batch)
+                val requested = batch.mapTo(HashSet()) { it.key }
+                attempted = attempted + requested
+                val failed = try {
+                    LearnedWords.delete(app, id, batch)
                 } catch (exception: CancellationException) {
                     throw exception
                 } catch (exception: Exception) {
                     Log.e("LearnedWords", "cannot delete learned words", exception)
-                    true
+                    batch
                 }
+                unsaved = unsaved.filterNot { it.key in requested } + failed
                 read(app, id)
             } finally {
                 deleting = false
             }
         }
     }
+
+    fun retrySave(context: Context, id: String) = delete(context, id, unsaved)
 
     private suspend fun read(context: Context, id: String) {
         if (!contextExists(context, id)) return

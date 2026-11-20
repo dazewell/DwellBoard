@@ -100,6 +100,7 @@
     <string name="dwell_learned_words_individual">Individual words</string>
     <string name="dwell_learned_words_related">Related forms</string>
     <string name="dwell_learned_words_no_matches">No matches</string>
+    <string name="dwell_learned_words_retry_save">Retry save</string>
     <string name="dwell_learned_words_save_failed">Some changes could not be saved.</string>
     <string name="dwell_learned_words_delete_failed">Some words are still present. You can try deleting them again.</string>
     <string name="dwell_learned_words_selection_hidden">%1$s · %2$d hidden</string>

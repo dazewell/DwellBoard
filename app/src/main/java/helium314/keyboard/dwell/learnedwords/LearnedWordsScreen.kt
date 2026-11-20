@@ -207,6 +207,9 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
             if (deleting) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
             }
+            if (state.saveFailed && !busy) WordStatus(
+                stringResource(R.string.dwell_learned_words_save_failed), R.string.dwell_learned_words_retry_save,
+            ) { state.retrySave(ctx, id) }
             val rangeModifier = if (busy || readFailed || dragRows.isEmpty()) Modifier
                 else wordRangeDrag(list, dragRows, selected) { state.selected = it }
             LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().then(rangeModifier), state = list) {
@@ -225,9 +228,6 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                     results.isEmpty() -> item {
                         WordStatus(stringResource(R.string.dwell_learned_words_no_matches), R.string.dwell_context_clear_search) { query = "" }
                     }
-                }
-                if (state.saveFailed && !readFailed && !reading) item(key = "save-failed") {
-                    WordStatus(stringResource(R.string.dwell_learned_words_save_failed))
                 }
                 if (state.deleteFailed && !readFailed && !reading) item(key = "delete-failed") {
                     WordStatus(stringResource(R.string.dwell_learned_words_delete_failed))
