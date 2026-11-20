@@ -42,7 +42,7 @@ class LearnedWordPresentationTest {
 
     @Test
     fun leavesSparseVerbLookalikesAndRepeatedLettersSeparate() {
-        val entries = listOf("канал", "канала", "каналов", "каналу", "ааабал", "ааабала", "ааабали").map { word(it) }
+        val entries = listOf("канал", "канала", "каналов", "ааабал", "ааабала", "ааабали").map { word(it) }
         assertTrue(relatedWordFamilies(entries).all { it.members.size == 1 })
     }
 
@@ -56,6 +56,31 @@ class LearnedWordPresentationTest {
         val grouped = families(entries)
         assertTrue("вжикали" in grouped.getValue("вжикал"))
         assertEquals(grouped, families(entries.reversed()))
+    }
+
+    @Test
+    fun groupsAdjectiveAdverbAndCorroboratingVerbForms() {
+        val forms = listOf("обалдеешь", "обалдел", "обалденная", "обалденно", "обалденного",
+            "обалденное", "обалденной", "обалденном", "обалденные", "обалденный",
+            "обалденными", "обалденных").map { word(it) }
+        val lookalikes = listOf(word("обалдение"), word("обалденный", english), word("Обалденная"))
+        val grouped = relatedWordFamilies((forms + lookalikes).reversed())
+
+        val family = grouped.single { it.members.size > 1 }
+        assertEquals("обалденный", family.anchor.word)
+        assertEquals(forms.toSet(), family.members.toSet())
+        assertEquals(lookalikes.toSet(), grouped.filter { it.members.size == 1 }.map { it.anchor }.toSet())
+    }
+
+    @Test
+    fun recognizesOtherVerbAndNounPatternsAndRejectsSparseAdjectives() {
+        fun family(vararg spellings: String) =
+            relatedWordFamilies(spellings.map { word(it) }).single().members.map { it.word }.toSet()
+
+        assertEquals(setOf("проверил", "проверила", "проверилось"), family("проверил", "проверила", "проверилось"))
+        assertEquals(setOf("старт", "старта", "старту", "стартом"), family("старт", "старта", "старту", "стартом"))
+        val sparse = listOf("маска", "маской", "масками", "обалденно", "обалденная", "обалдел").map { word(it) }
+        assertTrue(relatedWordFamilies(sparse).all { it.members.size == 1 })
     }
 
     @Test
