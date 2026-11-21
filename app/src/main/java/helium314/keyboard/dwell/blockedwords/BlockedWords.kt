@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 
@@ -88,7 +89,11 @@ object BlockedWords {
         // a write that fails halfway must not leave a truncated list, which would unblock everything after the break
         val temporary = File(file.parentFile, file.name + ".tmp")
         try {
-            temporary.writeText(kept.joinToString("") { it + "\n" })
+            // synced first, or a power cut right after the rename can leave the renamed file empty
+            FileOutputStream(temporary).use {
+                it.write(kept.joinToString("") { word -> word + "\n" }.toByteArray())
+                it.fd.sync()
+            }
             if (!temporary.renameTo(file)) throw IOException("cannot replace ${file.name}")
         } finally {
             if (temporary.exists()) temporary.delete()
