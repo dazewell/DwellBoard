@@ -25,6 +25,11 @@ class PunctuationAutospaceTest {
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "2-")) // "2-3"
         listOf(") ", "] ", "\" ", "' ", "” ", "! ", ". ").forEach { assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
         listOf("( ", "[ ", "+ ", "* ", "/ ", "< ").forEach { assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, it), it) } // minus sign
+        // Indic vowel sign, emoji, emoji with variation selector / skin tone / keycap, units after a number
+        listOf("ते ", "e 👍 ", "❤️ ", "👍🏽 ", "1️⃣ ", "50% ", "20° ", "5€ ", "t… ", "a ")
+            .forEach { assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
+        listOf("^ ", "$ ", "a€ ", "- ", "  ", "a\n ", "\uDC4D ")
+            .forEach { assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "= ")) // minus sign
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "ll")) // hyphenated word
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, " "))

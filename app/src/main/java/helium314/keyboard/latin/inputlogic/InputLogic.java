@@ -1137,7 +1137,7 @@ public final class InputLogic {
 
         // a dash after "word " is a separator (like in "Look here - a cat"), unlike in "well-known" or "-5"
         final boolean insertSpaceAfterDash = !isComposingWord && settingsValues.mAutospaceAfterPunctuation
-                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isSeparatorDash(codePoint, mConnection.getTextBeforeCursor(2, 0));
+                && helium314.keyboard.dwell.punctuation.PunctuationAutospace.isSeparatorDash(codePoint, mConnection.getTextBeforeCursor(3, 0));
 
         if (isComposingWord) {
             mWordComposer.applyProcessedEvent(event);
