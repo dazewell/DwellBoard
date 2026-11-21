@@ -28,12 +28,11 @@ object PunctuationAutospace {
     fun isDash(codePoint: Int): Boolean = codePoint == '-'.code || codePoint == '–'.code || codePoint == '—'.code
 
     /**
-     * A dash after "word " is a separator ("Look here - a cat"), unlike in "well-known" or "x = -5".
-     * [lastTwo] is the text right before the cursor, only its last 2 chars are used.
+     * A dash after "word " or "2 " is a separator ("Look here - a cat", "I got 2 - 3"), unlike in "well-known"
+     * or "x = -5". [lastTwo] is the text right before the cursor, only its last 2 chars are used.
      */
     @JvmStatic
-    fun isSeparatorDash(codePoint: Int, lastTwo: CharSequence?): Boolean =
-        isDash(codePoint) && lastTwo != null && lastTwo.length == 2 && lastTwo[1] == ' ' && Character.isLetter(lastTwo[0])
+    fun isSeparatorDash(codePoint: Int, lastTwo: CharSequence?): Boolean = isDash(codePoint) && isWordThenSpace(lastTwo)
 
     /**
      * Whether [codePoint] typed right after an automatically inserted space belongs directly behind the previous

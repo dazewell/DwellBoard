@@ -21,6 +21,8 @@ class PunctuationAutospaceTest {
     @Test fun separatorDash() {
         assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, "e "))
         assertTrue(PunctuationAutospace.isSeparatorDash('—'.code, "e "))
+        assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, "2 ")) // "I got 2 - 3"
+        assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "2-")) // "2-3"
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "= ")) // minus sign
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "ll")) // hyphenated word
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, " "))
