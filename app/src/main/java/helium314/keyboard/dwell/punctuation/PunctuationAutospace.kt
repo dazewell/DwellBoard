@@ -28,11 +28,16 @@ object PunctuationAutospace {
     fun isDash(codePoint: Int): Boolean = codePoint == '-'.code || codePoint == '–'.code || codePoint == '—'.code
 
     /**
-     * A dash after "word " or "2 " is a separator ("Look here - a cat", "I got 2 - 3"), unlike in "well-known"
-     * or "x = -5". [lastTwo] is the text right before the cursor, only its last 2 chars are used.
+     * A dash after "word ", "2 " or a closing mark and a space is a separator ("Look here - a cat", "I got 2 - 3",
+     * "(see above) - and"), unlike in "well-known" or a minus sign ("x = -5", "( -1"). [lastTwo] is the text
+     * right before the cursor, only its last 2 chars are used.
      */
     @JvmStatic
-    fun isSeparatorDash(codePoint: Int, lastTwo: CharSequence?): Boolean = isDash(codePoint) && isWordThenSpace(lastTwo)
+    fun isSeparatorDash(codePoint: Int, lastTwo: CharSequence?): Boolean = isDash(codePoint) && lastTwo != null
+            && lastTwo.length == 2 && lastTwo[1] == ' ' && (Character.isLetterOrDigit(lastTwo[0]) || lastTwo[0] in ENDS_PHRASE)
+
+    /** Closing marks and punctuation a phrase can end with. Quotes count as closing: an opening one isn't followed by a space. */
+    private const val ENDS_PHRASE = ")]}\"'”’».,;:!?"
 
     /**
      * Whether [codePoint] typed right after an automatically inserted space belongs directly behind the previous
