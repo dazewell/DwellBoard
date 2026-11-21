@@ -164,6 +164,11 @@ cd ..\DwellBoard-<slug>                                 # work here; the main cl
 # ...dwellboard-workflow steps: design review, hooks, compile, code review...
 ```
 
+App-managed worktrees skip the pull above and the repo's git hooks, so
+`.github/scripts/sync-dev.ps1` (Claude Code's SessionStart hook) fetches and
+fast-forwards a still-empty branch to `origin/dev`; a branch with commits or a
+remote ref is only reported.
+
 `FEATURES.md` rides in the same branch. Before self-managed worktree removal
 (`git worktree remove ..\DwellBoard-<slug>` from the main clone, then
 `git worktree prune`), stop/verify processes per `dwellboard-process-lifecycle`;

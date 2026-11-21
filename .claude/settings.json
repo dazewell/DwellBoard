@@ -4,5 +4,20 @@
     "commit": "",
     "pr": ""
   },
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"$CLAUDE_PROJECT_DIR/.github/scripts/sync-dev.ps1\"",
+            "timeout": 30,
+            "statusMessage": "Bringing the branch up to date with dev"
+          }
+        ]
+      }
+    ]
+  }
 }

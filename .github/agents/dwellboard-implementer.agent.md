@@ -94,6 +94,7 @@ steps from memory or read raw logs. Each prints short JSON (`pwsh -File`).
 | `FEATURES.md` 70-word check | `features-wordcount.ps1` |
 | End-of-session leftovers (dirty tree, unpushed, processes) | `worktree-check.ps1` |
 | Branch name | `new-branch-name.ps1 <slug>` |
+| Start from the newest `dev` (Claude Code runs it at session start) | `sync-dev.ps1` |
 
 ## How you run a change
 
@@ -168,6 +169,9 @@ branch, cut one from `dev` per `dwellboard-branch-flow`. Never commit to `dev`,
 `base` or `main`, and never force-push.
 
 Confirm the hooks once per clone: `git config core.hooksPath .githooks`.
+On a branch the session tooling handed you, run `sync-dev.ps1` before the first
+edit unless the session-start hook already reported it: it fast-forwards a
+still-empty branch to `origin/dev` and leaves anything else alone.
 
 ### 5. Write the change
 
