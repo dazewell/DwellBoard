@@ -32,7 +32,7 @@ Words that are in no dictionary are learned only when you tap them in the sugges
 
 ### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 
-With "Autospace after punctuation" on, typing , ; : ! ? after a word, ; ! ? after a number, or a dash after "word ", "2 " or ") ", adds the space right away; an existing space is not doubled; the next letter gets it. The same marks typed after "word " move in front of that space: "word ," becomes "word, ". Setting: Text correction → "Autospace after punctuation", off by default.
+With the setting on, typing , ; : ! ? after a word, ; ! ? after a number, or a dash after "word ", "2 " or ") ", adds the space right away; the next letter gets it. The same marks typed after "word " move in front of that space: "word ," becomes "word, ". Setting: Text correction → "Autospace after punctuation", off by default.
 
 ### DwellBoard name <!-- #dwellboard-name -->
 
