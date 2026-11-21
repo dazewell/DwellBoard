@@ -141,6 +141,9 @@ fun SettingsNavHost(
         composable(SettingsDestination.LearnedWords + "{id}") {
             LearnedWordsScreen(id = contextIdFromRoute(it.arguments?.getString("id")), onClickBack = ::goBack)
         }
+        composable(SettingsDestination.BlockedWords) { // DwellBoard
+            helium314.keyboard.dwell.blockedwords.BlockedWordsScreen(onClickBack = ::goBack)
+        }
         composable(SettingsDestination.Layouts) {
             SecondaryLayoutScreen(onClickBack = ::goBack)
         }
@@ -181,6 +184,7 @@ object SettingsDestination {
     const val LearningContexts = "learning_contexts"
     const val LearningContext = "learning_context/"
     const val LearnedWords = "learned_words/" // followed by contextRouteId
+    const val BlockedWords = "blocked_words" // DwellBoard
     val navTarget = MutableStateFlow(Settings)
 
     private val navScope = CoroutineScope(Dispatchers.Default)

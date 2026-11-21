@@ -60,6 +60,7 @@ fun TextCorrectionScreen(
     val gestureEnabled = JniUtils.sHaveGestureLib && prefs.getBoolean(Settings.PREF_GESTURE_INPUT, Defaults.PREF_GESTURE_INPUT)
     val items = listOf(
         SettingsWithoutKey.EDIT_PERSONAL_DICTIONARY,
+        SettingsWithoutKey.BLOCKED_WORDS, // DwellBoard
         R.string.settings_category_correction,
         Settings.PREF_BLOCK_POTENTIALLY_OFFENSIVE,
         Settings.PREF_AUTO_CORRECTION,
@@ -116,6 +117,13 @@ fun createCorrectionSettings(context: Context) = listOf(
         Preference(
             name = stringResource(R.string.edit_personal_dictionary),
             onClick = { SettingsDestination.navigateTo(SettingsDestination.PersonalDictionaries) },
+        ) { NextScreenIcon() }
+    },
+    // DwellBoard: words removed from the strip are kept per language, not per learning context, so they are listed here
+    Setting(context, SettingsWithoutKey.BLOCKED_WORDS, R.string.dwell_blocked_words_title, R.string.dwell_blocked_words_summary) {
+        Preference(
+            name = it.title, description = it.description,
+            onClick = { SettingsDestination.navigateTo(SettingsDestination.BlockedWords) },
         ) { NextScreenIcon() }
     },
     Setting(context, Settings.PREF_BLOCK_POTENTIALLY_OFFENSIVE,

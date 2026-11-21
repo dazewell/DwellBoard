@@ -132,6 +132,20 @@
         <item quantity="one">%d matching form</item>
         <item quantity="other">%d matching forms</item>
     </plurals>
+    <string name="dwell_blocked_words_title">Blocked words</string>
+    <string name="dwell_blocked_words_summary">Words you removed from suggestions</string>
+    <string name="dwell_blocked_words_search">Search blocked words</string>
+    <string name="dwell_blocked_words_loading">Loading blocked words…</string>
+    <string name="dwell_blocked_words_empty">No blocked words. To block one, long-press a suggestion and tap the bin icon.</string>
+    <string name="dwell_blocked_words_failed">Blocked words could not be read.</string>
+    <string name="dwell_blocked_words_unblock">Unblock</string>
+    <string name="dwell_blocked_words_unblock_selected">Unblock selected…</string>
+    <string name="dwell_blocked_words_unblock_title">Unblock words</string>
+    <plurals name="dwell_blocked_words_unblock_message">
+        <item quantity="one">Unblock %d word? It can be suggested again.</item>
+        <item quantity="other">Unblock %d words? They can be suggested again.</item>
+    </plurals>
+    <string name="dwell_blocked_words_unblock_failed">Some words could not be unblocked. You can try again.</string>
     <string name="dwell_recent_emojis_count">Recent emojis count</string>
     <string name="dwell_recent_emojis_grid">Rows: %1$s, columns: %2$s</string>
     <string name="dwell_recent_emoji_rows">Rows</string>

@@ -26,6 +26,10 @@ Keeps learned words, predictions, recent emojis and pinned clips separate for ch
 
 Open Learned words from any context to search across its languages and delete unwanted words and their predictions. Tap individual words or hold and drag to select a range, then delete from the bar at the bottom. The starting view shows new words and groups some related Russian forms. The view controls also offer dictionary words, individual forms and frequency order.
 
+### Blocked words <!-- #blocked-words -->
+
+Words you removed from suggestions, by long-pressing one and tapping the bin, are listed by language in Text correction → "Blocked words". Search them, tap or hold and drag to select, then unblock from the bar at the bottom so they can be suggested again.
+
 ### Learn new words only when tapped <!-- #learn-only-picked -->
 
 Words that are in no dictionary are learned only when you tap them in the suggestion strip, not when you type a space after them; the strip then shows the typed word. Known words still learn as you type. Setting: Text correction → "Learn new words only when tapped", off by default. "Show typed word on the left", also off, keeps the correction centered with the typed word beside it.
