@@ -28,12 +28,35 @@ object PunctuationAutospace {
     fun isDash(codePoint: Int): Boolean = codePoint == '-'.code || codePoint == '–'.code || codePoint == '—'.code
 
     /**
-     * A dash after "word " is a separator ("Look here - a cat"), unlike in "well-known" or "x = -5".
-     * [lastTwo] is the text right before the cursor, only its last 2 chars are used.
+     * A dash after "word ", "2 " or a closing mark and a space is a separator ("Look here - a cat", "I got 2 - 3",
+     * "(see above) - and", "nice 👍 - thanks"), unlike in "well-known" or a minus sign ("x = -5", "( -1", "2 ^ -1").
+     * [before] is the text right before the cursor, [BEFORE_DASH_LENGTH] chars fit a whole subdivision flag.
      */
     @JvmStatic
-    fun isSeparatorDash(codePoint: Int, lastTwo: CharSequence?): Boolean =
-        isDash(codePoint) && lastTwo != null && lastTwo.length == 2 && lastTwo[1] == ' ' && Character.isLetter(lastTwo[0])
+    fun isSeparatorDash(codePoint: Int, before: CharSequence?): Boolean {
+        if (!isDash(codePoint) || before == null || before.length < 2 || before[before.length - 1] != ' ') return false
+        val end = before.length - 1
+        val cp = Character.codePointBefore(before, end)
+        if (Character.isLetterOrDigit(cp) || (Character.isBmpCodePoint(cp) && ENDS_PHRASE.indexOf(cp.toChar()) >= 0))
+            return true
+        // also flags, skin tones, and newer emojis that older Android reports as unassigned
+        if (helium314.keyboard.dwell.capitalization.EmojiCaps.skipTrailingEmojis(before, end) != end) return true
+        return when (Character.getType(cp).toByte()) {
+            // vowel signs ending words in Indic scripts
+            Character.NON_SPACING_MARK, Character.COMBINING_SPACING_MARK, Character.ENCLOSING_MARK -> true
+            Character.OTHER_SYMBOL -> true // °, ™
+            Character.CURRENCY_SYMBOL -> { // "5€ -", but not "$ -5"
+                val i = end - Character.charCount(cp)
+                i > 0 && Character.isDigit(Character.codePointBefore(before, i))
+            }
+            else -> false
+        }
+    }
+
+    /** Closing marks and punctuation a phrase can end with. Quotes count as closing: an opening one isn't followed by a space. */
+    const val BEFORE_DASH_LENGTH = 16
+
+    private const val ENDS_PHRASE =")]}\"'”’».,;:!?%…"
 
     /**
      * Whether [codePoint] typed right after an automatically inserted space belongs directly behind the previous
