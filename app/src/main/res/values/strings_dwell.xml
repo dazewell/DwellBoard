@@ -142,8 +142,8 @@
     <string name="dwell_blocked_words_unblock_selected">Unblock selected…</string>
     <string name="dwell_blocked_words_unblock_title">Unblock words</string>
     <plurals name="dwell_blocked_words_unblock_message">
-        <item quantity="one">Unblock %d word? It can be suggested again.</item>
-        <item quantity="other">Unblock %d words? They can be suggested again.</item>
+        <item quantity="one">Unblock %d word? It can be suggested again. A word from contacts or app names returns once those lists change.</item>
+        <item quantity="other">Unblock %d words? They can be suggested again. Words from contacts or app names return once those lists change.</item>
     </plurals>
     <string name="dwell_blocked_words_unblock_failed">Some words could not be unblocked. You can try again.</string>
     <string name="dwell_recent_emojis_count">Recent emojis count</string>

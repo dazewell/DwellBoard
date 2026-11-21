@@ -28,7 +28,7 @@ Open Learned words from any context to search across its languages and delete un
 
 ### Blocked words <!-- #blocked-words -->
 
-Dictionary words you removed from suggestions, by long-pressing one and tapping the bin, are listed by language in Text correction → "Blocked words". Search them, tap or hold and drag to select, then unblock from the bar at the bottom so they can be suggested again.
+Dictionary words you removed from suggestions, by long-pressing one and tapping the bin, are listed by language in Text correction → "Blocked words". Search them, tap or hold and drag to select, then unblock from the bar at the bottom so they can be suggested again. Words from contacts or app names return once those lists change.
 
 ### Learn new words only when tapped <!-- #learn-only-picked -->
 
