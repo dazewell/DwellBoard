@@ -249,7 +249,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
                         memberRows(family).forEach { word ->
                             item(key = word.key.listKey) {
                                 val checked = word.key in selected
-                                WordRow(word, checked, family.isGroup, deleting, {
+                                WordRow(word.word, checked, family.isGroup, deleting, {
                                     state.selected = if (word.key in state.selected) state.selected - word.key else state.selected + word.key
                                 }) { deletePrompt = setOf(word.key) }
                             }
@@ -273,7 +273,7 @@ fun LearnedWordsScreen(id: String, onClickBack: () -> Unit) {
 }
 
 @Composable
-private fun WordStatus(message: String, action: Int? = null, onAction: () -> Unit = {}) {
+internal fun WordStatus(message: String, action: Int? = null, onAction: () -> Unit = {}) {
     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
         Text(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite }, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (action != null) TextButton(onClick = onAction) { Text(stringResource(action)) }
@@ -281,7 +281,7 @@ private fun WordStatus(message: String, action: Int? = null, onAction: () -> Uni
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-private fun LazyListScope.languageHeading(locale: Locale) {
+internal fun LazyListScope.languageHeading(locale: Locale) {
     stickyHeader(key = "language:${locale.toLanguageTag()}") {
         Text(
             locale.localizedDisplayName(LocalResources.current),
@@ -294,7 +294,10 @@ private fun LazyListScope.languageHeading(locale: Locale) {
 }
 
 @Composable
-private fun SelectionBar(count: Int, hidden: Int, canDelete: Boolean, canClear: Boolean, onClear: () -> Unit, onDelete: () -> Unit) {
+internal fun SelectionBar(
+    count: Int, hidden: Int, canDelete: Boolean, canClear: Boolean, onClear: () -> Unit, onDelete: () -> Unit,
+    actionText: String = stringResource(R.string.delete), destructive: Boolean = true,
+) {
     val selected = pluralStringResource(R.plurals.dwell_learned_words_selected, count, count)
     Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh) {
         Row(
@@ -311,11 +314,11 @@ private fun SelectionBar(count: Int, hidden: Int, canDelete: Boolean, canClear: 
             )
             FilledTonalButton(
                 onClick = onDelete, enabled = canDelete,
-                colors = ButtonDefaults.filledTonalButtonColors(
+                colors = if (!destructive) ButtonDefaults.filledTonalButtonColors() else ButtonDefaults.filledTonalButtonColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
                 ),
-            ) { Text(stringResource(R.string.delete)) }
+            ) { Text(actionText) }
         }
     }
 }
@@ -341,10 +344,10 @@ private fun WordViewChoice(description: Int, first: Int, second: Int, secondSele
     }
 }
 
-private data class WordAction(val label: String, val enabled: Boolean = true, val action: () -> Unit)
+internal data class WordAction(val label: String, val enabled: Boolean = true, val action: () -> Unit)
 
 @Composable
-private fun WordActions(description: String, actions: List<WordAction>) {
+internal fun WordActions(description: String, actions: List<WordAction>) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }, enabled = actions.any { it.enabled }) {
@@ -402,9 +405,11 @@ private fun WordFamilyRow(
 }
 
 @Composable
-private fun WordRow(word: LearnedWord, checked: Boolean, indented: Boolean, deleting: Boolean, onToggle: () -> Unit, onDelete: () -> Unit) {
+internal fun WordRow(
+    word: String, checked: Boolean, indented: Boolean, deleting: Boolean, onToggle: () -> Unit,
+    delete: String = stringResource(R.string.dwell_learned_words_delete_word), onDelete: () -> Unit,
+) {
     val select = stringResource(if (checked) R.string.dwell_learned_words_deselect else R.string.dwell_learned_words_select)
-    val delete = stringResource(R.string.dwell_learned_words_delete_word)
     Row(
         Modifier.fillMaxWidth()
             .background(if (checked) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
@@ -421,10 +426,10 @@ private fun WordRow(word: LearnedWord, checked: Boolean, indented: Boolean, dele
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Checkbox(checked, onCheckedChange = null, enabled = !deleting)
-            Text(word.word, Modifier.padding(vertical = 6.dp), style = MaterialTheme.typography.bodyLarge)
+            Text(word, Modifier.padding(vertical = 6.dp), style = MaterialTheme.typography.bodyLarge)
         }
         WordActions(
-            stringResource(R.string.dwell_learned_words_row_actions, word.word),
+            stringResource(R.string.dwell_learned_words_row_actions, word),
             listOf(WordAction(select, !deleting, onToggle), WordAction(delete, !deleting, onDelete)),
         )
     }
