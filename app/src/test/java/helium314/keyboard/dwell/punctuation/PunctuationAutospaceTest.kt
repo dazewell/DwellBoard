@@ -26,7 +26,9 @@ class PunctuationAutospaceTest {
         listOf(") ", "] ", "\" ", "' ", "” ", "! ", ". ").forEach { assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
         listOf("( ", "[ ", "+ ", "* ", "/ ", "< ").forEach { assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, it), it) } // minus sign
         // Indic vowel sign, emoji, emoji with variation selector / skin tone / keycap, units after a number
-        listOf("ते ", "e 👍 ", "❤️ ", "👍🏽 ", "1️⃣ ", "50% ", "20° ", "5€ ", "t… ", "a ")
+        listOf("ते ", "e 👍 ", "❤️ ", "👍🏽 ", "1️⃣ ", "50% ", "20° ", "5€ ", "t… ", "a ",
+            "🏴󠁧󠁢󠁥󠁮󠁧󠁿 ", // England flag, ends in a tag
+            "𝟚€ ") // digit outside the BMP
             .forEach { assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
         listOf("^ ", "$ ", "a€ ", "- ", "  ", "a\n ", "\uDC4D ")
             .forEach { assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
