@@ -118,7 +118,7 @@ public interface KeyboardActionListener {
     boolean onHorizontalSpaceSwipe(int steps);
     boolean onVerticalSpaceSwipe(int steps);
     // DwellBoard: #vertical-cursor-guard, asked before a vertical swipe starts moving the cursor up/down
-    default boolean allowsVerticalCursorSwipe(long swipeStart) { return true; }
+    default boolean allowsVerticalCursorSwipe() { return true; }
     void onEndSpaceSwipe();
     void toggleLayout(LayoutDirective.Utility layout, int autoCapsFlags, @Nullable RecapitalizeMode recapitalizeMode);
     void onLongPressAlphaSymbolForNumpad();
