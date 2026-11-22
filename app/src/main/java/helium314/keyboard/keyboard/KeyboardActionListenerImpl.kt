@@ -239,6 +239,10 @@ class KeyboardActionListenerImpl(private val latinIME: LatinIME, private val inp
         else -> false
     }
 
+    // DwellBoard: #vertical-cursor-guard
+    override fun allowsVerticalCursorSwipe(swipeStart: Long) = helium314.keyboard.dwell.cursor.VerticalCursorSwipe.allows(
+        swipeStart, settings.current.mInputAttributes.mInputType, connection)
+
     override fun onEndSpaceSwipe() {
         initialSubtype = null
         subtypeSwitchCount = 0

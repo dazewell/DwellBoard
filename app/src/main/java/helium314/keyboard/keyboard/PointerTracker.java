@@ -958,7 +958,9 @@ public final class PointerTracker implements PointerTrackerQueue.Element,
 
             // Vertical movement
             int stepsY = dY / sPointerStep;
-            if (stepsY != 0 && abs(dX) < abs(dY) && !mInHorizontalSwipe) {
+            // DwellBoard: #vertical-cursor-guard, an up/down cursor swipe the field can't use stays a space tap or horizontal swipe
+            if (stepsY != 0 && abs(dX) < abs(dY) && !mInHorizontalSwipe && (mInVerticalSwipe
+                    || sv.mSpaceSwipeVertical != KeyboardActionListener.SwipeAction.MOVE_CURSOR || sListener.allowsVerticalCursorSwipe(mStartTime))) {
                 if (!mInVerticalSwipe) {
                     sTimerProxy.cancelKeyTimersOf(this);
                     mInVerticalSwipe = true;
