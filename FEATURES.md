@@ -92,7 +92,7 @@ In Words mode, makes every word of delete swipe and enter swipe take the same fi
 
 ### Up and down swipe only in multi-line text <!-- #vertical-cursor-guard -->
 
-When space bar's vertical swipe is set to move the cursor, it only does so in text fields that take several lines and whose text already has a line break, and in terminals. In other fields a slightly vertical slide on space stays a space tap or a sideways cursor swipe, instead of jumping the cursor or leaving the field. Always on.
+When space bar's vertical swipe is set to move the cursor, it only does so in text fields where Enter starts a new line, and in terminals. Fields that wrap text but use Enter as Done or Send count as single-line. In other fields a slightly vertical slide on space stays a space tap or a sideways cursor swipe, instead of jumping the cursor or leaving the field. Always on.
 
 ### Keyboard Undo and Redo <!-- #keyboard-undo -->
 
