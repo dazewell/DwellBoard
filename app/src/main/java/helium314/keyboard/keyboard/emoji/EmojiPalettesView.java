@@ -261,6 +261,9 @@ public final class EmojiPalettesView extends LinearLayout
         if (initialized) return;
         mEmojiCategory.initialize();
         mTabStrip = (LinearLayout) KeyboardSwitcher.getInstance().getEmojiTabStrip();
+        // DwellBoard: the strip's style background is plain white and was only coloured by the suggestion
+        // strip's tint leaking through shared drawable state; once that sharing broke it showed white
+        mColors.setBackground(mTabStrip, ColorType.STRIP_BACKGROUND);
         if (Settings.getValues().isSecondaryStripVisible()) {
             for (EmojiCategory.CategoryProperties properties : mEmojiCategory.getShownCategories()) {
                 addTab(mTabStrip, properties.getCategory());
