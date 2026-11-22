@@ -90,6 +90,10 @@ In Words mode, delete swipe and enter swipe step from one word to the next: slid
 
 In Words mode, makes every word of delete swipe and enter swipe take the same finger travel. Without it the first word needs twice the slide of each word after it. Setting: the "Same distance for every word" switch in each swipe's sensitivity dialog (Advanced), off by default.
 
+### Up and down swipe only in multi-line text <!-- #vertical-cursor-guard -->
+
+When space bar's vertical swipe is set to move the cursor, it only does so in text fields that take several lines and whose text already has a line break, and in terminals. In other fields a slightly vertical slide on space stays a space tap or a sideways cursor swipe, instead of jumping the cursor or leaving the field. Always on.
+
 ### Keyboard Undo and Redo <!-- #keyboard-undo -->
 
 Undo and Redo keep recent keyboard text edits, including substitutions, typing, paste, cut and deletion. A substitution can be undone without removing the whole word. Setting: Toolbar → "Keyboard Undo and Redo", off by default; its description explains the added processing, memory use and history limits.
