@@ -48,7 +48,7 @@ exists so you can start searching immediately, not so you can skip the skill.
 - Input chain: `keyboard/PointerTracker.java` →
   `keyboard/KeyboardActionListenerImpl.kt` → `latin/LatinIME.java` →
   `latin/inputlogic/InputLogic.java`. Editor I/O: `latin/RichInputConnection.java`.
-- Suggestions: `latin/DictionaryFacilitatorImpl.kt` → `latin/Suggest.kt` →
+- Suggestions: `latin/DictionaryFacilitatorImpl.kt` → `latin/suggestions/Suggest.kt` →
   `latin/suggestions/SuggestionStripView.kt`.
 - Layouts: `app/src/main/assets/layouts`, interpreted by
   `keyboard/internal/keyboard_parser/KeyboardParser.kt` and
