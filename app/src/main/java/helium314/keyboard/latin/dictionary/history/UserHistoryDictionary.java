@@ -85,6 +85,12 @@ public class UserHistoryDictionary extends ExpandableBinaryDictionary {
         return attributeMap;
     }
 
+    // DwellBoard: a delayed history add may be in memory only when the learning context switches, so flush first
+    @Override
+    public void close() {
+        flushAndClose();
+    }
+
     @Override
     protected void loadInitialContentsLocked() {
         // No initial contents.

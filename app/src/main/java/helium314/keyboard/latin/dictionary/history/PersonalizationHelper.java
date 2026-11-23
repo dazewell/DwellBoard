@@ -68,6 +68,14 @@ public class PersonalizationHelper {
         }
     }
 
+    /** whether the dictionary is still cached, i.e. neither its learning context nor all history was removed since */
+    public static boolean isCached(final ExpandableBinaryDictionary dict) {
+        for (final SoftReference<UserHistoryDictionary> ref : sLangUserHistoryDictCache.values()) {
+            if (ref != null && ref.get() == dict) return true;
+        }
+        return false;
+    }
+
     public static void removeAllUserHistoryDictionaries(final Context context) {
         synchronized (sLangUserHistoryDictCache) {
             for (final ConcurrentHashMap.Entry<String, SoftReference<UserHistoryDictionary>> entry

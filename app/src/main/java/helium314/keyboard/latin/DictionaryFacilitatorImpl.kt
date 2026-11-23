@@ -448,7 +448,12 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 it.removeFromBlacklist(typedWord)
             }
 
-            UserHistoryDictionary.addToDictionary(userHistoryDictionary, ngramContext, wordToUse, isValid, timeStampInSeconds)
+            // DwellBoard: the dictionary may have been closed during the delay, if the learning context changed
+            userHistoryDictionary.updateEntriesForWordLater(
+                { dictionaryGroups.any { it.getSubDict(Dictionary.TYPE_USER_HISTORY) === userHistoryDictionary } },
+                { helium314.keyboard.latin.dictionary.history.PersonalizationHelper.isCached(userHistoryDictionary) },
+                ngramContext, wordToUse, isValid, timeStampInSeconds
+            )
         }
         // we use the original word, because that's the one that is "unlearned" when the user corrects the word
         synchronized(wordsWaitingForHistory) { wordsWaitingForHistory[typedWord] = addJob }
