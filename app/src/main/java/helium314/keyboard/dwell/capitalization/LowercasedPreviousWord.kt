@@ -8,9 +8,8 @@ import helium314.keyboard.latin.NgramContext.WordInfo
  *  Remembers the last word learned in lowercase, so the word typed after it is learned as following that form.
  *  The ngram context comes from the editor text and holds "Paris", but the user history only knows "paris", and
  *  learning looks up the previous word exactly, so without this the "paris is" pair would be dropped.
- *  Upstream's tryChangingWords does the same for words decapitalized at sentence start.
  *
- *  Only used from the input thread, like tryChangingWords. The pair is kept until another word is learned in
+ *  Only used from the input thread. The pair is kept until another word is learned in
  *  lowercase, so retyping the next word still finds it.
  */
 class LowercasedPreviousWord {
