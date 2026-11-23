@@ -593,7 +593,7 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         if (word.length() > BinaryDictionary.DICTIONARY_MAX_WORD_LENGTH) return;
         asyncExecuteTaskWithWriteLock(() -> {
             final boolean used = stillUsed.getAsBoolean();
-            if (!used && !stillCached.getAsBoolean()) return;
+            if (!stillCached.getAsBoolean()) return;
             loadExistingLocked(used);
             if (mBinaryDictionary == null) {
                 // no file yet: a used dictionary's pending reload would create it over an update made here
