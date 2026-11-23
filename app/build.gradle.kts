@@ -35,10 +35,10 @@ android {
         applicationId = "helium314.keyboard.dazewell"
         minSdk = 21
         targetSdk = 37
-        versionCode = 4300
-        versionName = "4.3-beta1"
+        versionCode = 4301
+        versionName = "4.3-beta2"
         // DwellBoard: staging.yml sets DWELL_BUILD_SHA so each CI build shows which commit it is (About screen, app info), and on dev pushes
-        // DWELL_BUILD_NUMBER so each dev release has its own version for update checkers (e.g. 4.3-beta1-dev.57+1a2b3c4d). Both unset locally.
+        // DWELL_BUILD_NUMBER so each dev release has its own version for update checkers (e.g. 4.3-beta2-dev.57+1a2b3c4d). Both unset locally.
         versionNameSuffix = (System.getenv("DWELL_BUILD_NUMBER")?.takeIf { it.isNotBlank() }?.let { "-dev.$it" } ?: "") +
             (System.getenv("DWELL_BUILD_SHA")?.takeIf { it.isNotBlank() }?.let { "+$it" } ?: "")
         ndk {

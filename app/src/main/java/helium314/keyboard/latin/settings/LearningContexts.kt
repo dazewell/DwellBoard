@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import helium314.keyboard.dwell.clipboard.ContextPins
 import helium314.keyboard.keyboard.emoji.RecentEmojis
-import helium314.keyboard.latin.personalization.PersonalizationHelper
+import helium314.keyboard.latin.dictionary.history.PersonalizationHelper
 import helium314.keyboard.latin.utils.ExecutorUtils
 import helium314.keyboard.latin.utils.prefs
 import kotlinx.coroutines.suspendCancellableCoroutine
