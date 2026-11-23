@@ -98,7 +98,7 @@ class InputTest {
             y.toFloat(),
             0
         )
-        keyboardSwitcher.mainKeyboardView.onTouchEvent(me)
+        keyboardSwitcher.mainKeyboardView!!.onTouchEvent(me) // DwellBoard: nullable since upstream 864cf09e, its own test was not updated
     }
 
     @BeforeTest

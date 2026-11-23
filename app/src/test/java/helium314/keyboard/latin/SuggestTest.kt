@@ -71,27 +71,27 @@ class SuggestTest {
     @Test fun `capitalized typed word gets lower case suggestions after Shift was tapped to lower case`() {
         tapTypingSuggestions = suggestionResults(listOf(suggestion("test", 100), suggestion("tests", 90), suggestion("tested", 80)))
         assertEquals(listOf("Test", "Tests", "Tested"),
-            getSuggestedWords(false, "Test", CapsMode.OFF).mSuggestedWordInfoList.map { it.mWord })
+            getSuggestedWords(false, "Test", CapsMode.OFF).suggestedWordInfoList.map { it.word })
         assertEquals(listOf("Test", "test", "tests", "tested"),
-            getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).mSuggestedWordInfoList.map { it.mWord })
+            getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).suggestedWordInfoList.map { it.word })
         // a locked or manual shift still wins
         assertEquals(listOf("Test", "TEST", "TESTS", "TESTED"),
-            getSuggestedWords(false, "Test", CapsMode.MANUAL_LOCKED, unshiftedByUser = true).mSuggestedWordInfoList.map { it.mWord })
+            getSuggestedWords(false, "Test", CapsMode.MANUAL_LOCKED, unshiftedByUser = true).suggestedWordInfoList.map { it.word })
     }
 
     @Test fun `all caps typed word is not auto-corrected to lower case after caps lock was released`() {
         enableAutocorrect(confidenceAggressive)
         tapTypingSuggestions = suggestionResults(listOf(suggestion("no", 650000, currentTypingLocale)))
         val result = getSuggestedWords(false, "NO", CapsMode.OFF, unshiftedByUser = true)
-        assert(!result.mWillAutoCorrect)
-        assertEquals(listOf("NO"), result.mSuggestedWordInfoList.map { it.mWord })
+        assert(!result.willAutoCorrect)
+        assertEquals(listOf("NO"), result.suggestedWordInfoList.map { it.word })
     }
 
     @Test fun `capitalized typed word is auto-corrected to lower case after Shift was tapped to lower case`() {
         enableAutocorrect(confidenceAggressive)
         tapTypingSuggestions = suggestionResults(listOf(suggestion("test", 650000, currentTypingLocale)))
-        assert(getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).mWillAutoCorrect)
-        assert(!getSuggestedWords(false, "Test", CapsMode.OFF).mWillAutoCorrect)
+        assert(getSuggestedWords(false, "Test", CapsMode.OFF, unshiftedByUser = true).willAutoCorrect)
+        assert(!getSuggestedWords(false, "Test", CapsMode.OFF).willAutoCorrect)
     }
 
     @Test fun `'on' to 'in' if 'in' was used before in this context`() {
@@ -556,7 +556,7 @@ class SuggestTest {
         val result3 = getSuggestedWords(true, "", CapsMode.MANUAL)
         // mWillAutoCorrect is true on phone, because after glide typing is done, the result is set as typed word
         // when pressing shift to capitalize it, autocorrect will only work if the typed word changes when capitalized. this does not work without typed word
-        //assert(result3.mWillAutoCorrect)
+        //assert(result3.willAutoCorrect)
         assertEquals("but", result3.typedWordInfo?.word)
         assertEquals(listOf("But", "Buy", "Bit", "😢", "Butter"), result3.suggestedWordInfoList.map { it.word })
     }
@@ -632,16 +632,16 @@ class SuggestTest {
             suggestion("siege", 925),
         ))
         val noCorrection = getSuggestedWords(false, "suge", CapsMode.OFF)
-        assert(!noCorrection.mWillAutoCorrect)
-        assertEquals(listOf("suge", "surge", "suge", "sure", "siege"), noCorrection.mSuggestedWordInfoList.map { it.mWord })
+        assert(!noCorrection.willAutoCorrect)
+        assertEquals(listOf("suge", "surge", "suge", "sure", "siege"), noCorrection.suggestedWordInfoList.map { it.word })
 
         tapTypingSuggestions = suggestionResults(listOf(suggestion("surge", 1000)))
         val oneSuggestion = getSuggestedWords(false, "suge", CapsMode.OFF)
-        assertEquals(listOf("suge", "surge", "suge"), oneSuggestion.mSuggestedWordInfoList.map { it.mWord })
+        assertEquals(listOf("suge", "surge", "suge"), oneSuggestion.suggestedWordInfoList.map { it.word })
 
         tapTypingSuggestions = suggestionResults(emptyList())
         val noSuggestion = getSuggestedWords(false, "suge", CapsMode.OFF)
-        assertEquals(listOf("suge", "suge"), noSuggestion.mSuggestedWordInfoList.map { it.mWord })
+        assertEquals(listOf("suge", "suge"), noSuggestion.suggestedWordInfoList.map { it.word })
 
         enableAutocorrect(confidenceVeryAggressive)
         tapTypingSuggestions = suggestionResults(listOf(
@@ -649,8 +649,8 @@ class SuggestTest {
             suggestion("hell", 620000),
         ))
         val correction = getSuggestedWords(false, "henlo", CapsMode.OFF)
-        assert(correction.mWillAutoCorrect)
-        assertEquals(listOf("henlo", "hello", "henlo", "hell"), correction.mSuggestedWordInfoList.map { it.mWord })
+        assert(correction.willAutoCorrect)
+        assertEquals(listOf("henlo", "hello", "henlo", "hell"), correction.suggestedWordInfoList.map { it.word })
     }
 
     @Test fun `capitalization only correction stays in the center with learn only picked typed left`() = inTextField {
@@ -664,9 +664,9 @@ class SuggestTest {
             suggestion("bit", 6200),
         ))
         val result = getSuggestedWords(false, "bur", CapsMode.MANUAL)
-        assert(result.mWillAutoCorrect)
+        assert(result.willAutoCorrect)
         // space commits index 1 when mWillAutoCorrect is set, so it must stay the capitalized typed word
-        assertEquals(listOf("bur", "Bur", "But", "Bit"), result.mSuggestedWordInfoList.map { it.mWord })
+        assertEquals(listOf("bur", "Bur", "But", "Bit"), result.suggestedWordInfoList.map { it.word })
     }
 
     // a selection update after a backspace can resume the word being typed; it must still be tappable
@@ -677,11 +677,11 @@ class SuggestTest {
             suggestion("sure", 935),
         ))
         val center = getSuggestedWords(false, "suge", CapsMode.OFF, resumed = true)
-        assertEquals(listOf("suge", "suge", "surge", "sure"), center.mSuggestedWordInfoList.map { it.mWord })
+        assertEquals(listOf("suge", "suge", "surge", "sure"), center.suggestedWordInfoList.map { it.word })
 
         latinIME.prefs().edit { putBoolean(Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT, true) }
         val left = getSuggestedWords(false, "suge", CapsMode.OFF, resumed = true)
-        assertEquals(listOf("suge", "surge", "suge", "sure"), left.mSuggestedWordInfoList.map { it.mWord })
+        assertEquals(listOf("suge", "surge", "suge", "sure"), left.suggestedWordInfoList.map { it.word })
     }
 
     private fun getSuggestedWords(gesture: Boolean, typedWord: String, capsMode: CapsMode, unshiftedByUser: Boolean = false, resumed: Boolean = false): SuggestedWords {

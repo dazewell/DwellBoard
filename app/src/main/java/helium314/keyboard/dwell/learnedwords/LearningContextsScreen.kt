@@ -54,7 +54,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import helium314.keyboard.latin.AppsManager
+import helium314.keyboard.latin.utils.AppsUtils
 import helium314.keyboard.latin.R
 import helium314.keyboard.latin.settings.LearningContext
 import helium314.keyboard.latin.settings.LearningContexts
@@ -324,7 +324,7 @@ private fun rememberContextApps(preview: Set<String>? = null, retry: Int = 0): A
         result = withContext(Dispatchers.IO) {
             try {
                 val apps = if (preview == null) {
-                    AppsManager(ctx).getPackagesWithNameAndIcon().map { (pkg, name, icon) ->
+                    AppsUtils.getPackagesWithNameAndIcon(ctx.packageManager).map { (pkg, name, icon) ->
                         ContextApp(pkg, name, icon?.toBitmap(iconSize, iconSize)?.asImageBitmap())
                     }
                 } else {
