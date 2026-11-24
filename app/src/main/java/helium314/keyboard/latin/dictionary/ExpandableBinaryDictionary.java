@@ -587,7 +587,8 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
     // during the delay (learning context switched, keyboard closed), it was closed without the update, so it is loaded,
     // updated, flushed and closed here. stillCached is false once its context or history was deleted: nothing is
     // written then, so a deleted file is not recreated. onLearned runs on this thread if the word just became
-    // suggestable, checked in the same locked task since the native read is only exact here.
+    // suggestable, checked in the same locked task since the native read is only exact here. Not offered while a used
+    // history has no file yet: that write goes through updateEntriesForWord.
     public void updateEntriesForWordLater(final java.util.function.BooleanSupplier stillUsed,
             final java.util.function.BooleanSupplier stillCached, @NonNull final NgramContext ngramContext,
             final String word, final boolean isValidWord, final int timestamp, @Nullable final Runnable onLearned) {

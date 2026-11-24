@@ -18,7 +18,7 @@ import helium314.keyboard.latin.settings.Settings
 
 /**
  * "Show learned words": once a word no dictionary knows becomes suggestable from the learned history, it floats up
- * from the suggestion strip and fades, styled like the key preview. Default learning delays the write so a correction
+ * from the suggestion strip and fades, in the key preview colours. Default learning delays the write so a correction
  * can cancel it, and a new word typed once is stored without a count, so there the popup comes with the second use.
  */
 object LearnedWordPopup {
@@ -69,7 +69,7 @@ object LearnedWordPopup {
         content.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         view.x = (stripPos[0] - contentPos[0] + (strip.width - view.measuredWidth) / 2).toFloat()
         view.y = (stripPos[1] - contentPos[1] + (strip.height - view.measuredHeight) / 2).toFloat()
-        // the IME window may end at the top of the strip, so the rise stays short enough not to be cut off
+        // a short rise keeps the word near the strip it came from rather than drifting over the app
         view.animate()
             .translationYBy(-strip.height * 0.6f)
             .alpha(0f)
