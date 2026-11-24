@@ -24,7 +24,7 @@ class PunctuationAutospaceTest {
         assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, "2 ")) // "I got 2 - 3"
         assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, "2-")) // "2-3"
         listOf(") ", "] ", "\" ", "' ", "” ", "! ", ". ").forEach { assertTrue(PunctuationAutospace.isSeparatorDash('-'.code, it), it) }
-        listOf("( ", "[ ", "+ ", "* ", "/ ", "< ").forEach { assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, it), it) } // minus sign
+        listOf("( ", "[ ", "+ ", "* ", "/ ", "< ", ", ", "; ", ": ").forEach { assertFalse(PunctuationAutospace.isSeparatorDash('-'.code, it), it) } // minus sign
         // Indic vowel sign, emoji, emoji with variation selector / skin tone / keycap, units after a number
         listOf("ते ", "e 👍 ", "❤️ ", "👍🏽 ", "1️⃣ ", "50% ", "20° ", "5€ ", "t… ", "a ",
             "🏴󠁧󠁢󠁥󠁮󠁧󠁿 ", // England flag, ends in a tag
