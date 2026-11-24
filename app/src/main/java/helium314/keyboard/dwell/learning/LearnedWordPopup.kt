@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.dwell.learning
 
+import android.animation.ValueAnimator
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
@@ -83,13 +86,25 @@ object LearnedWordPopup {
             Gravity.TOP or Gravity.LEFT))
         view.x = (stripPos[0] - contentPos[0] + (strip.width - view.measuredWidth) / 2).toFloat()
         view.y = (stripPos[1] - contentPos[1] + (strip.height - view.measuredHeight) / 2).toFloat()
+        val remove = Runnable { (view.parent as? ViewGroup)?.removeView(view) }
+        // with animations off (accessibility, battery saver) an animator ends before the first frame and would remove
+        // the popup unseen, so it just stays for the same time
+        if (!animatorsEnabled(context)) {
+            handler.postDelayed(remove, DURATION_MS)
+            return
+        }
         // a short rise keeps the word near the strip it came from rather than drifting over the app
         view.animate()
             .translationYBy(-strip.height * 0.6f)
             .alpha(0f)
             .setDuration(DURATION_MS)
             .setInterpolator(DecelerateInterpolator())
-            .withEndAction { (view.parent as? ViewGroup)?.removeView(view) }
+            .withEndAction(remove)
             .start()
     }
+
+    private fun animatorsEnabled(context: Context): Boolean =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ValueAnimator.areAnimatorsEnabled()
+        else android.provider.Settings.Global.getFloat(context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) != 0f
 }
