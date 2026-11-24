@@ -36,7 +36,7 @@ Words that are in no dictionary are learned only when you tap them in the sugges
 
 ### Show learned words <!-- #learned-word-popup -->
 
-When a word that is in no dictionary can now be suggested, it floats up from the suggestion strip as "💡word" and fades. With "Learn new words only when tapped" that is the tap; otherwise it is the second time you type the word, about 25 seconds later. Setting: Text correction → "Show learned words", off by default.
+When a word that is in no dictionary can now be suggested, it floats up from the suggestion strip as "💡word" and fades. With "Learn new words only when tapped" that is the tap; otherwise it is the second time you type the word, about 25 seconds later, if you are still in that field. Setting: Text correction → "Show learned words", off by default.
 
 ### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 
