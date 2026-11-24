@@ -77,6 +77,8 @@ fun TextCorrectionScreen(
         if (suggestionsEnabled && prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS)
             && prefs.getBoolean(Settings.PREF_LEARN_ONLY_PICKED, Defaults.PREF_LEARN_ONLY_PICKED))
             Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT else null,
+        if (suggestionsEnabled && prefs.getBoolean(Settings.PREF_KEY_USE_PERSONALIZED_DICTS, Defaults.PREF_KEY_USE_PERSONALIZED_DICTS))
+            Settings.PREF_SHOW_LEARNED_WORD else null,
         R.string.settings_category_space,
         Settings.PREF_KEY_USE_DOUBLE_SPACE_PERIOD,
         Settings.PREF_AUTOSPACE_AFTER_PUNCTUATION,
@@ -310,6 +312,11 @@ fun createCorrectionSettings(context: Context) = listOf(
         R.string.dwell_learn_only_picked_typed_left, R.string.dwell_learn_only_picked_typed_left_summary
     ) {
         SwitchPreference(it, Defaults.PREF_LEARN_ONLY_PICKED_TYPED_LEFT)
+    },
+    Setting(context, Settings.PREF_SHOW_LEARNED_WORD,
+        R.string.dwell_show_learned_word, R.string.dwell_show_learned_word_summary
+    ) {
+        SwitchPreference(it, Defaults.PREF_SHOW_LEARNED_WORD)
     },
     Setting(context, Settings.PREF_SPELLCHECK_SUGGEST,
         R.string.spell_check_suggestions, R.string.spell_check_suggestions_summary

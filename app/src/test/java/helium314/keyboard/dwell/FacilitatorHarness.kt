@@ -81,7 +81,7 @@ class FacilitatorHarness(private val context: Context, mainWords: Set<String>, v
                 else ngram.getNthPrevWord(1)?.toString()
             learned += Learned(it.getArgument(3), it.getArgument(4), previous, it.getArgument(0))
             null
-        }.`when`(dict).updateEntriesForWordLater(any(), any(), any(), anyString(), anyBoolean(), anyInt())
+        }.`when`(dict).updateEntriesForWordLater(any(), any(), any(), anyString(), anyBoolean(), anyInt(), any())
         return dict
     }
 

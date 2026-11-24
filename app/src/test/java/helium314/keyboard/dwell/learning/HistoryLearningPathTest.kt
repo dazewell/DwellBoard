@@ -153,7 +153,8 @@ class HistoryLearningPathTest {
         assertFalse(learned.stillUsed.asBoolean)
         org.mockito.Mockito.verify(old).updateEntriesForWordLater(
             org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any(),
-            org.mockito.ArgumentMatchers.eq("zorbly"), org.mockito.ArgumentMatchers.anyBoolean(), org.mockito.ArgumentMatchers.anyInt())
+            org.mockito.ArgumentMatchers.eq("zorbly"), org.mockito.ArgumentMatchers.anyBoolean(), org.mockito.ArgumentMatchers.anyInt(),
+            org.mockito.ArgumentMatchers.any())
         org.mockito.Mockito.verifyNoInteractions(new)
     }
 }

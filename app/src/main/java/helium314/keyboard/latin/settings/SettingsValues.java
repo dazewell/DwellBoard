@@ -132,6 +132,7 @@ public class SettingsValues {
     public final boolean mDontLearnCapitalized;
     public final boolean mLearnOnlyPicked;
     public final boolean mLearnOnlyPickedTypedLeft;
+    public final boolean mShowLearnedWord;
     public final boolean mUseContactsDictionary;
     public final boolean mUseAppsDictionary;
     public final boolean mCustomNavBarColor;
@@ -347,6 +348,8 @@ public class SettingsValues {
                 && prefs.getBoolean(Settings.PREF_LEARN_ONLY_PICKED, Defaults.PREF_LEARN_ONLY_PICKED);
         mLearnOnlyPickedTypedLeft = mLearnOnlyPicked
                 && prefs.getBoolean(Settings.PREF_LEARN_ONLY_PICKED_TYPED_LEFT, Defaults.PREF_LEARN_ONLY_PICKED_TYPED_LEFT);
+        mShowLearnedWord = mUsePersonalizedDicts && mSuggestionsEnabled // DwellBoard: the popup rises from the strip
+                && prefs.getBoolean(Settings.PREF_SHOW_LEARNED_WORD, Defaults.PREF_SHOW_LEARNED_WORD);
         mUseContactsDictionary = SettingsValues.readUseContactsEnabled(prefs, context);
         mUseAppsDictionary = prefs.getBoolean(Settings.PREF_USE_APPS, Defaults.PREF_USE_APPS);
         mCustomNavBarColor = prefs.getBoolean(Settings.PREF_NAVBAR_COLOR, Defaults.PREF_NAVBAR_COLOR);
