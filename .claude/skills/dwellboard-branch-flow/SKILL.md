@@ -180,8 +180,10 @@ User-visible features open non-draft PRs into `dev` by default; CI/bug/chore PRs
 are optional.
 
 ```powershell
-gh pr create --base dev --head <YYYY-MM-DD>_<slug> --title "<title>" --body "<body>"
+.\.github\scripts\open-pr.ps1 -Title "<title>" -BodyFile <file>
 ```
+
+Edit bodies with `.github/scripts/set-pr-body.ps1`.
 
 `ci.yml` compiles and unit-tests every PR push and is the no-local-tools gate;
 say so in the body. `process-rules.yml` also runs on every PR. For a test APK,
@@ -208,13 +210,11 @@ which trigger and ref produced the APK. A workflow that never ran is not a pass.
 Request behaviour verification only after review is clean. A UI-facing change
 also gets one earlier smoke build after compile, for reachability only.
 
-Copilot review is **billed and never automatic**. Request it once architect
-round 2 has cleared and `ci.yml` is green on the head SHA, via the
-`request_copilot_review` tool or its script,
-`.github/scripts/request-copilot-review.ps1 -PullRequest <n> -Wait`. **Two per
-PR**, the second only after fixing an Important-or-above finding; none on doc-
-or process-only PRs unless dazewell asks. The script enforces this; never
-hand-roll the request.
+The bug hunt runs once architect round 2 has cleared and `ci.yml` is green on
+the head SHA: `.github/scripts/invoke-bug-hunt.ps1 -PullRequest <n>`. **Two per
+branch**, the second only after fixing an Important-or-above finding; none on
+doc- or process-only PRs (the script answers `no-code`). The script enforces
+this; never run the skill any other way.
 
 Close every review point: fix or reply why not, resolve, verify none remain
 (`.github/scripts/get-review-threads.ps1`).
