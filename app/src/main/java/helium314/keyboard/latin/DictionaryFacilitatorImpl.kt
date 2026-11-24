@@ -442,8 +442,9 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         // DwellBoard: with "learn new words only when tapped" the user chooses what is learned, so it is not delayed
         // for a correction to cancel it
         val waits = !learnOnlyPicked
-        // DwellBoard: "show learned words", only for a word no dictionary knows
-        val onLearned = helium314.keyboard.dwell.learning.LearnedWordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse) }
+        // DwellBoard: "show learned words", only for a word no dictionary knows, also in lowercase like the check above
+        val onLearned = helium314.keyboard.dwell.learning.LearnedWordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
+            || isValidSpellingWord(wordToUse.lowercase(dictionaryGroup.locale)) }
         var addJob: Job? = null
         addJob = scope.launch(Dispatchers.IO) {
             if (waits) delay(unlearnDuration)
