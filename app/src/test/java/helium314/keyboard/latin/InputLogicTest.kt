@@ -989,6 +989,30 @@ class InputLogicTest {
         }
     }
 
+    @Test fun `auto caps look past an emoji only after a sentence end`() {
+        setInputType(InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
+        val sentenceCaps = android.text.TextUtils.CAP_MODE_SENTENCES
+        setText("Done. 🚀 ")
+        assertEquals(sentenceCaps, latinIME.currentAutoCapsState and sentenceCaps)
+        setText("done 🚀 ")
+        assertEquals(0, latinIME.currentAutoCapsState and sentenceCaps)
+    }
+
+    // upstream 4.3 replaces a whole word for a suggestion picked with the cursor inside it (RichInputConnection.replaceTextAtCursor)
+    @Test fun `keyboard undo after a pick replacing the word around the cursor never mangles text`() {
+        latinIME.prefs().edit { putBoolean(Settings.PREF_KEYBOARD_UNDO, true) }
+        setText("say hello")
+        setCursorPosition(6)
+        val info = SuggestedWordInfo("hellos", "", 0, 0, dict, 0, 0).apply { wordToReplace = "hello" }
+        latinIME.pickSuggestionManually(info)
+        handleMessages()
+        assertEquals("say hellos", text)
+        functionalKeyPress(KeyCode.UNDO)
+        assert(text == "say hello" || text == "say hellos") { "undo left \"$text\"" }
+        functionalKeyPress(KeyCode.REDO)
+        assert(text == "say hello" || text == "say hellos") { "redo left \"$text\"" }
+    }
+
     @Test fun `keyboard undo never records private input`() {
         latinIME.prefs().edit {
             putBoolean(Settings.PREF_KEYBOARD_UNDO, true)
