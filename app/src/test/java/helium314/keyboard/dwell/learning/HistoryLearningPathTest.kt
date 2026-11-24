@@ -102,19 +102,21 @@ class HistoryLearningPathTest {
         assertFalse("Zorbly" in h.waiting())
     }
 
-    @Test fun `with learn only when tapped a typed new word waits for a tap`() {
+    // the option learns at once, without the 25 s wait: the user chose the word, so there is nothing to cancel
+    @Test fun `with learn only when tapped a typed new word waits for a tap, then is learned at once`() {
         val h = harness(addNow = false, prefs = mapOf(Settings.PREF_LEARN_ONLY_PICKED to true))
         assertTrue(Settings.getValues().mLearnOnlyPicked)
         h.add("zorbly", previous("the"))
-        assertFalse("zorbly" in h.waiting())
+        h.add("blorpy", previous("the"))
         h.add("zorbly", previous("the"), picked = true)
-        assertTrue("zorbly" in h.waiting())
-        h.add("hello", previous("the"))
-        assertFalse("hello" in h.waiting()) // not known yet either
+        assertEquals(listOf("zorbly"), h.awaitLearned(1).map { it.word })
+        assertTrue(h.waiting().isEmpty())
+        Thread.sleep(100) // a typed add, had one been started, runs without delay too
+        assertEquals(listOf("zorbly"), h.learned.map { it.word })
     }
 
     @Test fun `with learn only when tapped a typed known word is learned and a tapped new one counts as valid`() {
-        val h = harness("hello", prefs = mapOf(Settings.PREF_LEARN_ONLY_PICKED to true))
+        val h = harness("hello", addNow = false, prefs = mapOf(Settings.PREF_LEARN_ONLY_PICKED to true))
         h.add("hello", previous("the"))
         h.add("zorbly", previous("the"), picked = true)
         val learned = h.awaitLearned(2).associateBy { it.word }
