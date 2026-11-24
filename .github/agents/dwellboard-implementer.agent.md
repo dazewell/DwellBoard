@@ -328,7 +328,8 @@ that head SHA**, with that head checked out:
 
 It answers `no-code` on a doc- or process-only diff and refuses a packet over
 160 KB (split with `-Path`). It needs the `claude` CLI signed in — if not, that
-is dazewell's one-time `claude auth login`, so ask — and bills that account.
+is dazewell's one-time `claude auth login`, so ask — and bills that account;
+a token saved by `Set-BugHuntToken` (`set-bug-hunt-token.ps1`) takes precedence.
 Model and effort come from what the changed lines touch (editor I/O, stored
 data, privacy, the input pipeline, core files), named in its `reasons`;
 `-Level` only when dazewell asks.
