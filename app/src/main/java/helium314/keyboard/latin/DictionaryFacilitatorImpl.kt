@@ -439,9 +439,12 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         // We don't add words with 0-frequency (assuming they would be profanity etc.).
         val isValid = helium314.keyboard.dwell.learning.PickedLearning.learnAsValid(learnOnlyPicked, pickedAsTapped, mainFreq > 0) // DwellBoard: was mainFreq > 0
 
+        // DwellBoard: with "learn new words only when tapped" the user chooses what is learned, so it is not delayed
+        // for a correction to cancel it
+        val waits = !learnOnlyPicked
         var addJob: Job? = null
         addJob = scope.launch(Dispatchers.IO) {
-            delay(unlearnDuration)
+            if (waits) delay(unlearnDuration)
             synchronized(wordsWaitingForHistory) {
                 if (wordsWaitingForHistory[typedWord] == addJob)
                     wordsWaitingForHistory.remove(typedWord)
@@ -459,7 +462,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
             )
         }
         // we use the original word, because that's the one that is "unlearned" when the user corrects the word
-        synchronized(wordsWaitingForHistory) { wordsWaitingForHistory[typedWord] = addJob }
+        if (waits) synchronized(wordsWaitingForHistory) { wordsWaitingForHistory[typedWord] = addJob }
     }
 
     private fun addToPersonalDictionaryIfInvalidButInHistory(word: String) {
