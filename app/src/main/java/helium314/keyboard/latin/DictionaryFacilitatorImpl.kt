@@ -388,7 +388,9 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 if (wordInHistory && !decapitalizedInHistory) return word
                 else if (!wordInHistory && decapitalizedInHistory) return decapitalizedWord
             }
-            return null // can't determine reliably enough, better add nothing (wasAutoCapitalizedOrIsBeginningOfSentence is unusual anyway)
+            // DwellBoard: was "return null" (add nothing), which never learns a new word typed first in a sentence.
+            // As before upstream 4.3, take it as lowercase that was only capitalized for the sentence start.
+            return decapitalizedWord
         } else {
             val lowerCasedWord = word.lowercase(dictionaryGroup.locale)
             if (lowerCasedWord == word) return word
