@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.dwell.learning
 
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
@@ -47,19 +49,17 @@ object LearnedWordPopup {
         val colors = Settings.getValues()?.mColors ?: return
 
         val view = TextView(context)
-        val attrs = context.obtainStyledAttributes(null, R.styleable.MainKeyboardView,
-            R.attr.mainKeyboardViewStyle, R.style.MainKeyboardView)
-        val backgroundId = attrs.getResourceId(R.styleable.MainKeyboardView_keyPreviewBackground, 0)
-        attrs.recycle()
-        if (backgroundId != 0) view.setBackgroundResource(backgroundId)
+        val density = context.resources.displayMetrics.density
+        // not the key preview drawable: its padding and minimum size also cover the key below, which leaves a tall
+        // empty box around a word. A white shape takes the preview colour through the same filter the theme applies.
+        view.background = GradientDrawable().apply { setColor(Color.WHITE); cornerRadius = 8 * density }
         colors.setBackground(view, ColorType.KEY_PREVIEW_BACKGROUND)
         view.setTextColor(colors.get(ColorType.KEY_PREVIEW_TEXT))
         view.setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.config_suggestion_text_size))
         val text = context.getString(R.string.dwell_learned_word_popup, word)
         view.text = text
         KeyboardTypeface.applyToTextView(view, text, android.graphics.Typeface.DEFAULT)
-        val padding = (context.resources.displayMetrics.density * 12).toInt()
-        view.setPadding(padding, view.paddingTop, padding, view.paddingBottom)
+        view.setPadding((12 * density).toInt(), (4 * density).toInt(), (12 * density).toInt(), (4 * density).toInt())
         view.isClickable = false
         view.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
 
