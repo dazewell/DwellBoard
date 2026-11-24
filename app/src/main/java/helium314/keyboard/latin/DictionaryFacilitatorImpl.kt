@@ -95,6 +95,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     }
 
     override fun onStartInput() {
+        helium314.keyboard.dwell.learning.LearnedWordPopup.onStartInput() // DwellBoard: a delayed popup must not reach another field
     }
 
     override fun onFinishInput() {

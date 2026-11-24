@@ -18,4 +18,13 @@ class LearnedWordPopupTest {
     @Test fun alreadySuggestableWordDoesNotPopAgain() {
         assertFalse(LearnedWordPopup.becameSuggestable(111, 115))
     }
+
+    @Test fun popupShowsOnlyInTheFieldTheWordWasTypedIn() {
+        assertTrue(LearnedWordPopup.shouldShow(3, 3, true))
+        assertFalse(LearnedWordPopup.shouldShow(3, 4, true))
+    }
+
+    @Test fun popupIsDroppedWhenTheFieldNowForbidsIt() {
+        assertFalse(LearnedWordPopup.shouldShow(3, 3, false))
+    }
 }

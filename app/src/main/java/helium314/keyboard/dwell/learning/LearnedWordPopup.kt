@@ -25,19 +25,29 @@ object LearnedWordPopup {
     private const val DURATION_MS = 1200L
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
+    // Counts input starts, on the main thread. A default-mode write lands 25 s after typing, possibly in another app,
+    // a password field or a screen share; a popup only shows in the input session its word was typed in.
+    @PublishedApi internal var session = 0
+
+    fun onStartInput() { session++ }
+
     /** What the history write runs if the word became suggestable, or null when the setting is off or [isKnown]. */
     inline fun callbackFor(word: String, isKnown: () -> Boolean): Runnable? {
         if (Settings.getValues()?.mShowLearnedWord != true || isKnown()) return null
-        return Runnable { post(word) }
+        val typedIn = session
+        return Runnable { post(word, typedIn) }
     }
 
     /** The history reports a word that is not suggestable yet, or absent, with a frequency of 0 or less. */
     @JvmStatic
     fun becameSuggestable(before: Int, after: Int): Boolean = before <= 0 && after > 0
 
-    fun post(word: String) {
-        handler.post { show(word) }
+    fun post(word: String, typedIn: Int) {
+        handler.post { if (shouldShow(typedIn, session, Settings.getValues()?.let { it.mShowLearnedWord && !it.mIncognitoModeEnabled } == true)) show(word) }
     }
+
+    /** The field the word was typed in is still the current one, and it may show learned words. */
+    fun shouldShow(typedIn: Int, current: Int, allowedNow: Boolean): Boolean = allowedNow && typedIn == current
 
     private fun show(word: String) {
         // by the time a delayed write lands the keyboard may be closed or the strip hidden; then there is nothing to show
