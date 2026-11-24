@@ -70,6 +70,7 @@ class KeyboardSwitcher private constructor() {
         view.setHardwareAcceleratedDrawingEnabled(isHardwareAcceleratedDrawingEnabled)
         view.keyboardActionListener = latinIME.mKeyboardActionListener
         latinIME.prefs().registerOnSharedPreferenceChangeListener(view)
+        view.requestApplyInsets() // DwellBoard: inflated after the last inset dispatch, so fitsSystemWindows would leave it under the nav bar
         clipboardHistory = view
         return view
     }
@@ -79,6 +80,7 @@ class KeyboardSwitcher private constructor() {
         val view = mainKeyboardFrame.emojiPalettes.inflate() as EmojiPalettesView
         view.setHardwareAcceleratedDrawingEnabled(isHardwareAcceleratedDrawingEnabled)
         view.setKeyboardActionListener(latinIME.mKeyboardActionListener)
+        view.requestApplyInsets() // DwellBoard: inflated after the last inset dispatch, so fitsSystemWindows would leave it under the nav bar
         emojiPalettes = view
         return view
     }
