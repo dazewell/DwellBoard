@@ -25,7 +25,7 @@ object LearnedWordPopup {
     private const val DURATION_MS = 1200L
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
-    // Counts input starts, on the main thread. A default-mode write lands 25 s after typing, possibly in another app,
+    // Counts input starts, on the main thread (not in gesture data gathering mode, whose facilitator has no hook). A default-mode write lands 25 s after typing, possibly in another app,
     // a password field or a screen share; a popup only shows in the input session its word was typed in.
     @PublishedApi internal var session = 0
 
