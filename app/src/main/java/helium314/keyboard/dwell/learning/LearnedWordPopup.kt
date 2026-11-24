@@ -6,9 +6,11 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
 import android.widget.TextView
 import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.KeyboardTypeface
@@ -76,7 +78,9 @@ object LearnedWordPopup {
         view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED)
         val stripPos = IntArray(2).also { strip.getLocationInWindow(it) }
         val contentPos = IntArray(2).also { content.getLocationInWindow(it) }
-        content.addView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        // left, not the default start: the IME window is right-to-left in an RTL system locale, and x counts from the left
+        content.addView(view, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+            Gravity.TOP or Gravity.LEFT))
         view.x = (stripPos[0] - contentPos[0] + (strip.width - view.measuredWidth) / 2).toFloat()
         view.y = (stripPos[1] - contentPos[1] + (strip.height - view.measuredHeight) / 2).toFloat()
         // a short rise keeps the word near the strip it came from rather than drifting over the app
