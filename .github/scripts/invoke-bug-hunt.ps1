@@ -257,7 +257,7 @@ if (-not (Test-Path $Skill)) { throw "Skill not found at $Skill." }
 
 # A token saved by set-bug-hunt-token.ps1 (DPAPI) overrides the shared CLI
 # login for this script's claude calls only; removed again in the finally.
-$TokenFile = Join-Path $HOME '.claudebug-hunt-token.txt'
+$TokenFile = Join-Path $HOME '.claude\bug-hunt-token.txt'
 if (Test-Path $TokenFile) {
     $env:CLAUDE_CODE_OAUTH_TOKEN = [System.Net.NetworkCredential]::new('',
         ((Get-Content $TokenFile -Raw).Trim() | ConvertTo-SecureString)).Password
