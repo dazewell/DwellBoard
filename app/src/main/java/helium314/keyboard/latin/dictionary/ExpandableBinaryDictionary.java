@@ -586,10 +586,12 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
     // DwellBoard: a delayed history update, in one write-locked task. If the facilitator stopped using this dictionary
     // during the delay (learning context switched, keyboard closed), it was closed without the update, so it is loaded,
     // updated, flushed and closed here. stillCached is false once its context or history was deleted: nothing is
-    // written then, so a deleted file is not recreated.
+    // written then, so a deleted file is not recreated. onLearned runs on this thread if the word just became
+    // suggestable, checked in the same locked task since the native read is only exact here. Not offered while a used
+    // history has no file yet: that write goes through updateEntriesForWord.
     public void updateEntriesForWordLater(final java.util.function.BooleanSupplier stillUsed,
             final java.util.function.BooleanSupplier stillCached, @NonNull final NgramContext ngramContext,
-            final String word, final boolean isValidWord, final int timestamp) {
+            final String word, final boolean isValidWord, final int timestamp, @Nullable final Runnable onLearned) {
         if (word.length() > BinaryDictionary.DICTIONARY_MAX_WORD_LENGTH) return;
         asyncExecuteTaskWithWriteLock(() -> {
             final boolean used = stillUsed.getAsBoolean();
@@ -604,11 +606,15 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
                 createNewDictionaryLocked(); // also replaces a bad file
             }
             runGCIfRequiredLocked(true /* mindsBlockByGC */);
-            mBinaryDictionary.updateEntriesForWordWithNgramContext(ngramContext, word, isValidWord, 1, timestamp);
+            final int before = onLearned == null ? 0 : mBinaryDictionary.getFrequency(word);
+            final boolean updated = mBinaryDictionary.updateEntriesForWordWithNgramContext(ngramContext, word, isValidWord, 1, timestamp);
+            final boolean learned = onLearned != null && updated
+                    && helium314.keyboard.dwell.learning.LearnedWordPopup.becameSuggestable(before, mBinaryDictionary.getFrequency(word));
             if (!used) {
                 mBinaryDictionary.flushWithGCIfHasUpdated();
                 closeBinaryDictionary();
             }
+            if (learned) onLearned.run();
         });
     }
 
