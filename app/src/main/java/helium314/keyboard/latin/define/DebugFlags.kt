@@ -58,7 +58,9 @@ $stackTrace
 Last log:
 ${Log.getLog(100).joinToString("\n")}
 """)
-        defaultUncaughtExceptionHandler!!.uncaughtException(t, e)
+        // DwellBoard: null only on a plain JVM (unit tests), where the NPE from !! killed a Dispatchers.Default worker
+        // holding a CPU permit; once all leaked, App.onCreate's runBlocking joinAll never returned. Android always has one.
+        defaultUncaughtExceptionHandler?.uncaughtException(t, e)
     }
 
     private fun writeCrashReportToFile(text: String) {

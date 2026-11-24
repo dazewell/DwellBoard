@@ -7,10 +7,9 @@ import helium314.keyboard.latin.common.StringUtils.mightBeEmoji
 import helium314.keyboard.latin.common.StringUtils.newSingleCodePointString
 import helium314.keyboard.latin.settings.SpacingAndPunctuations
 import helium314.keyboard.latin.utils.SpacedTokens
-import helium314.keyboard.latin.utils.SpannableStringUtils
-import helium314.keyboard.latin.utils.TextRange
 import java.math.BigInteger
 import java.util.Locale
+import kotlin.text.codePointAt
 
 fun CharSequence.codePointAt(offset: Int) = Character.codePointAt(this, offset)
 fun CharSequence.codePointBefore(offset: Int) = Character.codePointBefore(this, offset)
@@ -76,24 +75,6 @@ fun endsWithWordCodepoint(text: String, spacingAndPunctuations: SpacingAndPunctu
     return codePoint != Constants.NOT_A_CODE && spacingAndPunctuations.isWordCodePoint(codePoint)
 }
 
-fun getTouchedWordRange(before: CharSequence, after: CharSequence, spacingAndPunctuations: SpacingAndPunctuations): TextRange {
-    val iterator = WordBreakIterator.getForSpacingAndPunctuations(spacingAndPunctuations)
-    iterator.text = before.toString() + after
-    val (startIndexInBefore, endIndex) = iterator.getTouchedWordBounds(before.length)
-
-    val hasUrlSpans = SpannableStringUtils.hasUrlSpans(before, startIndexInBefore, before.length)
-        || SpannableStringUtils.hasUrlSpans(after, 0, endIndex - before.length)
-
-    // We don't use TextUtils#concat because it copies all spans without respect to their
-    // nature. If the text includes a PARAGRAPH span and it has been split, then
-    // TextUtils#concat will crash when it tries to concat both sides of it.
-    return TextRange(
-        SpannableStringUtils.concatWithNonParagraphSuggestionSpansOnly(before, after),
-        startIndexInBefore, endIndex, before.length,
-        hasUrlSpans
-    )
-}
-
 /** split the string on the first of consecutive space only, further consecutive spaces are added to the next split */
 fun String.splitOnFirstSpacesOnly(): List<String> {
     val out = mutableListOf<String>()
@@ -122,8 +103,14 @@ fun CharSequence.isValidNumber(): Boolean {
 }
 
 fun String.decapitalize(locale: Locale): String {
-    if (isEmpty() || !this[0].isUpperCase()) return this
-    return replaceFirstChar { it.lowercase(locale) }
+    val firstCp = codePointAt(0)
+    if (isEmpty() || !Character.isUpperCase(firstCp)) return this
+    if (firstCp < 0xffff)
+        return replaceFirstChar { it.lowercase(locale) }
+    // this doesn't consider locale, while String.lowercase would
+    // but anyway were unlikely to arrive here...
+    return String(Character.toChars(Character.toLowerCase(firstCp)))+
+        substring(Character.charCount(firstCp))
 }
 
 fun encodeBase36(string: String): String = BigInteger(string.toByteArray()).toString(36)
@@ -164,11 +151,14 @@ fun mightBeEmoji(text: CharSequence): Boolean {
 fun isEmoji(c: Int): Boolean = mightBeEmoji(c) && isEmoji(newSingleCodePointString(c))
 
 /** returns whether the text is a single emoji or a single regional indicator */
-fun isEmoji(text: CharSequence): Boolean = text.isSingleRegionalIndicator // not recognized by singleEmojiRegex
+fun isEmoji(text: CharSequence): Boolean = text.isSingleOrDoubleRegionalIndicator // not recognized by singleEmojiRegex
         || (text.toString().isSingleGrapheme && mightBeEmoji(text) && text.matches(singleEmojiRegex))
 
-private inline val CharSequence.isSingleRegionalIndicator: Boolean
-    get() = length == 2 && Character.codePointAt(this, 0).isRegionalIndicator
+private inline val CharSequence.isSingleOrDoubleRegionalIndicator get() =
+    (length == 2 && Character.codePointAt(this, 0).isRegionalIndicator)
+        || (length == 4 && Character.codePointAt(this, 0).isRegionalIndicator
+                && Character.codePointAt(this, 2).isRegionalIndicator
+           )
 
 inline val Int.isRegionalIndicator get() = this in 0x1F1E6..0x1F1FF
 //inline val Int.isSkinTone get() = this in 0x1F3FB..0x1F3FF

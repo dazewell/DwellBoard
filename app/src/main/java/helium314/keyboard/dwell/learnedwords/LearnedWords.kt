@@ -3,7 +3,7 @@ package helium314.keyboard.dwell.learnedwords
 
 import android.content.Context
 import helium314.keyboard.latin.dictionary.DictionaryFactory
-import helium314.keyboard.latin.personalization.PersonalizationHelper
+import helium314.keyboard.latin.dictionary.history.PersonalizationHelper
 import helium314.keyboard.latin.utils.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine

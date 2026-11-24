@@ -113,9 +113,9 @@ the other.
 - `latin/RichInputConnection.java` — every read/write to the editor; behaviour
   varies by app and OS version; **hot path**, upstream's most dangerous area.
 - `keyboard/KeyboardActionListenerImpl.kt` — key actions before `LatinIME`.
-- `keyboard/KeyboardSwitcher.java`, `keyboard/MainKeyboardView.java` —
+- `keyboard/KeyboardSwitcher.kt`, `keyboard/MainKeyboardView.java` —
   which keyboard/view is shown; rebuilt on layout and theme change.
-- `latin/Suggest.kt`, `latin/DictionaryFacilitatorImpl.kt`,
+- `latin/suggestions/Suggest.kt`, `latin/DictionaryFacilitatorImpl.kt`,
   `latin/suggestions/SuggestionStripView.kt` — suggestion creation to display.
 - `app/src/main/assets/layouts` + `keyboard/internal/keyboard_parser/` —
   layouts and popups; prefer a layout/data change over code when it suffices.

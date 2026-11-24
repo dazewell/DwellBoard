@@ -9,7 +9,7 @@ import helium314.keyboard.latin.dictionary.Dictionary
 import helium314.keyboard.latin.dictionary.DictionaryFactory
 import helium314.keyboard.latin.makedict.WordProperty
 import helium314.keyboard.latin.settings.Settings
-import helium314.keyboard.latin.utils.DictionaryInfoUtils
+import helium314.keyboard.latin.dictionary.DictionaryInfoUtils
 import java.util.Locale
 
 /**

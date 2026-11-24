@@ -8,6 +8,7 @@ package helium314.keyboard.latin.dictionary;
 
 import android.content.Context;
 import helium314.keyboard.latin.NgramContext;
+import helium314.keyboard.latin.define.DebugFlags;
 import helium314.keyboard.latin.utils.Log;
 
 import androidx.annotation.NonNull;
@@ -15,7 +16,6 @@ import androidx.annotation.Nullable;
 
 import com.android.inputmethod.latin.BinaryDictionary;
 
-import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo;
 import helium314.keyboard.latin.common.ComposedData;
 import helium314.keyboard.latin.common.FileUtils;
 import helium314.keyboard.latin.define.DecoderSpecificConstants;
@@ -23,6 +23,7 @@ import helium314.keyboard.latin.makedict.DictionaryHeader;
 import helium314.keyboard.latin.makedict.FormatSpec;
 import helium314.keyboard.latin.makedict.WordProperty;
 import helium314.keyboard.latin.settings.SettingsValuesForSuggestion;
+import helium314.keyboard.latin.suggestions.SuggestedWordInfo;
 import helium314.keyboard.latin.utils.AsyncResultHolder;
 import helium314.keyboard.latin.utils.ExecutorUtils;
 
@@ -87,9 +88,6 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
     /** Indicates whether a task for reloading the dictionary has been scheduled. */
     private final AtomicBoolean mIsReloading;
 
-    /** Indicates whether the current dictionary needs to be recreated. */
-    private boolean mNeedsToRecreate;
-
     private final ReentrantReadWriteLock mLock;
 
     /* A extension for a binary dictionary file. */
@@ -129,7 +127,6 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         mDictFile = getDictFile(context, dictName, dictFile);
         mBinaryDictionary = null;
         mIsReloading = new AtomicBoolean();
-        mNeedsToRecreate = false;
         mLock = new ReentrantReadWriteLock();
     }
 
@@ -463,6 +460,8 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
      * Create a new binary dictionary and load initial contents.
      */
     void createNewDictionaryLocked() {
+        if (DebugFlags.DEBUG_ENABLED)
+            Log.i(TAG, "creating new dictionary: " + this.getClass().getSimpleName() + " " + mLocale);
         removeBinaryDictionaryLocked();
         createOnMemoryBinaryDictionaryLocked();
         loadInitialContentsLocked();
@@ -470,20 +469,16 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         mBinaryDictionary.flushWithGCIfHasUpdated();
     }
 
-    /**
-     * Marks that the dictionary needs to be recreated.
-     *
-     */
-    protected void setNeedsToRecreate() {
-        mNeedsToRecreate = true;
+    private void clearNeedsToRecreate() {
+        ExpandableDictionaryUtils.setHasUpdated(this);
     }
 
-    void clearNeedsToRecreate() {
-        mNeedsToRecreate = false;
+    private boolean needsToRecreate() {
+        return ExpandableDictionaryUtils.needsUpdate(this);
     }
 
-    boolean isNeededToRecreate() {
-        return mNeedsToRecreate;
+    String getDictName() {
+        return mDictName;
     }
 
     /**
@@ -501,7 +496,7 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
      * Returns whether a dictionary reload is required.
      */
     private boolean isReloadRequired() {
-        return mBinaryDictionary == null || mNeedsToRecreate;
+        return mBinaryDictionary == null || needsToRecreate();
     }
 
     /**
@@ -515,7 +510,7 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         final File dictFile = mDictFile;
         asyncExecuteTaskWithWriteLock(() -> {
             try {
-                if (!dictFile.exists() || isNeededToRecreate()) {
+                if (!dictFile.exists() || needsToRecreate()) {
                     // If the dictionary file does not exist or contents have been updated,
                     // generate a new one.
                     createNewDictionaryLocked();
@@ -569,6 +564,54 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
         });
     }
 
+    // DwellBoard: loads the file when nothing is loaded. The reload regenerates a bad file only when no dictionary is set,
+    // so a bad one is closed again and, if wanted, left to the reload.
+    private void loadExistingLocked(final boolean reloadIfBad) {
+        if (mBinaryDictionary != null || !mDictFile.exists()) return;
+        loadBinaryDictionaryLocked();
+        if (mBinaryDictionary != null && !mBinaryDictionary.isValidDictionary()) {
+            closeBinaryDictionary();
+            if (reloadIfBad) reloadDictionaryIfRequired();
+        }
+    }
+
+    // DwellBoard: flush and close in one task, since separately queued tasks run in no fixed order on the pool
+    public void flushAndClose() {
+        asyncExecuteTaskWithWriteLock(() -> {
+            if (mBinaryDictionary != null) mBinaryDictionary.flushWithGCIfHasUpdated();
+            closeBinaryDictionary();
+        });
+    }
+
+    // DwellBoard: a delayed history update, in one write-locked task. If the facilitator stopped using this dictionary
+    // during the delay (learning context switched, keyboard closed), it was closed without the update, so it is loaded,
+    // updated, flushed and closed here. stillCached is false once its context or history was deleted: nothing is
+    // written then, so a deleted file is not recreated.
+    public void updateEntriesForWordLater(final java.util.function.BooleanSupplier stillUsed,
+            final java.util.function.BooleanSupplier stillCached, @NonNull final NgramContext ngramContext,
+            final String word, final boolean isValidWord, final int timestamp) {
+        if (word.length() > BinaryDictionary.DICTIONARY_MAX_WORD_LENGTH) return;
+        asyncExecuteTaskWithWriteLock(() -> {
+            final boolean used = stillUsed.getAsBoolean();
+            if (!stillCached.getAsBoolean()) return;
+            loadExistingLocked(used);
+            if (mBinaryDictionary == null) {
+                // no file yet: a used dictionary's pending reload would create it over an update made here
+                if (used) {
+                    updateEntriesForWord(ngramContext, word, isValidWord, 1, timestamp);
+                    return;
+                }
+                createNewDictionaryLocked(); // also replaces a bad file
+            }
+            runGCIfRequiredLocked(true /* mindsBlockByGC */);
+            mBinaryDictionary.updateEntriesForWordWithNgramContext(ngramContext, word, isValidWord, 1, timestamp);
+            if (!used) {
+                mBinaryDictionary.flushWithGCIfHasUpdated();
+                closeBinaryDictionary();
+            }
+        });
+    }
+
     // DwellBoard: runs the task with the dictionary, or null if it can't be loaded. It loads the dictionary itself because
     // the executor is a pool, so a reload queued earlier may still be waiting. A read task drops to the read lock, so
     // suggestions from this dictionary keep working while the learned words screen lists it.
@@ -577,14 +620,7 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
             Lock held = mLock.writeLock();
             held.lock();
             try {
-                if (mBinaryDictionary == null && mDictFile.exists()) {
-                    loadBinaryDictionaryLocked();
-                    // the reload regenerates a bad file only when no dictionary is set, so leave it to the reload
-                    if (mBinaryDictionary != null && !mBinaryDictionary.isValidDictionary()) {
-                        closeBinaryDictionary();
-                        reloadDictionaryIfRequired();
-                    }
-                }
+                loadExistingLocked(true);
                 final BinaryDictionary dict = mBinaryDictionary != null && mBinaryDictionary.isValidDictionary() ? mBinaryDictionary : null;
                 if (write && dict != null) runGCIfRequiredLocked(true);
                 if (!write) {
