@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SPDX-License-Identifier: GPL-3.0-only
+-->
+<!-- DwellBoard: the fork's labels replace upstream's in the manifest, so its own debug override no longer applied -->
+<resources>
+    <string name="dwell_app_name" translatable="false">DwellBoard debug</string>
+    <string name="dwell_spell_checker_service_name" translatable="false">DwellBoard debug Spell Checker</string>
+    <string name="dwell_ime_settings" translatable="false">DwellBoard debug Settings</string>
+</resources>
