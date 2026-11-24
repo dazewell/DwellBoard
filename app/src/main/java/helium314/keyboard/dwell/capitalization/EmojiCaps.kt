@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 package helium314.keyboard.dwell.capitalization
 
+import helium314.keyboard.latin.NgramContext
 import helium314.keyboard.latin.common.StringUtils
 
 /**
@@ -25,6 +26,17 @@ object EmojiCaps {
             while (j > 0 && (Character.isSpaceChar(cs[j - 1]) || cs[j - 1] == '\t')) j--
         }
         return j
+    }
+
+    /**
+     *  Whether the word before is only emojis. A word auto-capitalized after one was capitalized by [skipTrailingEmojis]
+     *  because a sentence ended before the emoji, though the ngram context does not count it as a sentence start.
+     */
+    @JvmStatic
+    fun followsEmoji(ngramContext: NgramContext): Boolean {
+        if (ngramContext.prevWordCount == 0 || ngramContext.isNthPrevWordBeginningOfSentence(1)) return false
+        val word = ngramContext.getNthPrevWord(1) ?: return false
+        return word.isNotEmpty() && skipTrailingEmojis(word, word.length) == 0
     }
 
     /** Start of the single emoji ending at [end], or [end] if there is none. */

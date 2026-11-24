@@ -301,7 +301,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     ) {
         val words = suggestion.splitOnWhitespace().dropLastWhile { it.isEmpty() }
 
-        if (wasAutoCapitalized && !ngramContext.isBeginningOfSentenceContext)
+        if (wasAutoCapitalized && !ngramContext.isBeginningOfSentenceContext
+            && !helium314.keyboard.dwell.capitalization.EmojiCaps.followsEmoji(ngramContext)) // DwellBoard: caps after "Done. 🚀" start a sentence
             return // could be word caps text field, too much danger of adding wrong capitalization
 
         // Add word to user dictionary if it is in no other dictionary except user history dictionary (i.e. typed again).
