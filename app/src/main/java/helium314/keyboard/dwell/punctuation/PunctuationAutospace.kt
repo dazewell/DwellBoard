@@ -53,10 +53,13 @@ object PunctuationAutospace {
         }
     }
 
-    /** Closing marks and punctuation a phrase can end with. Quotes count as closing: an opening one isn't followed by a space. */
+    /**
+     * Closing marks and punctuation a phrase can end with. Quotes count as closing: an opening one isn't followed by a space.
+     * Not , ; : because autospace puts a space after them, and a minus there ("Temp: -5", "(3, -2)") is far more common.
+     */
     const val BEFORE_DASH_LENGTH = 16
 
-    private const val ENDS_PHRASE =")]}\"'”’».,;:!?%…"
+    private const val ENDS_PHRASE =")]}\"'”’».!?%…"
 
     /**
      * Whether [codePoint] typed right after an automatically inserted space belongs directly behind the previous
