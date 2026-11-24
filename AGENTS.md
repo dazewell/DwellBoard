@@ -118,11 +118,11 @@ skipped gate passed.
 - Branches are `<YYYY-MM-DD>_<slug>` (`-` is an equally valid separator). With
   hooks on, `.githooks/post-commit` dates an undated local branch when it is
   committed to and `.githooks/pre-push` blocks pushing one.
-- PRs target `dev` and are **not drafts**. Copilot review is **billed and
-  never automatic**: request it once the head is worth an outside review, only
-  through the `request_copilot_review` tool or the script it wraps,
-  `.github/scripts/request-copilot-review.ps1`. Budget and timing are in
-  `dwellboard-branch-flow`.
+- PRs target `dev` and are **not drafts**. The outside review is the bug hunt,
+  `.github/scripts/invoke-bug-hunt.ps1`: a cold failure-scenario read in a
+  clean session, run once the head is worth it. Budget and timing are in
+  `dwellboard-branch-flow`. PR bodies are edited only through
+  `.github/scripts/set-pr-body.ps1`, which reads them back.
 - **Close every review point before handoff**: fix it, or reply explaining why
   not, then resolve the thread. Verify none remain unresolved.
 - User-visible change ⇒ its `FEATURES.md` entry ships in the same PR (70 words

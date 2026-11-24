@@ -255,8 +255,8 @@ the phone has a differently-signed build under that id the install fails, and on
 A local alternative is `.\gradlew.bat :app:assembleDebug`, which installs
 side by side as `helium314.keyboard.dazewell.debug`; say which one you handed over.
 
-PR mechanics — requesting the billed Copilot review, its budget, the severity
-floor, and thread resolution — are normative in
+PR mechanics — running the bug hunt, its budget, the severity floor, and
+thread resolution — are normative in
 `.github/agents/dwellboard-implementer.agent.md` and are not restated here.
 
 **Request the verification build only once review has settled** — round 2 clean,
