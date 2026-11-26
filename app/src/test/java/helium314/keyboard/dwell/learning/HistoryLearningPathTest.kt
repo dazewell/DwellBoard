@@ -131,6 +131,16 @@ class HistoryLearningPathTest {
     }
 
     // the learned form can differ from the typed one; a correction unlearns what was typed
+    // the waiting add also takes the word off the block list, which would undo the block the bin just made
+    @Test fun `removing a suggestion within the delay cancels learning it, in any case`() {
+        val h = harness(addNow = false)
+        h.add("Zorbly", NgramContext.BEGINNING_OF_SENTENCE, wasAutoCapitalized = true)
+        val job = h.waiting().getValue("Zorbly")
+        h.facilitator.removeWord("zorbly")
+        assertTrue(job.isCancelled)
+        assertTrue(h.waiting().isEmpty())
+    }
+
     @Test fun `correcting a word within the delay cancels learning it`() {
         val h = harness(addNow = false)
         h.add("Zorbly", NgramContext.BEGINNING_OF_SENTENCE, wasAutoCapitalized = true)

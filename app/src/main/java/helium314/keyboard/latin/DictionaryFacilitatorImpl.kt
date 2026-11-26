@@ -641,6 +641,11 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private fun isBlacklisted(word: String): Boolean = dictionaryGroups.any { it.isBlacklisted(word) }
 
     override fun removeWord(word: String) {
+        // DwellBoard: a history write still waiting for a correction would unblock and relearn the removed word when
+        // it lands. Any case, since a removed "Darn" may block "darn".
+        synchronized(wordsWaitingForHistory) {
+            wordsWaitingForHistory.keys.filter { it.equals(word, ignoreCase = true) }.mapNotNull { wordsWaitingForHistory.remove(it) }
+        }.forEach { it.cancel() }
         for (dictionaryGroup in dictionaryGroups) {
             dictionaryGroup.removeWord(word)
         }
