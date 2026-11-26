@@ -42,6 +42,10 @@ class FacilitatorHarness(private val context: Context, mainWords: Set<String>, v
     /** Adds without the 25 s wait, so [awaitLearned] sees the word the job writes. */
     fun addNow() = setField("unlearnDuration", 0L)
 
+    /** A short wait instead of 25 s; the Duration field holds its raw long. */
+    fun waitFor(ms: Long) = setField("unlearnDuration", kotlin.time.Duration::class.java.getDeclaredField("rawValue")
+        .apply { isAccessible = true }.get(with(kotlin.time.Duration) { ms.milliseconds }))
+
     fun add(word: String, ngramContext: NgramContext, wasAutoCapitalized: Boolean = false, picked: Boolean = false) =
         facilitator.addToUserHistory(word, wasAutoCapitalized, ngramContext, 0L, false, picked)
 

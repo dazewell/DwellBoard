@@ -609,7 +609,7 @@ abstract public class ExpandableBinaryDictionary extends Dictionary {
             final int before = onLearned == null ? 0 : mBinaryDictionary.getFrequency(word);
             final boolean updated = mBinaryDictionary.updateEntriesForWordWithNgramContext(ngramContext, word, isValidWord, 1, timestamp);
             final boolean learned = onLearned != null && updated
-                    && helium314.keyboard.dwell.learning.LearnedWordPopup.becameSuggestable(before, mBinaryDictionary.getFrequency(word));
+                    && helium314.keyboard.dwell.learning.WordPopup.becameSuggestable(before, mBinaryDictionary.getFrequency(word));
             if (!used) {
                 mBinaryDictionary.flushWithGCIfHasUpdated();
                 closeBinaryDictionary();

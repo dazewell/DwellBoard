@@ -95,7 +95,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     }
 
     override fun onStartInput() {
-        helium314.keyboard.dwell.learning.LearnedWordPopup.onStartInput() // DwellBoard: a delayed popup must not reach another field
+        helium314.keyboard.dwell.learning.WordPopup.onStartInput() // DwellBoard: a delayed popup must not reach another field
     }
 
     override fun onFinishInput() {
@@ -445,8 +445,9 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         val waits = !learnOnlyPicked
         // DwellBoard: "show learned words", only for a word no dictionary knows, also in lowercase like the check above,
         // and as typed: "learn capitalized words in lowercase" stores "London" as "london", which no dictionary has
-        val onLearned = helium314.keyboard.dwell.learning.LearnedWordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
+        val onLearned = helium314.keyboard.dwell.learning.WordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
             || isValidSpellingWord(wordToUse.lowercase(dictionaryGroup.locale)) || isValidSpellingWord(typedWord) }
+        val queuedAt = helium314.keyboard.dwell.learning.RemovedWords.now() // DwellBoard: compared with a later removal when this lands
         var addJob: Job? = null
         addJob = scope.launch(Dispatchers.IO) {
             if (waits) delay(unlearnDuration)
@@ -454,6 +455,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 if (wordsWaitingForHistory[typedWord] == addJob)
                     wordsWaitingForHistory.remove(typedWord)
             }
+            // DwellBoard: the suggestion was removed while this waited; it would be unblocked and relearned
+            if (helium314.keyboard.dwell.learning.RemovedWords.removedSince(typedWord, dictionaryGroup.locale, queuedAt)) return@launch
             // remove manually entered blacklisted words from blacklist for likely matching languages
             dictionaryGroups.filter { it.confidence == dictionaryGroup.confidence }.forEach {
                 it.removeFromBlacklist(typedWord)
@@ -641,6 +644,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private fun isBlacklisted(word: String): Boolean = dictionaryGroups.any { it.isBlacklisted(word) }
 
     override fun removeWord(word: String) {
+        helium314.keyboard.dwell.learning.RemovedWords.markRemoved(word, dictionaryGroups.map { it.locale }) // DwellBoard: a waiting history write must not undo this
         for (dictionaryGroup in dictionaryGroups) {
             dictionaryGroup.removeWord(word)
         }
@@ -856,6 +860,7 @@ private class DictionaryGroup(
 
     fun addToBlacklist(word: String) {
         if (!blacklist.add(word) || blacklistFile == null) return
+        helium314.keyboard.dwell.learning.WordPopup.onBlocked(word) // DwellBoard: removing a suggestion only sometimes blocks it
         scope.launch {
             synchronized(this) {
                 try {
