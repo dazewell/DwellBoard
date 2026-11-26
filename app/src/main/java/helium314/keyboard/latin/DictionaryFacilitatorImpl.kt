@@ -447,7 +447,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         // and as typed: "learn capitalized words in lowercase" stores "London" as "london", which no dictionary has
         val onLearned = helium314.keyboard.dwell.learning.WordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
             || isValidSpellingWord(wordToUse.lowercase(dictionaryGroup.locale)) || isValidSpellingWord(typedWord) }
-        val queuedAt = helium314.keyboard.dwell.learning.RemovedWords.now() // DwellBoard
+        val queuedAt = helium314.keyboard.dwell.learning.RemovedWords.now() // DwellBoard: compared with a later removal when this lands
         var addJob: Job? = null
         addJob = scope.launch(Dispatchers.IO) {
             if (waits) delay(unlearnDuration)

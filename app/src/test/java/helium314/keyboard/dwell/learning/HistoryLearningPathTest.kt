@@ -139,6 +139,7 @@ class HistoryLearningPathTest {
         h.add("Zorbly", NgramContext.BEGINNING_OF_SENTENCE, wasAutoCapitalized = true)
         h.facilitator.removeWord("zorbly")
         Thread.sleep(800)
+        assertTrue(h.waiting().isEmpty()) // both adds have landed
         assertTrue(h.learned.isEmpty())
         h.add("zorbly", previous("the")) // typed again after the removal, it is learned as usual
         assertEquals("zorbly", h.awaitLearned(1).single().word)
