@@ -456,7 +456,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                     wordsWaitingForHistory.remove(typedWord)
             }
             // DwellBoard: the suggestion was removed while this waited; it would be unblocked and relearned
-            if (helium314.keyboard.dwell.learning.RemovedWords.removedSince(typedWord, queuedAt)) return@launch
+            if (helium314.keyboard.dwell.learning.RemovedWords.removedSince(typedWord, dictionaryGroup.locale, queuedAt)) return@launch
             // remove manually entered blacklisted words from blacklist for likely matching languages
             dictionaryGroups.filter { it.confidence == dictionaryGroup.confidence }.forEach {
                 it.removeFromBlacklist(typedWord)
@@ -644,7 +644,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private fun isBlacklisted(word: String): Boolean = dictionaryGroups.any { it.isBlacklisted(word) }
 
     override fun removeWord(word: String) {
-        helium314.keyboard.dwell.learning.RemovedWords.markRemoved(word) // DwellBoard: a waiting history write must not undo this
+        helium314.keyboard.dwell.learning.RemovedWords.markRemoved(word, dictionaryGroups.map { it.locale }) // DwellBoard: a waiting history write must not undo this
         for (dictionaryGroup in dictionaryGroups) {
             dictionaryGroup.removeWord(word)
         }

@@ -12,8 +12,9 @@ import java.util.concurrent.TimeUnit
  * waiting map while the first write still runs, so cancelling from the map cannot reach every write; each write
  * checks here instead.
  *
- * Marked on the main thread by a bin tap, read on the IO thread when a write lands. Keyed in any case, since removing
- * "Darn" can block "darn".
+ * Marked on the main thread by a bin tap, read on the IO thread when a write lands. Removing "Darn" can block "darn",
+ * so each side also goes by its lowercase in the language's own locale: in Turkish "Işık" lowercases to "ışık", which
+ * a locale-free fold would not match.
  */
 object RemovedWords {
     // a write lands 25 s after it was queued, so an older removal can no longer be newer than any waiting write
@@ -24,13 +25,16 @@ object RemovedWords {
     @JvmStatic
     fun now(): Long = System.nanoTime()
 
-    fun markRemoved(word: String, now: Long = now()) {
+    /** [word] was removed, as shown, in the languages of [locales]. */
+    fun markRemoved(word: String, locales: Collection<Locale>, now: Long = now()) {
         removedAt.values.removeIf { now - it > KEEP_NS }
-        removedAt[key(word)] = now
+        removedAt[word] = now
+        locales.forEach { removedAt[word.lowercase(it)] = now }
     }
 
-    /** Whether [word] was removed after a write queued at [queuedAt], so that write must not land. */
-    fun removedSince(word: String, queuedAt: Long): Boolean = removedAt[key(word)]?.let { it - queuedAt >= 0 } == true
+    /** Whether [word], typed in [locale], was removed after a write queued at [queuedAt], so that write must not land. */
+    fun removedSince(word: String, locale: Locale, queuedAt: Long): Boolean =
+        removedAfter(word, queuedAt) || removedAfter(word.lowercase(locale), queuedAt)
 
-    private fun key(word: String) = word.lowercase(Locale.ROOT)
+    private fun removedAfter(key: String, queuedAt: Long) = removedAt[key]?.let { it - queuedAt >= 0 } == true
 }
