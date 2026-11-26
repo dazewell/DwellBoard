@@ -7,7 +7,7 @@
     <string name="dwell_learn_only_picked_typed_left">Show typed word on the left</string>
     <string name="dwell_learn_only_picked_typed_left_summary">While typing, the correction or top suggestion stays in the center and the word you are typing goes next to it, on the left in left-to-right languages</string>
     <string name="dwell_show_word_popups">Show learned and blocked words</string>
-    <string name="dwell_show_word_popups_summary">A word briefly floats up from the suggestion strip once a new word can be suggested, or when removing a suggestion blocks it</string>
+    <string name="dwell_show_word_popups_summary">A new word briefly floats up from the suggestion strip once it can be suggested, and a removed suggestion when it gets blocked</string>
     <!-- %s is the learned word -->
     <string name="dwell_learned_word_popup">💡%s</string>
     <!-- %s is the word that will no longer be suggested -->

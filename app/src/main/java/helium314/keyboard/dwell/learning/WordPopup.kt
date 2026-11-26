@@ -49,8 +49,10 @@ object WordPopup {
     fun becameSuggestable(before: Int, after: Int): Boolean = before <= 0 && after > 0
 
     fun post(word: String, typedIn: Int) {
-        handler.post { if (shouldShow(typedIn, session, Settings.getValues()?.let { it.mShowWordPopups && !it.mIncognitoModeEnabled } == true))
-            show(word, R.string.dwell_learned_word_popup) }
+        handler.post {
+            if (shouldShow(typedIn, session, Settings.getValues()?.let { it.mShowWordPopups && !it.mIncognitoModeEnabled } == true))
+                show(word, R.string.dwell_learned_word_popup)
+        }
     }
 
     // main thread only: a word is blocked from a bin tap in the suggestion strip
