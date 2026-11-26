@@ -447,6 +447,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         // and as typed: "learn capitalized words in lowercase" stores "London" as "london", which no dictionary has
         val onLearned = helium314.keyboard.dwell.learning.WordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
             || isValidSpellingWord(wordToUse.lowercase(dictionaryGroup.locale)) || isValidSpellingWord(typedWord) }
+        val queuedAt = helium314.keyboard.dwell.learning.RemovedWords.now() // DwellBoard
         var addJob: Job? = null
         addJob = scope.launch(Dispatchers.IO) {
             if (waits) delay(unlearnDuration)
@@ -454,6 +455,8 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                 if (wordsWaitingForHistory[typedWord] == addJob)
                     wordsWaitingForHistory.remove(typedWord)
             }
+            // DwellBoard: the suggestion was removed while this waited; it would be unblocked and relearned
+            if (helium314.keyboard.dwell.learning.RemovedWords.removedSince(typedWord, queuedAt)) return@launch
             // remove manually entered blacklisted words from blacklist for likely matching languages
             dictionaryGroups.filter { it.confidence == dictionaryGroup.confidence }.forEach {
                 it.removeFromBlacklist(typedWord)
@@ -641,11 +644,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     private fun isBlacklisted(word: String): Boolean = dictionaryGroups.any { it.isBlacklisted(word) }
 
     override fun removeWord(word: String) {
-        // DwellBoard: a history write still waiting for a correction would unblock and relearn the removed word when
-        // it lands. Any case, since a removed "Darn" may block "darn".
-        synchronized(wordsWaitingForHistory) {
-            wordsWaitingForHistory.keys.filter { it.equals(word, ignoreCase = true) }.mapNotNull { wordsWaitingForHistory.remove(it) }
-        }.forEach { it.cancel() }
+        helium314.keyboard.dwell.learning.RemovedWords.markRemoved(word) // DwellBoard: a waiting history write must not undo this
         for (dictionaryGroup in dictionaryGroups) {
             dictionaryGroup.removeWord(word)
         }
