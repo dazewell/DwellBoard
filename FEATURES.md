@@ -34,9 +34,9 @@ Dictionary words you removed from suggestions, by long-pressing one and tapping 
 
 Words that are in no dictionary are learned only when you tap them in the suggestion strip, not when you type a space after them; the strip then shows the typed word. Known words still learn as you type. Setting: Text correction → "Learn new words only when tapped", off by default. "Show typed word on the left", also off, keeps the correction centered with the typed word beside it.
 
-### Show learned words <!-- #learned-word-popup -->
+### Show learned and blocked words <!-- #learned-word-popup --> <!-- #blocked-word-popup -->
 
-When a word that is in no dictionary can now be suggested, it floats up from the suggestion strip as "💡word" and fades. With "Learn new words only when tapped" that is the tap; otherwise it is the second time you type the word, about 25 seconds later, if you are still in that field. Setting: Text correction → "Show learned words", off by default.
+When a word in no dictionary can now be suggested, it floats up from the strip as "💡word" and fades. With "Learn new words only when tapped" that is the tap; otherwise the second time you type it, 25 seconds later, if you are still in that field. Removing a suggestion that gets blocked, not just forgotten, shows "🚫word". Setting: Text correction → "Show learned and blocked words", off by default.
 
 ### Instant space after punctuation <!-- #punctuation-autospace --> <!-- #punctuation-space-swap -->
 

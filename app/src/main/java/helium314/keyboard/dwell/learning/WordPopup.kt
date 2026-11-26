@@ -22,11 +22,12 @@ import helium314.keyboard.latin.common.ColorType
 import helium314.keyboard.latin.settings.Settings
 
 /**
- * "Show learned words": once a word no dictionary knows becomes suggestable from the learned history, it floats up
- * from the suggestion strip and fades, in the key preview colours. Default learning delays the write so a correction
- * can cancel it, and a new word typed once is stored without a count, so there the popup comes with the second use.
+ * "Show learned and blocked words": a word floats up from the suggestion strip and fades, in the key preview colours,
+ * once a word no dictionary knows becomes suggestable from the learned history, and when removing a suggestion puts
+ * a word on the block list. Default learning delays the write so a correction can cancel it, and a new word typed once
+ * is stored without a count, so there the learned popup comes with the second use.
  */
-object LearnedWordPopup {
+object WordPopup {
     private const val DURATION_MS = 1200L
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
@@ -38,7 +39,7 @@ object LearnedWordPopup {
 
     /** What the history write runs if the word became suggestable, or null when the setting is off or [isKnown]. */
     inline fun callbackFor(word: String, isKnown: () -> Boolean): Runnable? {
-        if (Settings.getValues()?.mShowLearnedWord != true || isKnown()) return null
+        if (Settings.getValues()?.mShowWordPopups != true || isKnown()) return null
         val typedIn = session
         return Runnable { post(word, typedIn) }
     }
@@ -48,13 +49,26 @@ object LearnedWordPopup {
     fun becameSuggestable(before: Int, after: Int): Boolean = before <= 0 && after > 0
 
     fun post(word: String, typedIn: Int) {
-        handler.post { if (shouldShow(typedIn, session, Settings.getValues()?.let { it.mShowLearnedWord && !it.mIncognitoModeEnabled } == true)) show(word) }
+        handler.post { if (shouldShow(typedIn, session, Settings.getValues()?.let { it.mShowWordPopups && !it.mIncognitoModeEnabled } == true))
+            show(word, R.string.dwell_learned_word_popup) }
+    }
+
+    // main thread only: a word is blocked from a bin tap in the suggestion strip
+    private var blockPending = false
+
+    /** A word was just added to the block list. Unlike learning this is immediate, in the field the user is in. */
+    fun onBlocked(word: String) {
+        // one removal blocks the word in every active language whose dictionary has it; one popup is enough
+        if (blockPending || Settings.getValues()?.mShowWordPopups != true) return
+        blockPending = true
+        // posted so the strip has redrawn without the removed word first
+        handler.post { blockPending = false; show(word, R.string.dwell_blocked_word_popup) }
     }
 
     /** The field the word was typed in is still the current one, and it may show learned words. */
     fun shouldShow(typedIn: Int, current: Int, allowedNow: Boolean): Boolean = allowedNow && typedIn == current
 
-    private fun show(word: String) {
+    private fun show(word: String, format: Int) {
         // by the time a delayed write lands the keyboard may be closed or the strip hidden; then there is nothing to show
         val root = KeyboardSwitcher.getInstance().mainKeyboardView?.rootView ?: return
         val strip = root.findViewById<View>(R.id.suggestion_strip_view) ?: return
@@ -71,7 +85,7 @@ object LearnedWordPopup {
         colors.setBackground(view, ColorType.KEY_PREVIEW_BACKGROUND)
         view.setTextColor(colors.get(ColorType.KEY_PREVIEW_TEXT))
         view.setTextSize(TypedValue.COMPLEX_UNIT_PX, context.resources.getDimension(R.dimen.config_suggestion_text_size))
-        val text = context.getString(R.string.dwell_learned_word_popup, word)
+        val text = context.getString(format, word)
         view.text = text
         KeyboardTypeface.applyToTextView(view, text, android.graphics.Typeface.DEFAULT)
         view.setPadding((12 * density).toInt(), (4 * density).toInt(), (12 * density).toInt(), (4 * density).toInt())

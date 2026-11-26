@@ -95,7 +95,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     }
 
     override fun onStartInput() {
-        helium314.keyboard.dwell.learning.LearnedWordPopup.onStartInput() // DwellBoard: a delayed popup must not reach another field
+        helium314.keyboard.dwell.learning.WordPopup.onStartInput() // DwellBoard: a delayed popup must not reach another field
     }
 
     override fun onFinishInput() {
@@ -445,7 +445,7 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
         val waits = !learnOnlyPicked
         // DwellBoard: "show learned words", only for a word no dictionary knows, also in lowercase like the check above,
         // and as typed: "learn capitalized words in lowercase" stores "London" as "london", which no dictionary has
-        val onLearned = helium314.keyboard.dwell.learning.LearnedWordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
+        val onLearned = helium314.keyboard.dwell.learning.WordPopup.callbackFor(wordToUse) { mainFreq > 0 || isValidSpellingWord(wordToUse)
             || isValidSpellingWord(wordToUse.lowercase(dictionaryGroup.locale)) || isValidSpellingWord(typedWord) }
         var addJob: Job? = null
         addJob = scope.launch(Dispatchers.IO) {
@@ -856,6 +856,7 @@ private class DictionaryGroup(
 
     fun addToBlacklist(word: String) {
         if (!blacklist.add(word) || blacklistFile == null) return
+        helium314.keyboard.dwell.learning.WordPopup.onBlocked(word) // DwellBoard: removing a suggestion only sometimes blocks it
         scope.launch {
             synchronized(this) {
                 try {

@@ -182,7 +182,7 @@ object Defaults {
     const val PREF_DONT_LEARN_CAPITALIZED = false
     const val PREF_LEARN_ONLY_PICKED = false
     const val PREF_LEARN_ONLY_PICKED_TYPED_LEFT = false
-    const val PREF_SHOW_LEARNED_WORD = false
+    const val PREF_SHOW_WORD_POPUPS = false
     @JvmField
     val PREF_NAVBAR_COLOR = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
     const val PREF_ENABLED_SUBTYPES = ""

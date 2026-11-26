@@ -6,25 +6,25 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class LearnedWordPopupTest {
+class WordPopupTest {
     @Test fun newWordStoredValidIsLearned() {
-        assertTrue(LearnedWordPopup.becameSuggestable(Dictionary.NOT_A_PROBABILITY, 111))
+        assertTrue(WordPopup.becameSuggestable(Dictionary.NOT_A_PROBABILITY, 111))
     }
 
     @Test fun newWordStoredWithoutCountIsNotLearnedYet() {
-        assertFalse(LearnedWordPopup.becameSuggestable(Dictionary.NOT_A_PROBABILITY, Dictionary.NOT_A_PROBABILITY))
+        assertFalse(WordPopup.becameSuggestable(Dictionary.NOT_A_PROBABILITY, Dictionary.NOT_A_PROBABILITY))
     }
 
     @Test fun alreadySuggestableWordDoesNotPopAgain() {
-        assertFalse(LearnedWordPopup.becameSuggestable(111, 115))
+        assertFalse(WordPopup.becameSuggestable(111, 115))
     }
 
     @Test fun popupShowsOnlyInTheFieldTheWordWasTypedIn() {
-        assertTrue(LearnedWordPopup.shouldShow(3, 3, true))
-        assertFalse(LearnedWordPopup.shouldShow(3, 4, true))
+        assertTrue(WordPopup.shouldShow(3, 3, true))
+        assertFalse(WordPopup.shouldShow(3, 4, true))
     }
 
     @Test fun popupIsDroppedWhenTheFieldNowForbidsIt() {
-        assertFalse(LearnedWordPopup.shouldShow(3, 3, false))
+        assertFalse(WordPopup.shouldShow(3, 3, false))
     }
 }

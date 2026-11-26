@@ -194,7 +194,7 @@ public final class Settings implements SharedPreferences.OnSharedPreferenceChang
     public static final String PREF_DONT_LEARN_CAPITALIZED = "dont_learn_capitalized";
     public static final String PREF_LEARN_ONLY_PICKED = "learn_only_picked";
     public static final String PREF_LEARN_ONLY_PICKED_TYPED_LEFT = "learn_only_picked_typed_left";
-    public static final String PREF_SHOW_LEARNED_WORD = "show_learned_word";
+    public static final String PREF_SHOW_WORD_POPUPS = "show_learned_word"; // DwellBoard: key kept from when it covered learned words only
     public static final String PREF_NAVBAR_COLOR = "navbar_color";
     public static final String PREF_ENABLED_SUBTYPES = "enabled_subtypes";
     public static final String PREF_SELECTED_SUBTYPE = "selected_subtype";
